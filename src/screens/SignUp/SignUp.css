@@ -1,0 +1,202 @@
+/* Container */
+.signup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom right, #2855ae, #7292cf);
+  font-family: system-ui, sans-serif;
+}
+
+/* Card */
+.signup-card {
+  width: 450px;
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0px 4px 18px rgba(0,0,0,0.08);
+  animation: fade-in 0.7s ease-in-out;
+}
+
+/* Header */
+
+.signup-title {
+  font-size: 2.3rem;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-weight: 900;
+  margin-bottom: 6px;
+  color: #4A4A4A;
+  line-height: 1.2;
+  text-transform: none; 
+  margin-bottom: 20px;
+}
+
+.signup-subtitle {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Form fields */
+.signup-field {
+  margin-bottom: 18px;
+}
+
+.signup-label {
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.signup-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #dcdcdc;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.signup-input-wrapper:hover {
+  border-color: #888;
+}
+
+.signup-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  margin-left: 8px;
+}
+
+.signup-input-icon {
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+/* Show/Hide password button */
+.signup-eye-button {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding-left: 6px;
+}
+
+.signup-eye-icon {
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+/* Checkbox */
+.signup-terms {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 16px;
+}
+
+.signup-terms-text {
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.signup-link {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.signup-link:hover {
+  text-decoration: underline;
+}
+
+/* Already have account */
+.signup-login-text {
+  text-align: center;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+
+/* Button */
+.signup-submit {
+  width: 100%;
+  padding: 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 4px;
+  transition: 0.2s;
+}
+
+.signup-submit:hover {
+  background: #1d4ed8;
+}
+
+/* OR Divider */
+.signup-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.signup-or::before,
+.signup-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ddd;
+}
+
+/* Google button */
+.signup-google {
+  width: 100%;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.signup-google:hover {
+  background: #fafafa;
+}
+
+.signup-google-icon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Fade animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .signup-card {
+    width: 90%;
+    padding: 24px;
+  }
+}

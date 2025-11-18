@@ -1,0 +1,138 @@
+:root {
+  --color-white: #ffffff;
+  --color-text-dark: #111827;
+  --color-text-medium: #374151;
+  --color-text-light: #6b7280;
+  --color-text-subtle: #9ca3af;
+
+  --color-primary: #8b5cf6;
+  --color-secondary: #3b82f6;
+  --color-tertiary: #10b981;
+  --color-accent-yellow: #f59e0b;
+  --color-accent-pink: #ec4899;
+
+  --color-bg-light: #f3f4f6;
+  --color-bg-medium: #e5e7eb;
+  --color-bg-dark: #111827;
+
+  --color-text-on-dark: #d1d5db;
+  --gradient-primary: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ---------- RESET ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-dark);
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(180deg, var(--color-bg-light) 0%, var(--color-bg-medium) 100%);
+  color: var(--color-text-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.page-wrapper {
+  max-width: 1430px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-dark);
+  font-weight: 800;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.section-header h2 {
+  font-size: 48px;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.section-header p {
+  font-size: 20px;
+  line-height: 1.5;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 16px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--color-white);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg-light);
+}
+
+@media (max-width: 768px) {
+  .section-header h2 {
+    font-size: 36px;
+  }
+  .section-header p {
+    font-size: 18px;
+  }
+}
