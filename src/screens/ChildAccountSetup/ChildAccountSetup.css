@@ -1,0 +1,312 @@
+/* Step 1 page wrapper */
+.setup1-page {
+  background: #f6f7f8;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background circles */
+.setup1-circle-blue,
+.setup1-circle-yellow,
+.setup1-circle-green {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(32px);
+}
+
+.setup1-circle-blue {
+  width: 344px;
+  height: 361px;
+  background: rgba(43, 124, 238, 0.2);
+  top: 10%;
+  left: 15%;
+}
+
+.setup1-circle-yellow {
+  width: 241px;
+  height: 252px;
+  background: rgba(253, 230, 138, 0.3);
+  bottom: 10%;
+  right: 10%;
+}
+
+.setup1-circle-green {
+  width: 179px;
+  height: 190px;
+  background: rgba(167, 243, 208, 0.3);
+  top: 25%;
+  right: 20%;
+}
+
+/* Main container */
+.setup1-container {
+  display: flex;
+  gap: 2rem;
+  width: 900px;
+  height: auto;
+}
+
+/* Form Card */
+.setup1-form-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 32px;
+  padding: 2.5rem;
+  backdrop-filter: blur(6px);
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Step and progress */
+.setup1-step-info p {
+  font-size: 14px;
+  color: #617289;
+  margin: 0 0 5px;
+}
+
+.setup1-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #dbe0e6;
+  border-radius: 4px;
+}
+
+.setup1-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  border-radius: 4px;
+}
+
+/* Title */
+.setup1-title {
+  font-size: 32px;
+  margin-top: 1.5rem;
+  color: #111418;
+}
+
+/* Form Inputs */
+.setup1-form-content {
+  margin-top: 2rem;
+}
+
+.setup1-input-label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.setup1-text-input {
+  width: 100%;
+  height: 50px;
+  border-radius: 25px;
+  border: 1px solid #dbe0e6;
+  padding: 0 15px;
+  outline: none;
+}
+
+.setup1-hint-text {
+  font-size: 14px;
+  color: #617289;
+  margin-top: 5px;
+}
+
+/* Button */
+.setup1-continue-button {
+  margin-top: 1.5rem;
+  width: 200px;
+  height: 45px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Side Image */
+.setup1-image-box {
+  width: 350px;
+  height: 350px;
+}
+
+.setup1-side-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 32px;
+}
+
+/* Page layout */
+.setup2-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f6f7f8;
+  font-family: sans-serif;
+}
+
+/* Form card container */
+.setup2-container {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+}
+
+.setup2-form-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Step info */
+.setup2-step-info p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+}
+
+.setup2-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.setup2-progress-fill {
+  height: 100%;
+  background: #3b82f6;
+  width: 66.67%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Title section */
+.setup2-title-section h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.setup2-title-section p {
+  color: #6b7280;
+  margin-top: 4px;
+  font-size: 0.95rem;
+}
+
+/* Info box */
+.setup2-info-box {
+  display: flex;
+  gap: 16px;
+  background: #f3f4f6;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.setup2-icon-circle {
+  background: #3b82f6;
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.setup2-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.setup2-info-text h3 {
+  margin: 0;
+  font-weight: 600;
+  color: #111827;
+}
+
+.setup2-info-text p {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Consent section */
+.setup2-consent-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #111827;
+}
+
+.setup2-consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Email section */
+.setup2-email-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.setup2-email-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.setup2-email-icon {
+  width: 20px;
+  height: 20px;
+  color: #9ca3af;
+}
+
+.setup2-text-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+/* Continue button */
+.setup2-continue-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.setup2-continue-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.setup2-continue-button:not(:disabled):hover {
+  background: #2563eb;
+}
