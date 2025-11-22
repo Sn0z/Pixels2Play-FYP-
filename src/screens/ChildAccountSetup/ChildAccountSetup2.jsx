@@ -1,20 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MailIcon, ShieldCheckIcon } from "lucide-react";
 import "./ChildAccountSetup.css";
 
 const ChildAccountSetupStep2 = () => {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
+  const [fadeIn, setFadeIn] = useState(false);
+
+  // Trigger fade-in after component mounts
+  useEffect(() => {
+    setFadeIn(true);
+  }, []);
 
   return (
-    <div className="setup2-page">
+    <div className={`setup2-page ${fadeIn ? "fade-in" : ""}`}>
       {/* Background circles */}
-      <div className="setup2-circle-blue" />
-      <div className="setup2-circle-yellow" />
-      <div className="setup2-circle-green" />
+      <div className="setup1-circle-blue" />
+      <div className="setup1-circle-yellow" />
+      <div className="setup1-circle-green" />
 
-      <div className="setup2-container">
-        <div className="setup2-form-card">
+      <div className={`setup2-container ${fadeIn ? "fade-in delay-1" : ""}`}>
+        <div className={`setup2-form-card ${fadeIn ? "fade-in delay-2" : ""}`}>
           {/* Step header */}
           <div className="setup2-step-info">
             <p>Step 2 of 3</p>
@@ -71,7 +77,8 @@ const ChildAccountSetupStep2 = () => {
                 placeholder="yourparent.email@example.com"
                 className="setup2-text-input"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}/>
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
 
             <button

@@ -1,18 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ChildAccountSetup.css";
 
 const ChildAccountSetup1 = () => {
   const [email, setEmail] = useState("");
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    setAnimate(true);
+  }, []);
 
   return (
-    <main className="setup1-page">
+    <main className={`setup1-page ${animate ? "fade-in" : ""}`}>
       {/* Background circles */}
       <div className="setup1-circle-blue" />
       <div className="setup1-circle-yellow" />
       <div className="setup1-circle-green" />
 
-      <div className="setup1-container">
-        <div className="setup1-form-card">
+      <div className={`setup1-container ${animate ? "fade-in" : ""}`}>
+        <div className={`setup1-form-card ${animate ? "fade-in" : ""}`}>
           {/* Step Header */}
           <div className="setup1-step-info">
             <p>Step 1 of 3</p>
@@ -54,7 +59,7 @@ const ChildAccountSetup1 = () => {
         </div>
 
         {/* Right Side Image */}
-        <div className="setup1-image-box">
+        <div className={`setup1-image-box ${animate ? "fade-in" : ""}`}>
           <img
             src="https://c.animaapp.com/miaatpqmWZ43wO/img/image-h-auto-w-full.png"
             alt="Child graphic"
