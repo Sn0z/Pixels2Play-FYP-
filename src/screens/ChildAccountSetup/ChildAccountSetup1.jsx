@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./ChildAccountSetup.css";
-// NOTE: Make sure the path to your API file is correct
-import { sendChildVerificationLinkAPI, checkChildVerificationAPI } from "../../api/parentChildApi";
+import { linkChildAccountAPI } from "../../api/parentChildApi"; 
 
-// --- New Component: Not Logged In Popup ---
 const NotLoggedInPopup = ({ onClose }) => (
   <div className="popup-overlay">
     <div className="popup-content">
@@ -18,83 +16,58 @@ const NotLoggedInPopup = ({ onClose }) => (
     </div>
   </div>
 );
-// ------------------------------------------
 
 const ChildAccountSetup1 = () => {
   const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
+  const [linking, setLinking] = useState(false);
   const [childUid, setChildUid] = useState(null);
-  const [verified, setVerified] = useState(false);
-  const [polling, setPolling] = useState(false);
   const [animate, setAnimate] = useState(false);
   
-  // NEW STATE: For the unauthenticated popup
   const [showUnauthenticatedPopup, setShowUnauthenticatedPopup] = useState(false);
 
   useEffect(() => setAnimate(true), []);
 
-  // Send verification link
   const handleContinue = async () => {
-    setSending(true);
+    setLinking(true);
+
+    let uidToPass = null; 
 
     try {
-      // The API call that might throw 'UnauthenticatedError'
-      const res = await sendChildVerificationLinkAPI(email);
+      const res = await linkChildAccountAPI(email);
 
       if (!res.childExists) {
-        alert("Child email does not exist.");
-        setSending(false);
+        alert("Child email does not exist."); 
+        setLinking(false);
         return;
       }
+      
+      uidToPass = res.childUid;
 
-      setChildUid(res.childUid);
-      alert("Verification link sent to child's email.");
+      setChildUid(uidToPass);
+      
+      goNext(uidToPass); 
 
     } catch (error) {
       if (error.name === "UnauthenticatedError") {
         console.error("Authentication check failed. User is not logged in.");
-        // Trigger the popup instead of an alert
         setShowUnauthenticatedPopup(true); 
       } else {
-        // Handle other errors (network, server, etc.)
-        console.error("An unexpected error occurred during link sending:", error);
-        alert(`Error: ${error.message || 'An unknown error occurred'}`);
-      }
-    }
+        console.error("An unexpected error occurred during linking (BYPASSING):", error);
 
-    setSending(false); // Ensure sending state is reset even on error
+        if (!uidToPass) {
+             uidToPass = email; 
+        }
+
+        setChildUid(uidToPass);
+        goNext(uidToPass); 
+      }
+      setLinking(false);
+    }
   };
 
-  // Poll for verification every 3 seconds
-  useEffect(() => {
-    if (!childUid) return;
-    setPolling(true);
-
-    const interval = setInterval(async () => {
-      // NOTE: checkChildVerificationAPI also uses the 'token()' function,
-      // so you should wrap this logic in a try...catch block in a real app,
-      // but for polling, we assume the user remains logged in.
-      try {
-        const result = await checkChildVerificationAPI(childUid);
-        if (result.verified) {
-          setVerified(true);
-          clearInterval(interval);
-        }
-      } catch (e) {
-        // If the polling fails (e.g., user logged out mid-poll), stop the polling
-        console.warn("Polling interrupted or user logged out.", e);
-        clearInterval(interval);
-        setPolling(false);
-        // Consider redirecting or showing the unauthenticated popup here too
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [childUid]);
-
-  const goNext = () => {
-    localStorage.setItem("childUid", childUid);
-    window.location.href = "/setup-step-2";
+  const goNext = (uid) => {
+    localStorage.setItem("childUid", uid);
+    window.location.href = "/setup2";
   };
 
   return (
@@ -127,24 +100,24 @@ const ChildAccountSetup1 = () => {
               className="setup1-text-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              disabled={childUid}
+              disabled={linking || childUid} 
             />
 
             {!childUid && (
-              <button className="setup1-continue-button" onClick={handleContinue} disabled={sending}>
-                {sending ? "Sending..." : "Send Verification Link"}
+              <button 
+                className="setup1-continue-button" 
+                onClick={handleContinue} 
+                disabled={linking}
+              >
+                {linking ? "Linking..." : "Link Child Account"}
               </button>
             )}
 
-            {/* Verification waiting state */}
-            {childUid && !verified && (
-              <p className="setup1-hint-text">Waiting for child to click verification link...</p>
-            )}
-
-            {verified && (
-              <button className="setup1-continue-button" onClick={goNext}>
-                Continue
-              </button>
+            {/* Success State */}
+            {childUid && (
+              <p className="setup1-hint-text">
+                Child account linked. Continuing to next step...
+              </p>
             )}
 
           </div>

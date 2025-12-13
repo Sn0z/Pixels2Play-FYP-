@@ -30,17 +30,17 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="header-container">
-        <a href="#" className="logo">
+        <a href="/" className="logo">
           <img src="../public/assets/17_1165.png" className="logo-icon" />
           <span className="logo-text">Pixles2Play</span>
         </a>
 
         <nav className="main-nav">
           <ul className="nav-links">
-            <li><a href="#hero">Home</a></li>
-            <li><a href="#courses">Courses</a></li>
+            <li><a href="/">Home</a></li>
+            <li><a href="/courses">Courses</a></li>
             <li><a href="#projects">Projects</a></li>
-            <li><a href="#footer">Contact Us</a></li>
+            <li><a href="/contact">Contact Us</a></li>
             <li><a href="#pricing">Pricing</a></li>
           </ul>
         </nav>

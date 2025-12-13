@@ -1,0 +1,96 @@
+.courses-container {
+  width: 100%;
+  background: #f8fafc;
+}
+
+.courses-main {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 150px 16px 32px;
+}
+
+.courses-content {
+  width: 100%;
+  max-width: 1216px;
+  display: flex;
+  gap: 32px;
+}
+
+.courses-sidebar {
+  width: 256px;
+}
+
+.filter-card {
+  background: white;
+  border: 1px solid #e1e8ef;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 4px #00000020;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.filter-title {
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f162a;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  color: #465469;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  color: #0f162a;
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: #e1e8ef;
+  margin: 16px 0;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-subtitle {
+  font-family: Inter, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0f162a;
+}
+
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  color: #334154;
+  cursor: pointer;
+}
+
+.courses-list {
+  flex: 1;
+}

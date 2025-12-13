@@ -2,15 +2,64 @@ import React, { useState, useEffect } from "react";
 import { MailIcon, ShieldCheckIcon } from "lucide-react";
 import "./ChildAccountSetup.css";
 
+// --- TEMPORARY API PLACEHOLDER ---
+const recordParentConsentAPI = async (parentEmail, childUid) => {
+    console.log(`Recording consent for Child: ${childUid} by Parent Email: ${parentEmail}`);
+    
+    // Simulate an API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500)); 
+    
+    // Simulate successful API response
+    return { success: true };
+};
+// ----------------------------------
+
 const ChildAccountSetupStep2 = () => {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
+  const [loading, setLoading] = useState(false); // New state for loading/confirmation
   const [fadeIn, setFadeIn] = useState(false);
+
+  // Get the child's UID (set in Step 1) from local storage
+  const childUid = localStorage.getItem("childUid");
 
   // Trigger fade-in after component mounts
   useEffect(() => {
     setFadeIn(true);
   }, []);
+
+  // Function to handle the form submission
+  const handleSubmit = async () => {
+    if (!consent || !email || loading) {
+      return; // Prevent submission if consent is missing or loading
+    }
+    
+    // 1. Start loading state
+    setLoading(true);
+
+    try {
+      // 2. Call the API to record consent
+      const res = await recordParentConsentAPI(email, childUid);
+
+      if (res.success) {
+        // 3. Redirect to Step 3 upon successful consent recording
+        window.location.href = "/setup3";
+      } else {
+        // Handle API failure (e.g., parent email mismatch, server error)
+        alert("Failed to confirm consent. Please check your email and try again.");
+      }
+    } catch (error) {
+      console.error("Consent submission error:", error);
+      alert("An unexpected error occurred. Please try again.");
+    } finally {
+      // 4. End loading state only if redirection didn't happen
+      if (window.location.pathname !== "/setup3") {
+        setLoading(false);
+      }
+    }
+  };
+
+  const isFormValid = consent && email.length > 5 && email.includes('@');
 
   return (
     <div className={`setup2-page ${fadeIn ? "fade-in" : ""}`}>
@@ -60,6 +109,7 @@ const ChildAccountSetupStep2 = () => {
                 type="checkbox"
                 checked={consent}
                 onChange={() => setConsent(!consent)}
+                disabled={loading}
               />
               I confirm I am the parent or legal guardian and I consent to the
               creation of this account for my child under the platform's terms.
@@ -72,20 +122,22 @@ const ChildAccountSetupStep2 = () => {
             <div className="setup2-email-input-wrapper">
               <MailIcon className="setup2-email-icon" />
               <input
-                id="child-email"
+                id="parent-email" // Changed ID to parent-email for clarity
                 type="email"
                 placeholder="yourparent.email@example.com"
                 className="setup2-text-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
             </div>
 
             <button
               className="setup2-continue-button"
-              disabled={!consent}
+              onClick={handleSubmit} // Call the new submit function
+              disabled={!isFormValid || loading} // Disable if form is invalid or loading
             >
-              Confirm & Continue
+              {loading ? "Confirming..." : "Confirm & Continue"}
             </button>
           </div>
         </div>
