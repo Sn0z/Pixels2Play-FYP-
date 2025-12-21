@@ -1,0 +1,292 @@
+/* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  font-family: Inter, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f3f4f6;
+  color: #111827;
+  line-height: 1.5;
+}
+
+/* ================= APP ================= */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.brand-icon {
+  background: #544aea;
+  color: white;
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.avatar {
+  background: #e5e7eb;
+  border-radius: 999px;
+  padding: 6px;
+}
+
+/* ================= MAIN ================= */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* ================= HEADER ================= */
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: 40px;
+  font-weight: 800;
+  margin: 8px 0;
+}
+
+.page-header p {
+  color: #6b7280;
+  font-size: 18px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.back-link:hover {
+  color: #544aea;
+}
+
+/* ================= LAYOUT ================= */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 40px;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= CARD ================= */
+.card {
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+/* ================= ORDER ================= */
+.order {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+@media (max-width: 640px) {
+  .order {
+    flex-direction: column;
+  }
+}
+
+.order img {
+  width: 130px;
+  height: 130px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.order-info {
+  flex: 1;
+}
+
+.badge {
+  background: rgba(84, 74, 234, 0.12);
+  color: #544aea;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.price {
+  font-size: 28px;
+  font-weight: 800;
+  margin-left: auto;
+}
+
+.price-box {
+  margin-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 14px;
+}
+
+.price-box div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.total {
+  font-weight: 800;
+  color: #544aea;
+}
+
+/* ================= PAYMENT ================= */
+.payment {
+  border: 2px solid #544aea;
+  background: rgba(84, 74, 234, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.khalti {
+  background: #5d2e8e;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ================= BUTTON ================= */
+.pay-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #5d2e8e, #4a2472);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(93, 46, 142, 0.3);
+}
+
+.pay-btn:hover {
+  transform: translateY(-1px);
+}
+
+.terms {
+  font-size: 12px;
+  text-align: center;
+  color: #6b7280;
+  margin-top: 12px;
+}
+
+/* ================= SIDEBAR ================= */
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-card {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+/* ================= HELP CARD ================= */
+.help-card {
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  padding: 28px;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
+}
+
+.help-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 10px;
+}
+
+.help-card p {
+  font-size: 14px;
+  color: #1e40af;
+  margin-bottom: 18px;
+}
+
+.help-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.help-card a::before {
+  content: "💬";
+}
+
