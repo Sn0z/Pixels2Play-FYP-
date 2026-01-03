@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Module, QuizQuestion, QuizChoice, UserModuleProgress, ParentChildLink, WatchEvent
+from .models import Module, QuizQuestion, QuizChoice, UserModuleProgress, ParentChildLink, WatchEvent, AttentionEvent
 
 
 class ChoiceInline(admin.TabularInline):
@@ -29,3 +29,4 @@ admin.site.register(QuizChoice)
 admin.site.register(UserModuleProgress)
 admin.site.register(ParentChildLink)
 admin.site.register(WatchEvent)
+admin.site.register(AttentionEvent)

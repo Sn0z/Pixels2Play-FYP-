@@ -17,6 +17,9 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
   const [details, setDetails] = useState(null);
   const [completed, setCompleted] = useState(false);
   const [error, setError] = useState(null);
+  const [attentionAction, setAttentionAction] = useState(null);
+  const [attentionNotice, setAttentionNotice] = useState(null);
+  const [endedByAttention, setEndedByAttention] = useState(false);
 
   // Load YouTube IFrame API
   useEffect(() => {
@@ -110,6 +113,63 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
     }
   }, [maxWatched, duration]);
 
+  // Poll attention-status and apply actions (play/pause/end)
+  useEffect(() => {
+    let id;
+    let mounted = true;
+
+    const poll = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+        const token = await user.getIdToken();
+
+        const res = await fetch(`${API_BASE}/modules/${moduleId}/attention-status/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+
+        if (data.action && data.action !== attentionAction) {
+          setAttentionAction(data.action);
+          const player = playerInstanceRef.current;
+
+          if (data.action === 'play') {
+            setAttentionNotice(null);
+            player && player.playVideo && player.playVideo();
+          }
+
+          if (data.action === 'pause') {
+            player && player.pauseVideo && player.pauseVideo();
+            setAttentionNotice('Paused: please look at the screen');
+          }
+
+          if (data.action === 'end') {
+            player && player.pauseVideo && player.pauseVideo();
+            setEndedByAttention(true);
+            setAttentionNotice(data.message || 'Course ended due to inactivity');
+          }
+        }
+      } catch (err) {
+        // silent
+        console.error('attention poll error', err);
+      }
+    };
+
+    if (playerInstanceRef.current) {
+      poll();
+      id = setInterval(poll, 2000);
+    }
+
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moduleId, attentionAction]);
+
   const sendWatchProgress = async (current_time) => {
     try {
       const user = auth.currentUser;
@@ -201,7 +261,9 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
           <div>Duration: {Math.floor(duration)}s</div>
         </div>
         {!watchedEnough && <div className="notice">Watch at least 95% to enable quiz</div>}
-        {watchedEnough && !quiz && (
+        {attentionNotice && <div className="attention-notice">{attentionNotice}</div>}
+        {endedByAttention && <div className="error">{attentionNotice || 'Course ended due to inactivity'}</div>}
+        {watchedEnough && !quiz && !endedByAttention && (
           <button className="primary" onClick={fetchQuiz}>Start Quiz</button>
         )}
       </div>
@@ -245,7 +307,7 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
           ))}
 
           <div className="quiz-actions">
-            <button className="primary" onClick={submitQuiz} disabled={Object.keys(answers).length < quiz.length}>Submit Quiz</button>
+            <button className="primary" onClick={submitQuiz} disabled={Object.keys(answers).length < quiz.length || endedByAttention}>Submit Quiz</button>
           </div>
 
           {score !== null && (

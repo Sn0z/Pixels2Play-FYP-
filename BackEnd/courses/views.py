@@ -15,6 +15,232 @@ def module_list(request):
     return Response(serializer.data)
 
 
+@api_view(['POST'])
+def import_module(request):
+    """Accept module JSON (from Firestore admin) and create/update Module and questions.
+    Requires Firebase token and admin UID configured in settings.COURSE_ADMIN_UIDS (or DEBUG True).
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded.get('uid')
+    from django.conf import settings
+
+    if settings.COURSE_ADMIN_UIDS:
+        if uid not in settings.COURSE_ADMIN_UIDS:
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+    else:
+        # Allow in DEBUG for easy development
+        if not settings.DEBUG:
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+    payload = request.data.get('module')
+    if not isinstance(payload, dict):
+        return Response({'error': 'module payload required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    title = payload.get('title')
+    if not title:
+        return Response({'error': 'title required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    module_id = payload.get('id')
+    if module_id:
+        module, _ = Module.objects.update_or_create(id=module_id, defaults={
+            'title': payload.get('title'),
+            'description': payload.get('description', ''),
+            'order': payload.get('order', 0),
+            'video_url': payload.get('video_url', ''),
+            'video_host': payload.get('video_host', 'youtube'),
+            'video_duration': float(payload.get('video_duration') or 0.0),
+            'required_percent': float(payload.get('required_percent', 0.95)),
+            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
+            'published': bool(payload.get('published', True)),
+        })
+    else:
+        module, _ = Module.objects.update_or_create(title=title, defaults={
+            'description': payload.get('description', ''),
+            'order': payload.get('order', 0),
+            'video_url': payload.get('video_url', ''),
+            'video_host': payload.get('video_host', 'youtube'),
+            'video_duration': float(payload.get('video_duration') or 0.0),
+            'required_percent': float(payload.get('required_percent', 0.95)),
+            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
+            'published': bool(payload.get('published', True)),
+        })
+
+    # Replace (clear) existing questions and choices
+    module.questions.all().delete()
+
+    for qdata in payload.get('questions', []):
+        q = QuizQuestion.objects.create(module=module, text=qdata.get('text', ''))
+        for c in qdata.get('choices', []):
+            QuizChoice.objects.create(question=q, text=c.get('text', ''), is_correct=bool(c.get('is_correct', False)))
+
+    return Response({'ok': True, 'module_id': module.id})
+
+
+@api_view(['POST'])
+def attention_event(request, module_id):
+    """Receive attention events from trusted tracker or from authenticated user.
+
+    Expected body: {
+        'status': 'LOOKING' | 'NOT_LOOKING' | 'AWAY_ALERT',
+        optional: 'uid' when using secret key auth (server-side tracker)
+    }
+
+    Auth: either Firebase token (Bearer) or header X-EYE-KEY with settings.EYE_TRACKER_SECRET.
+    """
+    from django.conf import settings
+
+    # Try Firebase-based auth first
+    decoded = verify_firebase_token(request)
+    secret = request.headers.get('X-EYE-KEY') or request.headers.get('X-Eye-Key')
+
+    if decoded:
+        firebase_uid = decoded.get('uid')
+    elif secret and secret == settings.EYE_TRACKER_SECRET:
+        firebase_uid = request.data.get('uid')
+        if not firebase_uid:
+            return Response({'error': 'uid required when using secret key'}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        module = Module.objects.get(pk=module_id)
+    except Module.DoesNotExist:
+        return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    status_val = request.data.get('status')
+    if status_val not in ['LOOKING', 'NOT_LOOKING', 'AWAY_ALERT']:
+        return Response({'error': 'invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+
+    AttentionEvent.objects.create(firebase_uid=firebase_uid, module=module, status=status_val, note=request.data.get('note', ''))
+
+    progress, _ = UserModuleProgress.objects.get_or_create(firebase_uid=firebase_uid, module=module)
+
+    now = timezone.now()
+
+    if status_val == 'LOOKING':
+        progress.away_start = None
+        progress.save()
+        return Response({'action': 'play'})
+
+    if status_val == 'NOT_LOOKING':
+        if not progress.away_start:
+            progress.away_start = now
+            progress.save()
+        # If they've been away > 60 seconds, mark ended
+        if progress.away_start and (now - progress.away_start).total_seconds() > 60:
+            progress.ended = True
+            progress.ended_reason = 'Away too long'
+            progress.save()
+            return Response({'action': 'end', 'message': 'Course ended due to inactivity'})
+        return Response({'action': 'pause'})
+
+    if status_val == 'AWAY_ALERT':
+        progress.ended = True
+        progress.ended_reason = 'Away alert'
+        progress.save()
+        return Response({'action': 'end', 'message': 'Course ended due to inactivity'})
+
+    return Response({'ok': True})
+
+
+@api_view(['GET'])
+def attention_status(request, module_id):
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    firebase_uid = decoded['uid']
+
+    try:
+        module = Module.objects.get(pk=module_id)
+    except Module.DoesNotExist:
+        return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    last = AttentionEvent.objects.filter(firebase_uid=firebase_uid, module=module).order_by('-created_at').first()
+
+    if not last:
+        return Response({'status': 'UNKNOWN', 'action': 'play'})
+
+    elapsed = (timezone.now() - last.created_at).total_seconds()
+
+    # Determine action
+    if last.status == 'LOOKING':
+        return Response({'status': 'LOOKING', 'elapsed': elapsed, 'action': 'play'})
+
+    if last.status == 'NOT_LOOKING':
+        # If away over 60s return end
+        if elapsed > 60:
+            return Response({'status': 'NOT_LOOKING', 'elapsed': elapsed, 'action': 'end', 'message': 'Away too long'})
+        return Response({'status': 'NOT_LOOKING', 'elapsed': elapsed, 'action': 'pause'})
+
+    if last.status == 'AWAY_ALERT':
+        return Response({'status': 'AWAY_ALERT', 'elapsed': elapsed, 'action': 'end', 'message': 'Away alert'})
+
+    return Response({'status': last.status, 'elapsed': elapsed, 'action': 'pause'})
+    """Accept module JSON (from Firestore admin) and create/update Module and questions.
+    Requires Firebase token and admin UID configured in settings.COURSE_ADMIN_UIDS (or DEBUG True).
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded.get('uid')
+    from django.conf import settings
+
+    if settings.COURSE_ADMIN_UIDS:
+        if uid not in settings.COURSE_ADMIN_UIDS:
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+    else:
+        # Allow in DEBUG for easy development
+        if not settings.DEBUG:
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+    payload = request.data.get('module')
+    if not isinstance(payload, dict):
+        return Response({'error': 'module payload required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    title = payload.get('title')
+    if not title:
+        return Response({'error': 'title required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    module_id = payload.get('id')
+    if module_id:
+        module, _ = Module.objects.update_or_create(id=module_id, defaults={
+            'title': payload.get('title'),
+            'description': payload.get('description', ''),
+            'order': payload.get('order', 0),
+            'video_url': payload.get('video_url', ''),
+            'video_host': payload.get('video_host', 'youtube'),
+            'video_duration': float(payload.get('video_duration') or 0.0),
+            'required_percent': float(payload.get('required_percent', 0.95)),
+            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
+            'published': bool(payload.get('published', True)),
+        })
+    else:
+        module, _ = Module.objects.update_or_create(title=title, defaults={
+            'description': payload.get('description', ''),
+            'order': payload.get('order', 0),
+            'video_url': payload.get('video_url', ''),
+            'video_host': payload.get('video_host', 'youtube'),
+            'video_duration': float(payload.get('video_duration') or 0.0),
+            'required_percent': float(payload.get('required_percent', 0.95)),
+            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
+            'published': bool(payload.get('published', True)),
+        })
+
+    # Replace (clear) existing questions and choices
+    module.questions.all().delete()
+
+    for qdata in payload.get('questions', []):
+        q = QuizQuestion.objects.create(module=module, text=qdata.get('text', ''))
+        for c in qdata.get('choices', []):
+            QuizChoice.objects.create(question=q, text=c.get('text', ''), is_correct=bool(c.get('is_correct', False)))
+
+    return Response({'ok': True, 'module_id': module.id})
+
 @api_view(['GET'])
 def module_detail(request, module_id):
     try:
@@ -176,12 +402,14 @@ def module_status(request, module_id):
     progress = UserModuleProgress.objects.filter(firebase_uid=firebase_uid, module=module).first()
 
     if not progress:
-        return Response({'purchased': False, 'completed': False, 'max_watched_seconds': 0.0})
+        return Response({'purchased': False, 'completed': False, 'max_watched_seconds': 0.0, 'ended': False})
 
     return Response({
         'completed': progress.completed,
         'max_watched_seconds': progress.max_watched_seconds,
         'quiz_score': progress.quiz_score,
+        'ended': progress.ended,
+        'ended_reason': progress.ended_reason,
     })
 
 

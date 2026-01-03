@@ -48,6 +48,9 @@ class UserModuleProgress(models.Model):
     max_watched_seconds = models.FloatField(default=0.0)
     quiz_score = models.FloatField(null=True)
     completed = models.BooleanField(default=False)
+    away_start = models.DateTimeField(null=True, blank=True)
+    ended = models.BooleanField(default=False)
+    ended_reason = models.CharField(max_length=255, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -56,6 +59,22 @@ class UserModuleProgress(models.Model):
     def __str__(self):
         return f"{self.firebase_uid} - {self.module.title}"
 
+
+class AttentionEvent(models.Model):
+    STATUS_CHOICES = [
+        ('LOOKING', 'Looking'),
+        ('NOT_LOOKING', 'Not Looking'),
+        ('AWAY_ALERT', 'Away Alert')
+    ]
+
+    firebase_uid = models.CharField(max_length=128)
+    module = models.ForeignKey(Module, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    note = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.firebase_uid} - {self.module.title} - {self.status} @ {self.created_at}"
 
 class ParentChildLink(models.Model):
     parent_uid = models.CharField(max_length=128)

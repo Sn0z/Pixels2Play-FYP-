@@ -58,3 +58,31 @@ class CoursesAPITest(TestCase):
 
         res = self.client.post(f'/api/courses/modules/{self.module.id}/watch/', json.dumps({'current_time': 5}), content_type='application/json')
         self.assertEqual(res.status_code, 403)
+
+    from django.test import override_settings
+
+    @override_settings(COURSE_ADMIN_UIDS=['admin1'])
+    @patch('courses.views.verify_firebase_token')
+    def test_import_module(self, mock_verify):
+        mock_verify.return_value = {'uid': 'admin1'}
+        module_payload = {
+            'module': {
+                'title': 'FS Module',
+                'description': 'From firestone',
+                'order': 10,
+                'video_url': 'dQw4w9WgXcQ',
+                'video_host': 'youtube',
+                'video_duration': 120,
+                'required_percent': 0.9,
+                'quiz_passing_score': 0.7,
+                'published': True,
+                'questions': [
+                    {'text': '1+1?', 'choices': [{'text': '2', 'is_correct': True}, {'text': '3', 'is_correct': False}]}
+                ]
+            }
+        }
+
+        res = self.client.post('/api/courses/import/', json.dumps(module_payload), content_type='application/json')
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue('module_id' in data)

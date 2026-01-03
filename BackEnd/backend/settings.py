@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -84,6 +85,14 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Admin Firebase UIDs allowed to manage course syncs.
+# Add UIDs here in production, e.g. ['uid1', 'uid2']
+COURSE_ADMIN_UIDS = []
+
+# Secret key for trusted eye tracker clients (e.g., local Python eye tracker)
+# Keep this secret in production and set via environment variable
+EYE_TRACKER_SECRET = os.environ.get('EYE_TRACKER_SECRET', '')
 
 
 # Password validation

@@ -102,3 +102,22 @@
 .error {
   color: #b91c1c;
 }
+
+.attention-notice {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #fff8f0;
+  border: 1px solid #ffd1a8;
+  border-radius: 6px;
+  color: #7a4b00;
+}
+
+.ended-overlay {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff0f0;
+  border: 1px solid #f5c2c2;
+  border-radius: 6px;
+  color: #b91c1c;
+  font-weight: 700;
+}
