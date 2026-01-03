@@ -11,6 +11,7 @@ import CourseDetailSection from "./screens/CoursePage/CourseDetailSection";
 import Contact from "./screens/ContactPage/ContactPage";
 import ChatBot from "./chatbot/Chatbot";
 import CheckOut from "./screens/CheckOut/CheckOut";
+import WatchDemo from "./screens/WatchDemo";
 import { AuthProvider } from "./contexts/authContext";
 
 
@@ -28,6 +29,8 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/coursedetails" element={<CourseDetailSection />} />
+          <Route path="/coursedetails/:moduleId" element={<CourseDetailSection />} />
+          <Route path="/watch/:moduleId" element={<WatchDemo />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/chatbot" element={<ChatBot />} />
           <Route path="/checkout" element={<CheckOut />} />

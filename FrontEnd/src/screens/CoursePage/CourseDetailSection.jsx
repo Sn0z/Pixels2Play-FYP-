@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import FooterSection from "../Footer";
 import NavigationBarSection from "../Header";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
+import WatchAndQuiz from "../WatchAndQuiz/WatchAndQuiz";
 import "./CourseDetailSection.css";
 
 const auth = getAuth();
@@ -39,6 +40,68 @@ export default function CourseDetailSection() {
 
   return () => unsubscribe();
 }, []);
+
+// Module preview state: fetch first published module and show WatchAndQuiz inline
+const { moduleId: paramModuleId } = useParams();
+  const [modules, setModules] = useState([]);
+  const [module, setModule] = useState(null);
+  const [moduleLoading, setModuleLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadModules() {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/api/courses/modules/');
+        if (!res.ok) return setModuleLoading(false);
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          setModules(data);
+          // If route param provided, fetch that module or pick from list
+          if (paramModuleId) {
+            const found = data.find((m) => String(m.id) === String(paramModuleId));
+            if (found) setModule(found);
+            else {
+              // fetch by id fallback
+              const r = await fetch(`http://127.0.0.1:8000/api/courses/modules/${paramModuleId}/`);
+              if (r.ok) setModule(await r.json());
+            }
+          } else {
+            setModule(data[0]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load modules', err);
+      } finally {
+        setModuleLoading(false);
+      }
+    }
+    loadModules();
+  }, [paramModuleId]);
+
+  function getVideoId(mod) {
+    if (!mod) return ''; 
+    if (mod.video_host === 'youtube') {
+      const u = mod.video_url || '';
+      const m = u.match(/[?&]v=([^&]+)/);
+      if (m) return m[1];
+      const s = u.match(/youtu\.be\/([^?&]+)/);
+      if (s) return s[1];
+      return u;
+    }
+    return mod.video_url;
+  }
+
+function getVideoId(mod) {
+  if (!mod) return '';
+  if (mod.video_host === 'youtube') {
+    const u = mod.video_url || '';
+    const m = u.match(/[?&]v=([^&]+)/);
+    if (m) return m[1];
+    const s = u.match(/youtu\.be\/([^?&]+)/);
+    if (s) return s[1];
+    return u;
+  }
+  return mod.video_url;
+}
 
 const courseDetails = [
   {
@@ -94,6 +157,15 @@ return (
               </p>
             </div>
           </div>
+
+          {/* Inline module preview and WatchAndQuiz */}
+          {!moduleLoading && module && (
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ marginBottom: 8 }}>Module Preview: {module.title}</h3>
+              <WatchAndQuiz videoId={getVideoId(module)} moduleId={module.id} />
+            </div>
+          )}
+
         </div>
 
         <aside className="course-sidebar">
@@ -112,6 +184,26 @@ return (
             >
               {loading ? "Checking..." : purchased ? "Purchased" : "Enroll Now"}
             </button>
+
+            {/* Module selector */}
+            <div style={{ marginTop: 16 }}>
+              <h4 style={{ margin: '8px 0' }}>Modules</h4>
+              <ul role="list" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {modules.map((m) => (
+                  <li key={m.id} role="listitem">
+                    <button
+                      className={`details-btn`}
+                      style={{ width: '100%', textAlign: 'left', marginBottom: 6 }}
+                      aria-pressed={module && module.id === m.id}
+                      aria-selected={module && module.id === m.id}
+                      onClick={() => navigate(`/coursedetails/${m.id}`)}
+                    >
+                      {m.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <div className="sidebar-details">
               {courseDetails.map((detail, index) => (
