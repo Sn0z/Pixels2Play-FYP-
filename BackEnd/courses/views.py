@@ -1,10 +1,14 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 
 from .models import Module, QuizQuestion, QuizChoice, UserModuleProgress, ParentChildLink, WatchEvent
 from .serializers import ModuleSerializer, QuizQuestionSerializer, ParentChildLinkSerializer
 from payments.firebase import verify_firebase_token
+from users.permissions import IsChild, IsParentOrAdmin, IsAdmin, IsAuthenticatedFirebase
+from utils.firestore import FirestoreService
+from utils.constants import ROLE_CHILD, ROLE_UNASSIGNED
 from django.utils import timezone
 
 
@@ -81,8 +85,21 @@ def import_module(request):
 
 @api_view(['POST'])
 def attention_event(request, module_id):
-    """Receive attention events from trusted tracker or from authenticated user.
-
+    """
+    Receive attention events from trusted tracker or from authenticated user.
+    
+    Supports proposal section: "Attention-Controlled Video Playback"
+    
+    Rules (from proposal):
+    1. When lesson video starts → start attention tracking
+    2. If ATTENTIVE → video plays
+    3. If DISTRACTED for > 5 seconds → pause video
+    4. If attention returns → resume video
+    5. If NOT_PRESENT for > 15 seconds:
+       - End lesson
+       - Mark lesson incomplete
+       - Stop attention tracking
+    
     Expected body: {
         'status': 'LOOKING' | 'NOT_LOOKING' | 'AWAY_ALERT',
         optional: 'uid' when using secret key auth (server-side tracker)
@@ -114,40 +131,72 @@ def attention_event(request, module_id):
     if status_val not in ['LOOKING', 'NOT_LOOKING', 'AWAY_ALERT']:
         return Response({'error': 'invalid status'}, status=status.HTTP_400_BAD_REQUEST)
 
+    # Create attention event
     AttentionEvent.objects.create(firebase_uid=firebase_uid, module=module, status=status_val, note=request.data.get('note', ''))
 
     progress, _ = UserModuleProgress.objects.get_or_create(firebase_uid=firebase_uid, module=module)
 
     now = timezone.now()
 
+    # Proposal requirement: ATTENTIVE → video plays
     if status_val == 'LOOKING':
         progress.away_start = None
         progress.save()
         return Response({'action': 'play'})
 
+    # Proposal requirement: DISTRACTED for > 5 seconds → pause video
     if status_val == 'NOT_LOOKING':
         if not progress.away_start:
             progress.away_start = now
             progress.save()
-        # If they've been away > 60 seconds, mark ended
-        if progress.away_start and (now - progress.away_start).total_seconds() > 60:
-            progress.ended = True
-            progress.ended_reason = 'Away too long'
-            progress.save()
-            return Response({'action': 'end', 'message': 'Course ended due to inactivity'})
-        return Response({'action': 'pause'})
+        
+        # Check if distracted for > 5 seconds (proposal requirement)
+        distracted_duration = (now - progress.away_start).total_seconds() if progress.away_start else 0
+        
+        if distracted_duration > 5:
+            # Proposal requirement: If NOT_PRESENT for > 15 seconds → end lesson
+            if distracted_duration > 15:
+                progress.ended = True
+                progress.ended_reason = 'Not present for more than 15 seconds'
+                progress.save()
+                return Response({
+                    'action': 'end',
+                    'message': 'Lesson ended due to inattention (not present for >15 seconds)'
+                })
+            # Proposal requirement: DISTRACTED for > 5 seconds → pause video
+            return Response({
+                'action': 'pause',
+                'message': 'Video paused due to distraction (>5 seconds)'
+            })
+        
+        # Less than 5 seconds, still tracking but not pausing yet
+        return Response({'action': 'play', 'warning': 'Attention detected as distracted'})
 
+    # Proposal requirement: AWAY_ALERT → end lesson immediately
     if status_val == 'AWAY_ALERT':
         progress.ended = True
-        progress.ended_reason = 'Away alert'
+        progress.ended_reason = 'Away alert - not present'
         progress.save()
-        return Response({'action': 'end', 'message': 'Course ended due to inactivity'})
+        return Response({
+            'action': 'end',
+            'message': 'Lesson ended due to inattention (away alert)'
+        })
 
     return Response({'ok': True})
 
 
 @api_view(['GET'])
 def attention_status(request, module_id):
+    """
+    Get current attention status for a module.
+    
+    Supports proposal section: "Attention-Controlled Video Playback"
+    
+    Returns action based on proposal rules:
+    - ATTENTIVE → 'play'
+    - DISTRACTED > 5s → 'pause'
+    - NOT_PRESENT > 15s → 'end'
+    """
     decoded = verify_firebase_token(request)
     if not decoded:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -166,18 +215,44 @@ def attention_status(request, module_id):
 
     elapsed = (timezone.now() - last.created_at).total_seconds()
 
-    # Determine action
+    # Proposal requirement: ATTENTIVE → video plays
     if last.status == 'LOOKING':
         return Response({'status': 'LOOKING', 'elapsed': elapsed, 'action': 'play'})
 
+    # Proposal requirement: DISTRACTED for > 5 seconds → pause video
     if last.status == 'NOT_LOOKING':
-        # If away over 60s return end
-        if elapsed > 60:
-            return Response({'status': 'NOT_LOOKING', 'elapsed': elapsed, 'action': 'end', 'message': 'Away too long'})
-        return Response({'status': 'NOT_LOOKING', 'elapsed': elapsed, 'action': 'pause'})
+        # Proposal requirement: If NOT_PRESENT for > 15 seconds → end lesson
+        if elapsed > 15:
+            return Response({
+                'status': 'NOT_LOOKING',
+                'elapsed': elapsed,
+                'action': 'end',
+                'message': 'Not present for more than 15 seconds'
+            })
+        # Proposal requirement: DISTRACTED for > 5 seconds → pause video
+        if elapsed > 5:
+            return Response({
+                'status': 'NOT_LOOKING',
+                'elapsed': elapsed,
+                'action': 'pause',
+                'message': 'Distracted for more than 5 seconds'
+            })
+        # Less than 5 seconds, still playing but tracking
+        return Response({
+            'status': 'NOT_LOOKING',
+            'elapsed': elapsed,
+            'action': 'play',
+            'warning': 'Attention detected as distracted'
+        })
 
+    # Proposal requirement: AWAY_ALERT → end lesson
     if last.status == 'AWAY_ALERT':
-        return Response({'status': 'AWAY_ALERT', 'elapsed': elapsed, 'action': 'end', 'message': 'Away alert'})
+        return Response({
+            'status': 'AWAY_ALERT',
+            'elapsed': elapsed,
+            'action': 'end',
+            'message': 'Away alert - lesson ended'
+        })
 
     return Response({'status': last.status, 'elapsed': elapsed, 'action': 'pause'})
     """Accept module JSON (from Firestore admin) and create/update Module and questions.
@@ -253,12 +328,29 @@ def module_detail(request, module_id):
 
 
 @api_view(['POST'])
+@permission_classes([IsChild])  # Only CHILD can watch courses
 def update_watch(request, module_id):
-    decoded = verify_firebase_token(request)
-    if not decoded:
+    """
+    Update watch progress for a module.
+    
+    Supports proposal section: "Video-based Courses"
+    Rules: CHILD watches video, UNASSIGNED cannot access
+    
+    Access: CHILD only (UNASSIGNED blocked by permission)
+    """
+    firebase_user = request.firebase_user
+    if not firebase_user:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
-
-    firebase_uid = decoded['uid']
+    
+    firebase_uid = firebase_user['uid']
+    
+    # Additional check: verify user has CHILD role
+    user = FirestoreService.get_user(firebase_uid)
+    if not user or user.get('role') != ROLE_CHILD:
+        return Response(
+            {'error': 'Only children can watch courses. Please complete parent-child linking.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -316,12 +408,29 @@ def quiz(request, module_id):
 
 
 @api_view(['POST'])
+@permission_classes([IsChild])  # Only CHILD can submit quizzes
 def submit_quiz(request, module_id):
-    decoded = verify_firebase_token(request)
-    if not decoded:
+    """
+    Submit quiz answers for a module.
+    
+    Supports proposal section: "Video-based Courses"
+    Educational principles: Real-time feedback
+    
+    Access: CHILD only (UNASSIGNED blocked by permission)
+    """
+    firebase_user = request.firebase_user
+    if not firebase_user:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
-
-    firebase_uid = decoded['uid']
+    
+    firebase_uid = firebase_user['uid']
+    
+    # Additional check: verify user has CHILD role
+    user = FirestoreService.get_user(firebase_uid)
+    if not user or user.get('role') != ROLE_CHILD:
+        return Response(
+            {'error': 'Only children can submit quizzes. Please complete parent-child linking.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -463,9 +572,17 @@ def approve_link(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsParentOrAdmin])  # PARENT or ADMIN can view analytics
 def module_analytics(request, module_id):
-    decoded = verify_firebase_token(request)
-    if not decoded:
+    """
+    Get analytics for a module.
+    
+    Supports proposal section: "Admin & Analytics"
+    
+    Access: PARENT (own children only) or ADMIN
+    """
+    firebase_user = request.firebase_user
+    if not firebase_user:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:

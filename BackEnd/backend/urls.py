@@ -19,6 +19,14 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/payments/", include("payments.urls")),
-    path("api/courses/", include("courses.urls")),
+    # From Pixels to Play API endpoints
+    path("api/", include("users.urls")),  # /api/auth/login, /api/users/me
+    path("api/family/", include("family.urls")),  # /api/family/link, /api/family/links
+    path("api/games/", include("games.urls")),  # /api/games/* - AI Learning Games
+    path("api/progress/", include("progress.urls")),  # /api/progress/* - Progress Tracking
+    path("api/analytics/", include("analytics.urls")),  # /api/analytics/* - Admin Analytics
+    path("api/evaluation/", include("evaluation.urls")),  # /api/evaluation/* - Research Evaluation
+    # Existing endpoints
+    path("api/payments/", include("payments.urls")),  # /api/payments/* - Khalti Payments
+    path("api/courses/", include("courses.urls")),  # /api/courses/* - Video Courses
 ]

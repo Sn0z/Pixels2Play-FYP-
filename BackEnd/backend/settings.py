@@ -42,18 +42,27 @@ INSTALLED_APPS = [
     "payments",
     "courses",
     "corsheaders",
+    # From Pixels to Play apps
+    "utils",
+    "users",
+    "family",
+    "games",  # AI Learning Games
+    "progress",  # Progress Tracking
+    "analytics",  # Admin Analytics
+    "evaluation",  # Research Evaluation
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Firebase Authentication Middleware - verifies Firebase ID tokens
+    'backend.middleware.firebase_auth.FirebaseAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -144,3 +153,15 @@ CORS_ALLOW_HEADERS = [
     "authorization",
     "content-type",
 ]
+
+# Django REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # We use Firebase authentication via middleware
+        # No DRF authentication classes needed
+    ],
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+}
