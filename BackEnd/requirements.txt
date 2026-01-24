@@ -1,0 +1,12 @@
+# Django and Django REST Framework
+Django>=6.0,<7.0
+djangorestframework>=3.14.0
+
+# Firebase Admin SDK for authentication and Firestore
+firebase-admin>=6.0.0
+
+# CORS handling for React frontend
+django-cors-headers>=4.0.0
+
+# Additional utilities (if needed)
+python-dotenv>=1.0.0

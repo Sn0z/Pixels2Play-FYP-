@@ -13,6 +13,7 @@ import ChatBot from "./chatbot/Chatbot";
 import CheckOut from "./screens/CheckOut/CheckOut";
 import WatchDemo from "./screens/WatchDemo";
 import AdminModules from "./screens/Admin/AdminModules";
+import KidsHome from "./screens/ChildHomePage/ChildHomePage";
 import { AuthProvider } from "./contexts/authContext";
 
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/chatbot" element={<ChatBot />} />
           <Route path="/checkout" element={<CheckOut />} />
+          <Route path="/kidshome" element={<KidsHome />} />
         </Routes>
       </Router>
     </AuthProvider>

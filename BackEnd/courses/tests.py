@@ -9,7 +9,7 @@ class CoursesAPITest(TestCase):
         self.client = Client()
         self.module = Module.objects.create(
             title='Test Module',
-            video_url='dQw4w9WgXcQ',
+            video_url='tCDvOQI3pco',
             video_duration=100.0,
             required_percent=0.9,
             quiz_passing_score=0.7,
@@ -70,7 +70,7 @@ class CoursesAPITest(TestCase):
                 'title': 'FS Module',
                 'description': 'From firestone',
                 'order': 10,
-                'video_url': 'dQw4w9WgXcQ',
+                'video_url': 'tCDvOQI3pco',
                 'video_host': 'youtube',
                 'video_duration': 120,
                 'required_percent': 0.9,
