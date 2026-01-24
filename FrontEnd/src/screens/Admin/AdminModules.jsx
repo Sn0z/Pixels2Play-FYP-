@@ -1,6 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { getModulesFirestore, createModuleFirestore, updateModuleFirestore, deleteModuleFirestore, syncModuleToBackend } from '../../api/firestoreModules';
 import { auth } from '../../FireBase/firebase';
+
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, ''); // Use Django API directly.
+
+async function safeJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function getAuthToken() {
+  const user = auth.currentUser;
+  const token = await user?.getIdToken();
+  if (!token) {
+    throw new Error('Authentication required to manage modules.'); // Enforce Firebase auth for Django admin endpoints.
+  }
+  return token;
+}
+
+async function fetchModules() {
+  const res = await fetch(`${API_BASE}/courses/modules/`); // Public list from Django.
+  if (!res.ok) return [];
+  return res.json();
+}
+
+async function importModuleToDjango(modulePayload) {
+  const token = await getAuthToken();
+  const res = await fetch(`${API_BASE}/courses/import/`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`, // Send Firebase token to Django.
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ module: modulePayload }),
+  }); // Use Django import endpoint for create/update.
+
+  if (!res.ok) {
+    const err = await safeJson(res);
+    throw new Error(err?.error || 'Failed to import module to Django.');
+  }
+  return res.json();
+}
 
 export default function AdminModules() {
   const [modules, setModules] = useState([]);
@@ -12,7 +55,7 @@ export default function AdminModules() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const data = await getModulesFirestore();
+      const data = await fetchModules();
       setModules(data);
       setLoading(false);
     }
@@ -27,15 +70,10 @@ export default function AdminModules() {
     try {
       setSaving(true);
       setMsg('');
-      if (!editing.id) {
-        const added = await createModuleFirestore(editing);
-        setModules(prev => [added, ...prev]);
-        setEditing(null);
-      } else {
-        await updateModuleFirestore(editing.id, editing);
-        setModules(prev => prev.map(p => p.id === editing.id ? editing : p));
-        setEditing(null);
-      }
+      await importModuleToDjango(editing); // Create/update in Django via import endpoint.
+      const refreshed = await fetchModules(); // Refresh list after import for consistency.
+      setModules(refreshed);
+      setEditing(null);
     } catch (err) {
       setMsg(err.message);
     } finally {
@@ -45,14 +83,13 @@ export default function AdminModules() {
 
   const remove = async (id) => {
     if (!confirm('Delete module?')) return;
-    await deleteModuleFirestore(id);
-    setModules(prev => prev.filter(m => m.id !== id));
+    setMsg('Delete is not supported via the Django API yet.'); // Django has no delete endpoint.
   };
 
   const sync = async (m) => {
     try {
       setMsg('Syncing...');
-      await syncModuleToBackend(m.id, m);
+      await importModuleToDjango(m); // Use Django import endpoint to sync.
       setMsg('Synced OK');
     } catch (err) {
       setMsg('Sync error: ' + err.message);
@@ -63,7 +100,7 @@ export default function AdminModules() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h2>Manage Modules (Firestore)</h2>
+      <h2>Manage Modules (Django)</h2>
       <button onClick={startNew}>+ New Module</button>
       <div style={{ marginTop: 12 }}>{msg}</div>
 

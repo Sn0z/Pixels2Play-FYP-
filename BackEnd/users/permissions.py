@@ -21,9 +21,13 @@ class IsAuthenticatedFirebase(permissions.BasePermission):
     
     Checks that request.firebase_user exists (set by middleware).
     """
-    
+
     def has_permission(self, request, view):
-        return request.firebase_user is not None
+        # Surface clear auth errors from middleware/auth class.
+        if not getattr(request, "firebase_user", None):
+            self.message = getattr(request, "firebase_auth_error", None) or "Authentication required. Provide a Firebase ID token."  # Clear 401/403 message.
+            return False
+        return True
 
 
 class IsChild(permissions.BasePermission):

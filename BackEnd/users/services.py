@@ -85,3 +85,16 @@ class UserService:
             True if successful, False otherwise
         """
         return FirestoreService.update_user_role(firebase_uid, role)
+    
+    @staticmethod
+    def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+        """
+        Find a user by email address.
+        
+        Args:
+            email: User email address
+            
+        Returns:
+            User document as dict, or None if not found
+        """
+        return FirestoreService.get_user_by_email(email)

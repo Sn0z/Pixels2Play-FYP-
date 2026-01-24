@@ -2,7 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import './WatchAndQuiz.css';
 import { auth } from '../../FireBase/firebase';
 
-const API_BASE = 'http://127.0.0.1:8000/api/courses';
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, ''); // Use Django API directly.
+
+const API_BASE_COURSES = `${API_BASE}/courses`;
 
 export default function WatchAndQuiz({ videoId, moduleId }) {
   const playerRef = useRef(null);
@@ -124,7 +127,7 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
         if (!user) return;
         const token = await user.getIdToken();
 
-        const res = await fetch(`${API_BASE}/modules/${moduleId}/attention-status/`, {
+        const res = await fetch(`${API_BASE_COURSES}/modules/${moduleId}/attention-status/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -176,7 +179,7 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
       if (!user) return;
       const token = await user.getIdToken();
 
-      await fetch(`${API_BASE}/modules/${moduleId}/watch/`, {
+      await fetch(`${API_BASE_COURSES}/modules/${moduleId}/watch/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +203,7 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
       }
       const token = await user.getIdToken();
 
-      const res = await fetch(`${API_BASE}/modules/${moduleId}/quiz/`, {
+      const res = await fetch(`${API_BASE_COURSES}/modules/${moduleId}/quiz/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -224,7 +227,7 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
 
       const payload = Object.entries(answers).map(([question_id, choice_id]) => ({ question_id, choice_id }));
 
-      const res = await fetch(`${API_BASE}/modules/${moduleId}/quiz/submit/`, {
+      const res = await fetch(`${API_BASE_COURSES}/modules/${moduleId}/quiz/submit/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from corsheaders.defaults import default_headers  # Use CORS defaults to avoid missing headers.
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,11 @@ SECRET_KEY = 'django-insecure-(f2rsf5t&azlciqn1=wx@y7zvsj)7a#y@qgt11$d#t(2^$*obf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if host.strip()
+]  # Allow local dev hosts unless overridden via env.
 
 
 # Application definition
@@ -43,7 +48,7 @@ INSTALLED_APPS = [
     "courses",
     "corsheaders",
     # From Pixels to Play apps
-    "utils",
+    "utils.apps.UtilsConfig",  # Custom AppConfig to initialize Firebase on startup
     "users",
     "family",
     "games",  # AI Learning Games
@@ -142,17 +147,24 @@ STATIC_URL = 'static/'
 
 KHALTI_SECRET_KEY = "ae5f844d758c4316be6282de9a2cf687"
 
-FIREBASE_SERVICE_ACCOUNT = BASE_DIR / "firebase-service-account.json"
+FIREBASE_SERVICE_ACCOUNT = os.environ.get(
+    "FIREBASE_SERVICE_ACCOUNT",
+    str(BASE_DIR / "firebase-service-account.json"),
+)  # Allow env override for service account path.
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 
-CORS_ALLOW_HEADERS = [
-    "authorization",
-    "content-type",
-]
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-eye-key",
+]  # Keep defaults and allow eye-tracker header for attention endpoints.
+
+# Allow credentials for CORS (if needed for cookies/auth)
+CORS_ALLOW_CREDENTIALS = True
 
 # Django REST Framework settings
 REST_FRAMEWORK = {
@@ -160,8 +172,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # We use Firebase authentication via middleware
-        # No DRF authentication classes needed
+        'users.authentication.FirebaseAuthentication',  # Use Firebase tokens for DRF auth.
     ],
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }

@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, List
 from firebase_admin import firestore
 from django.conf import settings
+from .firebase_init import ensure_initialized
 from .constants import (
     ROLE_UNASSIGNED,
     AUTH_PROVIDER_GOOGLE,
@@ -20,8 +21,20 @@ from .constants import (
 )
 
 
-# Initialize Firestore client
-db = firestore.client()
+# Lazy-loaded Firestore client - initialized on first use
+_db = None
+
+
+def get_db():
+    """
+    Get Firestore client, initializing Firebase if needed.
+    This ensures Firebase is initialized before creating the client.
+    """
+    global _db
+    if _db is None:
+        ensure_initialized()
+        _db = firestore.client()
+    return _db
 
 
 class FirestoreService:
@@ -46,6 +59,7 @@ class FirestoreService:
             User document as dict, or None if not found
         """
         try:
+            db = get_db()
             doc_ref = db.collection(FIRESTORE_COLLECTION_USERS).document(user_id)
             doc = doc_ref.get()
             
@@ -89,6 +103,7 @@ class FirestoreService:
         }
         
         try:
+            db = get_db()
             doc_ref = db.collection(FIRESTORE_COLLECTION_USERS).document(user_id)
             doc_ref.set(user_data)
             user_data['id'] = user_id
@@ -111,6 +126,7 @@ class FirestoreService:
             True if successful, False otherwise
         """
         try:
+            db = get_db()
             doc_ref = db.collection(FIRESTORE_COLLECTION_USERS).document(user_id)
             doc_ref.update({'role': role})
             return True
@@ -131,6 +147,7 @@ class FirestoreService:
             True if successful, False otherwise
         """
         try:
+            db = get_db()
             doc_ref = db.collection(FIRESTORE_COLLECTION_USERS).document(user_id)
             doc_ref.update(updates)
             return True
@@ -163,6 +180,7 @@ class FirestoreService:
         }
         
         try:
+            db = get_db()
             # Use parent_id and child_id as composite key to prevent duplicates
             link_id = f"{parent_id}_{child_id}"
             doc_ref = db.collection(FIRESTORE_COLLECTION_FAMILY_LINKS).document(link_id)
@@ -186,6 +204,7 @@ class FirestoreService:
             List of family link documents
         """
         try:
+            db = get_db()
             links_ref = db.collection(FIRESTORE_COLLECTION_FAMILY_LINKS)
             query = links_ref.where('parent_id', '==', parent_id)
             docs = query.stream()
@@ -213,6 +232,7 @@ class FirestoreService:
             List of family link documents
         """
         try:
+            db = get_db()
             links_ref = db.collection(FIRESTORE_COLLECTION_FAMILY_LINKS)
             query = links_ref.where('child_id', '==', child_id)
             docs = query.stream()
@@ -241,6 +261,7 @@ class FirestoreService:
             True if link exists, False otherwise
         """
         try:
+            db = get_db()
             link_id = f"{parent_id}_{child_id}"
             doc_ref = db.collection(FIRESTORE_COLLECTION_FAMILY_LINKS).document(link_id)
             doc = doc_ref.get()
@@ -248,3 +269,30 @@ class FirestoreService:
         except Exception as e:
             print(f"Error checking link existence: {e}")
             return False
+
+    @staticmethod
+    def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+        """
+        Find a user by email address.
+        
+        Args:
+            email: User email address
+            
+        Returns:
+            User document as dict, or None if not found
+        """
+        try:
+            db = get_db()
+            users_ref = db.collection(FIRESTORE_COLLECTION_USERS)
+            query = users_ref.where('email', '==', email).limit(1)
+            docs = query.stream()
+            
+            for doc in docs:
+                user_data = doc.to_dict()
+                user_data['id'] = doc.id
+                return user_data
+            
+            return None
+        except Exception as e:
+            print(f"Error getting user by email {email}: {e}")
+            return None

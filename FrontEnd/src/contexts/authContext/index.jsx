@@ -3,6 +3,17 @@ import { auth } from "../../FireBase/firebase";
 import { GoogleAuthProvider } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/$/, ""); // Use Django API directly.
+
+async function safeJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 const AuthContext = React.createContext();
 
 export function useAuth() {
@@ -14,6 +25,7 @@ export function AuthProvider({ children }) {
   const [userLoggedIn, setUserLoggedIn] = useState(false);
   const [isEmailUser, setIsEmailUser] = useState(false);
   const [isGoogleUser, setIsGoogleUser] = useState(false);
+  const [userProfile, setUserProfile] = useState(null); // Django user profile
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +35,6 @@ export function AuthProvider({ children }) {
 
   async function initializeUser(user) {
     if (user) {
-
       setCurrentUser({ ...user });
 
       // check if provider is email and password login
@@ -39,9 +50,27 @@ export function AuthProvider({ children }) {
       setIsGoogleUser(isGoogle);
 
       setUserLoggedIn(true);
+
+      // Call Django login endpoint to sync user with backend
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` }, // Send Firebase ID token to Django.
+        });
+        const data = await safeJson(response);
+        if (!response.ok) {
+          throw new Error(data?.error || "Login failed");
+        }
+        setUserProfile(data.user);
+      } catch (error) {
+        console.error("Failed to sync user with Django backend:", error);
+        // Continue even if Django sync fails - user is still authenticated with Firebase
+      }
     } else {
       setCurrentUser(null);
       setUserLoggedIn(false);
+      setUserProfile(null);
     }
 
     setLoading(false);
@@ -52,7 +81,9 @@ export function AuthProvider({ children }) {
     isEmailUser,
     isGoogleUser,
     currentUser,
-    setCurrentUser
+    setCurrentUser,
+    userProfile, // Django user profile (role, etc.)
+    setUserProfile,
   };
 
   return (

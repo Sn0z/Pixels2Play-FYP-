@@ -13,6 +13,7 @@ from django.utils import timezone
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Public course list for marketing pages.
 def module_list(request):
     modules = Module.objects.filter(published=True).order_by('order')
     serializer = ModuleSerializer(modules, many=True)
@@ -317,6 +318,7 @@ def attention_status(request, module_id):
     return Response({'ok': True, 'module_id': module.id})
 
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Public module detail for preview pages.
 def module_detail(request, module_id):
     try:
         module = Module.objects.get(pk=module_id, published=True)

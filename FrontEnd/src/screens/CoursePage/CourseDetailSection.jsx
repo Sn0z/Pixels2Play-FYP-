@@ -6,6 +6,9 @@ import { onAuthStateChanged, getAuth } from "firebase/auth";
 import WatchAndQuiz from "../WatchAndQuiz/WatchAndQuiz";
 import "./CourseDetailSection.css";
 
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/$/, ""); // Use Django API directly.
+
 const auth = getAuth();
 
 export default function CourseDetailSection() {
@@ -25,7 +28,7 @@ export default function CourseDetailSection() {
     const token = await user.getIdToken();
 
     const res = await fetch(
-      "http://127.0.0.1:8000/api/payments/course-status/scratch-101/",
+      `${API_BASE}/payments/course-status/scratch-101/`, // Use shared API base for consistency.
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -50,7 +53,7 @@ const { moduleId: paramModuleId } = useParams();
   useEffect(() => {
     async function loadModules() {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/courses/modules/');
+        const res = await fetch(`${API_BASE}/courses/modules/`); // Use shared API base for consistency.
         if (!res.ok) return setModuleLoading(false);
         const data = await res.json();
         if (Array.isArray(data) && data.length) {
@@ -61,7 +64,7 @@ const { moduleId: paramModuleId } = useParams();
             if (found) setModule(found);
             else {
               // fetch by id fallback
-              const r = await fetch(`http://127.0.0.1:8000/api/courses/modules/${paramModuleId}/`);
+              const r = await fetch(`${API_BASE}/courses/modules/${paramModuleId}/`); // Use shared API base for consistency.
               if (r.ok) setModule(await r.json());
             }
           } else {

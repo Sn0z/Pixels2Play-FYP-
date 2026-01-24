@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny
 from users.services import UserService
 from users.serializers import UserSerializer, LoginResponseSerializer
 from users.permissions import IsAuthenticatedFirebase
-from utils.constants import AUTH_PROVIDER_GOOGLE
+from utils.constants import AUTH_PROVIDER_GOOGLE, AUTH_PROVIDER_EMAIL
 
 
 @api_view(['POST'])
@@ -117,6 +117,64 @@ def get_current_user(request):
     
     # Get user from Firestore
     user = UserService.get_user_profile(firebase_user['uid'])
+    
+    if not user:
+        return Response(
+            {'error': 'User not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Serialize and return
+    serializer = UserSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticatedFirebase])
+def search_user_by_email(request):
+    """
+    Search for a user by email address.
+    
+    This endpoint allows authenticated users to find other users by email.
+    Useful for parent-child linking flows.
+    
+    Request:
+        Headers:
+            Authorization: Bearer <firebase_id_token>
+        Query Params:
+            email: Email address to search for
+    
+    Response:
+        {
+            "id": "uid123",
+            "email": "user@example.com",
+            "name": "User Name",
+            "role": "UNASSIGNED",
+            "auth_provider": "google"
+        }
+        or null if not found
+    
+    Error Responses:
+        - 400: Missing email parameter
+        - 401: Authentication required
+    """
+    firebase_user = request.firebase_user
+    
+    if not firebase_user:
+        return Response(
+            {'error': 'Authentication required'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    email = request.query_params.get('email')
+    if not email:
+        return Response(
+            {'error': 'Email parameter is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Search for user by email
+    user = UserService.get_user_by_email(email)
     
     if not user:
         return Response(
