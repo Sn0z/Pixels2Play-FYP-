@@ -9,13 +9,13 @@ This module contains API endpoints for:
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from users.permissions import IsAuthenticatedFirebase
 from family.serializers import (
     FamilyLinkRequestSerializer,
     FamilyLinkResponseSerializer,
     FamilyLinkSerializer,
 )
 from family.services import FamilyService
-from users.permissions import IsAuthenticatedFirebase
 from utils.firestore import FirestoreService
 from utils.constants import ROLE_PARENT, ROLE_CHILD, ROLE_ADMIN
 
@@ -53,13 +53,10 @@ def link_parent_child(request):
         - 400: Validation error (users not found, link exists, etc.)
         - 401: Authentication required
     """
-    # Get current user
-    firebase_user = request.firebase_user
+    # Get current user (set by FirebaseAuthentication + middleware)
+    firebase_user = getattr(request, "firebase_user", None)
     if not firebase_user:
-        return Response(
-            {'error': 'Authentication required'},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({'error': getattr(request, "firebase_auth_error", None) or 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
     
     # Validate request data
     serializer = FamilyLinkRequestSerializer(data=request.data)
@@ -71,6 +68,21 @@ def link_parent_child(request):
     
     parent_id = serializer.validated_data['parent_id']
     child_id = serializer.validated_data['child_id']
+    consent = serializer.validated_data.get("consent", None)
+    parent_email = serializer.validated_data.get("parent_email", None)
+
+    # Security: the authenticated user must be the parent (unless ADMIN).
+    caller_uid = firebase_user.get("uid")
+    caller = FirestoreService.get_user(caller_uid) if caller_uid else None
+    caller_role = caller.get("role") if caller else None
+    if caller_role != ROLE_ADMIN and caller_uid != parent_id:
+        return Response({'error': 'You can only link a child to your own parent account.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Optional: consent + parent email verification (matches the signed-in account).
+    if consent is False:
+        return Response({'error': 'Parent consent is required.'}, status=status.HTTP_400_BAD_REQUEST)
+    if parent_email and firebase_user.get("email") and parent_email.lower().strip() != firebase_user.get("email").lower().strip():
+        return Response({'error': 'Parent email does not match the signed-in account.'}, status=status.HTTP_400_BAD_REQUEST)
     
     # Create family link
     try:
@@ -125,12 +137,9 @@ def get_family_links(request):
             }
         ]
     """
-    firebase_user = request.firebase_user
+    firebase_user = getattr(request, "firebase_user", None)
     if not firebase_user:
-        return Response(
-            {'error': 'Authentication required'},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({'error': getattr(request, "firebase_auth_error", None) or 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
     
     current_user_id = firebase_user['uid']
     current_user = FirestoreService.get_user(current_user_id)

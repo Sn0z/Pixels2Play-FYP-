@@ -58,6 +58,15 @@ class FamilyService:
         # Check if link already exists
         if FirestoreService.link_exists(parent_id, child_id):
             return False, "Family link already exists"
+
+        # Prevent reverse/circular duplicates as well (child already linked as a parent of caller).
+        if FirestoreService.link_exists(child_id, parent_id):
+            return False, "Family link already exists (reverse)"
+
+        # Prevent a child from being linked to multiple parents.
+        existing_child_links = FirestoreService.get_family_links_by_child(child_id)
+        if existing_child_links:
+            return False, "Child account is already linked to a parent"
         
         # Check if parent already has a role assigned (should be UNASSIGNED or PARENT)
         parent_role = parent.get('role')

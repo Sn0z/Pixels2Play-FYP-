@@ -16,6 +16,7 @@ class FirebaseUser:
         self.uid = firebase_user.get("uid")  # Store UID for downstream logic.
         self.email = firebase_user.get("email", "")
         self.name = firebase_user.get("name", "")
+        self.picture = firebase_user.get("picture", "")
         self.firebase_user = firebase_user
         self.is_authenticated = True  # DRF checks this to allow access.
 
@@ -57,6 +58,7 @@ class FirebaseAuthentication(authentication.BaseAuthentication):
             "email": decoded_token.get("email", ""),
             "email_verified": decoded_token.get("email_verified", False),
             "name": decoded_token.get("name", ""),
+            "picture": decoded_token.get("picture", ""),
             "firebase_token": decoded_token,
         }
 

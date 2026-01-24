@@ -10,6 +10,8 @@ const API_BASE_COURSES = `${API_BASE}/courses`;
 export default function WatchAndQuiz({ videoId, moduleId }) {
   const playerRef = useRef(null);
   const playerInstanceRef = useRef(null);
+  const maxWatchedRef = useRef(0);
+  const lastProgressSecondRef = useRef(-1);
   const [duration, setDuration] = useState(0);
   const [maxWatched, setMaxWatched] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -87,27 +89,29 @@ export default function WatchAndQuiz({ videoId, moduleId }) {
       setCurrentTime(cur);
 
       // If user seeks forward beyond maxWatched + 0.6s, rewind to maxWatched
-      if (cur > maxWatched + 0.6) {
-        player.seekTo(maxWatched, true);
+      const mw = maxWatchedRef.current || 0;
+      if (cur > mw + 0.6) {
+        player.seekTo(mw, true);
         return;
       }
 
-      if (cur > maxWatched) {
+      if (cur > mw) {
+        maxWatchedRef.current = cur;
         setMaxWatched(cur);
       }
 
       // Every 5 seconds send an update to server
       const nowSeconds = Math.floor(cur);
-      if (nowSeconds % 5 === 0) {
-        // Avoid spamming; send only on boundaries
+      // Avoid spamming: send at most once per second, and only at 5-second boundaries.
+      if (nowSeconds % 5 === 0 && lastProgressSecondRef.current !== nowSeconds) {
+        lastProgressSecondRef.current = nowSeconds;
         await sendWatchProgress(nowSeconds);
       }
     };
 
     const id = setInterval(tick, 500);
     return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maxWatched]);
+  }, [moduleId]);
 
   useEffect(() => {
     if (!duration) return;

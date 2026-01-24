@@ -82,6 +82,8 @@ class FirebaseAuthenticationMiddleware(MiddlewareMixin):
                 'email': decoded_token.get('email', ''),
                 'email_verified': decoded_token.get('email_verified', False),
                 'name': decoded_token.get('name', ''),
+                'picture': decoded_token.get('picture', ''),
+                'phone_number': decoded_token.get('phone_number', ''),
                 'firebase_token': decoded_token,
             }
             

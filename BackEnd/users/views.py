@@ -9,10 +9,9 @@ This module contains API endpoints for:
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from users.services import UserService
 from users.serializers import UserSerializer, LoginResponseSerializer
-from users.permissions import IsAuthenticatedFirebase
 from utils.constants import AUTH_PROVIDER_GOOGLE, AUTH_PROVIDER_EMAIL
 
 
@@ -57,6 +56,7 @@ def login(request):
     uid = firebase_user['uid']
     email = firebase_user.get('email', '')
     name = firebase_user.get('name', email.split('@')[0])  # Fallback to email prefix
+    picture = firebase_user.get('picture', '')
     
     # Determine auth provider from Firebase token
     firebase_token = firebase_user.get('firebase_token', {})
@@ -68,7 +68,8 @@ def login(request):
         firebase_uid=uid,
         email=email,
         name=name,
-        auth_provider=auth_provider
+        auth_provider=auth_provider,
+        picture=picture,
     )
     
     # Serialize user data
@@ -85,7 +86,7 @@ def login(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticatedFirebase])
+@permission_classes([IsAuthenticated])
 def get_current_user(request):
     """
     Get current user profile.
@@ -108,12 +109,9 @@ def get_current_user(request):
         }
     """
     firebase_user = request.firebase_user
-    
     if not firebase_user:
-        return Response(
-            {'error': 'Authentication required'},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        # When DRF auth succeeds, request.firebase_user should be present (set by FirebaseAuthentication).
+        return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
     
     # Get user from Firestore
     user = UserService.get_user_profile(firebase_user['uid'])
@@ -130,7 +128,7 @@ def get_current_user(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticatedFirebase])
+@permission_classes([IsAuthenticated])
 def search_user_by_email(request):
     """
     Search for a user by email address.
@@ -159,12 +157,8 @@ def search_user_by_email(request):
         - 401: Authentication required
     """
     firebase_user = request.firebase_user
-    
     if not firebase_user:
-        return Response(
-            {'error': 'Authentication required'},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
     
     email = request.query_params.get('email')
     if not email:

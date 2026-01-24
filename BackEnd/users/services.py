@@ -6,6 +6,7 @@ including user creation, role management, and profile retrieval.
 """
 
 from typing import Dict, Any, Optional
+from firebase_admin import firestore
 from utils.firestore import FirestoreService
 from utils.constants import (
     ROLE_UNASSIGNED,
@@ -24,7 +25,8 @@ class UserService:
         firebase_uid: str,
         email: str,
         name: str,
-        auth_provider: str = AUTH_PROVIDER_EMAIL
+        auth_provider: str = AUTH_PROVIDER_EMAIL,
+        picture: str = ""
     ) -> Dict[str, Any]:
         """
         Get existing user or create new user with UNASSIGNED role.
@@ -46,8 +48,18 @@ class UserService:
         user = FirestoreService.get_user(firebase_uid)
         
         if user:
-            # User exists, return existing user
-            return user
+            # User exists: keep profile fields fresh on every login (non-destructive merge).
+            FirestoreService.upsert_user(
+                firebase_uid,
+                {
+                    'email': email,
+                    'name': name,
+                    'auth_provider': auth_provider,
+                    'photo_url': picture or user.get('photo_url', ''),
+                    'last_login': firestore.SERVER_TIMESTAMP,
+                },
+            )
+            return FirestoreService.get_user(firebase_uid) or user
         
         # User doesn't exist, create new user with UNASSIGNED role
         user = FirestoreService.create_user(
@@ -56,6 +68,10 @@ class UserService:
             name=name,
             auth_provider=auth_provider
         )
+
+        # Store optional profile fields for new users too.
+        if picture:
+            FirestoreService.upsert_user(firebase_uid, {'photo_url': picture})
         
         return user
     

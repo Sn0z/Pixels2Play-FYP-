@@ -1,24 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { MailIcon, ShieldCheckIcon } from "lucide-react";
 import "./ChildAccountSetup.css";
+import { auth } from "../../FireBase/firebase";
 
-// --- TEMPORARY API PLACEHOLDER ---
-const recordParentConsentAPI = async (parentEmail, childUid) => {
-    console.log(`Recording consent for Child: ${childUid} by Parent Email: ${parentEmail}`);
-    
-    // Simulate an API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    
-    // Simulate successful API response
-    return { success: true };
-};
-// ----------------------------------
+const API_BASE =
+  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
+
+async function safeJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function linkParentChildAPI({ parentEmail, childUid, consent }) {
+  const user = auth.currentUser;
+  const token = await user?.getIdToken();
+  if (!token || !user?.uid) {
+    const err = new Error("Authentication required. Please log in again.");
+    err.name = "UnauthenticatedError";
+    throw err;
+  }
+
+  const res = await fetch(`${API_BASE}/family/link`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      parent_uid: user.uid,
+      child_uid: childUid,
+      parent_email: parentEmail,
+      consent,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await safeJson(res);
+    throw new Error(body?.error || body?.detail || "Failed to link parent and child.");
+  }
+
+  return await safeJson(res);
+}
 
 const ChildAccountSetupStep2 = () => {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false); // New state for loading/confirmation
   const [fadeIn, setFadeIn] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Get the child's UID (set in Step 1) from local storage
   const childUid = localStorage.getItem("childUid");
@@ -30,27 +62,27 @@ const ChildAccountSetupStep2 = () => {
 
   // Function to handle the form submission
   const handleSubmit = async () => {
+    if (!childUid) {
+      window.location.href = "/setup1";
+      return;
+    }
+
     if (!consent || !email || loading) {
       return; // Prevent submission if consent is missing or loading
     }
     
     // 1. Start loading state
     setLoading(true);
+    setErrorMessage("");
 
     try {
-      // 2. Call the API to record consent
-      const res = await recordParentConsentAPI(email, childUid);
+      await linkParentChildAPI({ parentEmail: email.trim(), childUid, consent: true });
 
-      if (res.success) {
-        // 3. Redirect to Step 3 upon successful consent recording
-        window.location.href = "/setup3";
-      } else {
-        // Handle API failure (e.g., parent email mismatch, server error)
-        alert("Failed to confirm consent. Please check your email and try again.");
-      }
+      // Redirect to Step 3 upon successful link
+      window.location.href = "/setup3";
     } catch (error) {
       console.error("Consent submission error:", error);
-      alert("An unexpected error occurred. Please try again.");
+      setErrorMessage(error?.message || "An unexpected error occurred. Please try again.");
     } finally {
       // 4. End loading state only if redirection didn't happen
       if (window.location.pathname !== "/setup3") {
@@ -131,6 +163,12 @@ const ChildAccountSetupStep2 = () => {
                 disabled={loading}
               />
             </div>
+
+            {errorMessage && (
+              <p className="setup1-hint-text" role="alert">
+                {errorMessage}
+              </p>
+            )}
 
             <button
               className="setup2-continue-button"

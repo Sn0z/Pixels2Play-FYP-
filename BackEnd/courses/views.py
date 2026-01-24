@@ -3,7 +3,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
-from .models import Module, QuizQuestion, QuizChoice, UserModuleProgress, ParentChildLink, WatchEvent
+from .models import (
+    Module,
+    QuizQuestion,
+    QuizChoice,
+    UserModuleProgress,
+    ParentChildLink,
+    WatchEvent,
+    AttentionEvent,
+)
 from .serializers import ModuleSerializer, QuizQuestionSerializer, ParentChildLinkSerializer
 from payments.firebase import verify_firebase_token
 from users.permissions import IsChild, IsParentOrAdmin, IsAdmin, IsAuthenticatedFirebase
@@ -256,66 +264,6 @@ def attention_status(request, module_id):
         })
 
     return Response({'status': last.status, 'elapsed': elapsed, 'action': 'pause'})
-    """Accept module JSON (from Firestore admin) and create/update Module and questions.
-    Requires Firebase token and admin UID configured in settings.COURSE_ADMIN_UIDS (or DEBUG True).
-    """
-    decoded = verify_firebase_token(request)
-    if not decoded:
-        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
-
-    uid = decoded.get('uid')
-    from django.conf import settings
-
-    if settings.COURSE_ADMIN_UIDS:
-        if uid not in settings.COURSE_ADMIN_UIDS:
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-    else:
-        # Allow in DEBUG for easy development
-        if not settings.DEBUG:
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-    payload = request.data.get('module')
-    if not isinstance(payload, dict):
-        return Response({'error': 'module payload required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    title = payload.get('title')
-    if not title:
-        return Response({'error': 'title required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    module_id = payload.get('id')
-    if module_id:
-        module, _ = Module.objects.update_or_create(id=module_id, defaults={
-            'title': payload.get('title'),
-            'description': payload.get('description', ''),
-            'order': payload.get('order', 0),
-            'video_url': payload.get('video_url', ''),
-            'video_host': payload.get('video_host', 'youtube'),
-            'video_duration': float(payload.get('video_duration') or 0.0),
-            'required_percent': float(payload.get('required_percent', 0.95)),
-            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
-            'published': bool(payload.get('published', True)),
-        })
-    else:
-        module, _ = Module.objects.update_or_create(title=title, defaults={
-            'description': payload.get('description', ''),
-            'order': payload.get('order', 0),
-            'video_url': payload.get('video_url', ''),
-            'video_host': payload.get('video_host', 'youtube'),
-            'video_duration': float(payload.get('video_duration') or 0.0),
-            'required_percent': float(payload.get('required_percent', 0.95)),
-            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
-            'published': bool(payload.get('published', True)),
-        })
-
-    # Replace (clear) existing questions and choices
-    module.questions.all().delete()
-
-    for qdata in payload.get('questions', []):
-        q = QuizQuestion.objects.create(module=module, text=qdata.get('text', ''))
-        for c in qdata.get('choices', []):
-            QuizChoice.objects.create(question=q, text=c.get('text', ''), is_correct=bool(c.get('is_correct', False)))
-
-    return Response({'ok': True, 'module_id': module.id})
 
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Public module detail for preview pages.
@@ -398,6 +346,7 @@ def update_watch(request, module_id):
 
 
 @api_view(['GET'])
+@permission_classes([IsChild])  # Only CHILD can access quizzes
 def quiz(request, module_id):
     try:
         module = Module.objects.get(pk=module_id, published=True)

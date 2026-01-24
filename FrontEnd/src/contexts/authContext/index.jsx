@@ -26,7 +26,8 @@ export function AuthProvider({ children }) {
   const [isEmailUser, setIsEmailUser] = useState(false);
   const [isGoogleUser, setIsGoogleUser] = useState(false);
   const [userProfile, setUserProfile] = useState(null); // Django user profile
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true); // Firebase auth state resolution
+  const [profileLoading, setProfileLoading] = useState(false); // Django sync in background
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, initializeUser);
@@ -50,8 +51,18 @@ export function AuthProvider({ children }) {
       setIsGoogleUser(isGoogle);
 
       setUserLoggedIn(true);
+    } else {
+      setCurrentUser(null);
+      setUserLoggedIn(false);
+      setUserProfile(null);
+    }
 
-      // Call Django login endpoint to sync user with backend
+    // Never block initial render on backend sync; render immediately after Firebase state resolves.
+    setAuthLoading(false);
+
+    // Sync with Django in the background (best-effort).
+    if (user) {
+      setProfileLoading(true);
       try {
         const token = await user.getIdToken();
         const response = await fetch(`${API_BASE}/auth/login`, {
@@ -62,18 +73,14 @@ export function AuthProvider({ children }) {
         if (!response.ok) {
           throw new Error(data?.error || "Login failed");
         }
-        setUserProfile(data.user);
+        setUserProfile(data?.user || null);
       } catch (error) {
         console.error("Failed to sync user with Django backend:", error);
         // Continue even if Django sync fails - user is still authenticated with Firebase
+      } finally {
+        setProfileLoading(false);
       }
-    } else {
-      setCurrentUser(null);
-      setUserLoggedIn(false);
-      setUserProfile(null);
     }
-
-    setLoading(false);
   }
 
   const value = {
@@ -84,11 +91,13 @@ export function AuthProvider({ children }) {
     setCurrentUser,
     userProfile, // Django user profile (role, etc.)
     setUserProfile,
+    authLoading,
+    profileLoading,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

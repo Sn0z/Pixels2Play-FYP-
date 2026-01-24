@@ -11,6 +11,14 @@ const API_BASE =
 
 const auth = getAuth();
 
+async function safeJson(response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
 export default function CourseDetailSection() {
   const navigate = useNavigate();
 
@@ -18,31 +26,30 @@ export default function CourseDetailSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  console.log("Current user:", auth.currentUser);
-  const unsubscribe = onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      try {
+        if (!user) {
+          setPurchased(false);
+          return;
+        }
 
-    const token = await user.getIdToken();
+        const token = await user.getIdToken();
+        const res = await fetch(`${API_BASE}/payments/course-status/scratch-101/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-    const res = await fetch(
-      `${API_BASE}/payments/course-status/scratch-101/`, // Use shared API base for consistency.
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        const data = await safeJson(res);
+        setPurchased(!!data?.purchased);
+      } catch (err) {
+        console.error("Failed to check purchase status:", err);
+        setPurchased(false);
+      } finally {
+        setLoading(false);
       }
-    );
+    });
 
-    const data = await res.json();
-    setPurchased(data.purchased);
-    setLoading(false);
-  });
-
-  return () => unsubscribe();
-}, []);
+    return () => unsubscribe();
+  }, []);
 
 // Module preview state: fetch first published module and show WatchAndQuiz inline
 const { moduleId: paramModuleId } = useParams();
@@ -92,19 +99,6 @@ const { moduleId: paramModuleId } = useParams();
     }
     return mod.video_url;
   }
-
-function getVideoId(mod) {
-  if (!mod) return '';
-  if (mod.video_host === 'youtube') {
-    const u = mod.video_url || '';
-    const m = u.match(/[?&]v=([^&]+)/);
-    if (m) return m[1];
-    const s = u.match(/youtu\.be\/([^?&]+)/);
-    if (s) return s[1];
-    return u;
-  }
-  return mod.video_url;
-}
 
 const courseDetails = [
   {

@@ -100,6 +100,7 @@ class FirestoreService:
             'role': ROLE_UNASSIGNED,
             'auth_provider': auth_provider,
             'created_at': firestore.SERVER_TIMESTAMP,
+            'last_login': firestore.SERVER_TIMESTAMP,
         }
         
         try:
@@ -112,6 +113,21 @@ class FirestoreService:
         except Exception as e:
             print(f"Error creating user {user_id}: {e}")
             raise
+
+    @staticmethod
+    def upsert_user(user_id: str, data: Dict[str, Any]) -> bool:
+        """
+        Create or update a user document in Firestore (merge semantics).
+        Useful during login/signup to keep profile fields fresh without overwriting role/linking data.
+        """
+        try:
+            db = get_db()
+            doc_ref = db.collection(FIRESTORE_COLLECTION_USERS).document(user_id)
+            doc_ref.set(data, merge=True)
+            return True
+        except Exception as e:
+            print(f"Error upserting user {user_id}: {e}")
+            return False
 
     @staticmethod
     def update_user_role(user_id: str, role: str) -> bool:
@@ -128,7 +144,16 @@ class FirestoreService:
         try:
             db = get_db()
             doc_ref = db.collection(FIRESTORE_COLLECTION_USERS).document(user_id)
-            doc_ref.update({'role': role})
+            # Keep backward-compatible `role` plus explicit flags used by the frontend.
+            is_parent = role == "PARENT"
+            is_child = role == "CHILD"
+            doc_ref.update(
+                {
+                    'role': role,
+                    'isParent': is_parent,
+                    'isChild': is_child,
+                }
+            )
             return True
         except Exception as e:
             print(f"Error updating user role {user_id}: {e}")

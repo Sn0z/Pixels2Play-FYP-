@@ -20,7 +20,7 @@ async function safeJson(response) {
   }
 }
 
-async function linkChildAccountAPI(childEmail) {
+async function findChildAccountAPI(childEmail) {
   if (!childEmail) {
     throw new Error("Child email is required."); // Prevent empty email searches.
   }
@@ -31,13 +31,28 @@ async function linkChildAccountAPI(childEmail) {
     throw new UnauthenticatedError("Authentication required to link accounts."); // Enforce Firebase auth for Django endpoints.
   }
 
-  const searchRes = await fetch(
-    `${API_BASE}/users/search?email=${encodeURIComponent(childEmail)}`,
-    {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` }, // Send Firebase token to Django.
+  // Add a timeout so the UI never gets stuck on "Checking..." forever.
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+
+  let searchRes;
+  try {
+    searchRes = await fetch(
+      `${API_BASE}/users/search?email=${encodeURIComponent(childEmail)}`,
+      {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }, // Send Firebase token to Django.
+        signal: controller.signal,
+      }
+    ); // Look up child by email via Django API.
+  } catch (err) {
+    if (err?.name === "AbortError") {
+      throw new Error("Request timed out. Is the backend running on port 8000?");
     }
-  ); // Look up child by email via Django API.
+    throw err;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 
   if (searchRes.status === 404) {
     return { childExists: false };
@@ -49,34 +64,10 @@ async function linkChildAccountAPI(childEmail) {
   }
 
   const child = await searchRes.json();
-  const parentUid = user?.uid;
-  if (!parentUid) {
-    throw new UnauthenticatedError("Authentication required to link accounts."); // Align with UI handling.
-  }
-
-  const linkRes = await fetch(`${API_BASE}/family/link`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`, // Send Firebase token to Django.
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      parent_id: parentUid,
-      child_id: child.id,
-    }),
-  }); // Create parent-child link and assign roles via Django.
-
-  if (!linkRes.ok) {
-    const linkErr = await safeJson(linkRes);
-    throw new Error(linkErr?.error || "Failed to link parent and child.");
-  }
-
-  const linkData = await safeJson(linkRes);
 
   return {
     childExists: true,
     childUid: child.id,
-    linkStatus: linkData?.status || "linked",
   };
 }
 
@@ -100,44 +91,37 @@ const ChildAccountSetup1 = () => {
   const [linking, setLinking] = useState(false);
   const [childUid, setChildUid] = useState(null);
   const [animate, setAnimate] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   
   const [showUnauthenticatedPopup, setShowUnauthenticatedPopup] = useState(false);
 
   useEffect(() => setAnimate(true), []);
 
   const handleContinue = async () => {
+    setErrorMessage("");
     setLinking(true);
 
-    let uidToPass = null; 
-
     try {
-      const res = await linkChildAccountAPI(email);
+      console.log("[Setup1] Searching child email:", email.trim(), "API_BASE:", API_BASE);
+      const res = await findChildAccountAPI(email.trim());
 
       if (!res.childExists) {
-        alert("Child email does not exist."); 
+        setErrorMessage("We couldn’t find a child account with that email.");
         setLinking(false);
         return;
       }
       
-      uidToPass = res.childUid;
-
-      setChildUid(uidToPass);
+      setChildUid(res.childUid);
       
-      goNext(uidToPass); 
+      goNext(res.childUid); 
 
     } catch (error) {
       if (error.name === "UnauthenticatedError") {
         console.error("Authentication check failed. User is not logged in.");
         setShowUnauthenticatedPopup(true); 
       } else {
-        console.error("An unexpected error occurred during linking (BYPASSING):", error);
-
-        if (!uidToPass) {
-             uidToPass = email; 
-        }
-
-        setChildUid(uidToPass);
-        goNext(uidToPass); 
+        console.error("Child lookup failed:", error);
+        setErrorMessage(error?.message || "Something went wrong. Please try again.");
       }
       setLinking(false);
     }
@@ -181,20 +165,26 @@ const ChildAccountSetup1 = () => {
               disabled={linking || childUid} 
             />
 
+            {errorMessage && (
+              <p className="setup1-hint-text" role="alert">
+                {errorMessage}
+              </p>
+            )}
+
             {!childUid && (
               <button 
                 className="setup1-continue-button" 
                 onClick={handleContinue} 
-                disabled={linking}
+                disabled={linking || !email.trim()}
               >
-                {linking ? "Linking..." : "Link Child Account"}
+                {linking ? "Checking..." : "Continue"}
               </button>
             )}
 
             {/* Success State */}
             {childUid && (
               <p className="setup1-hint-text">
-                Child account linked. Continuing to next step...
+                Child account found. Continuing to next step...
               </p>
             )}
 

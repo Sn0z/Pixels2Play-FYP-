@@ -11,8 +11,26 @@ class FamilyLinkRequestSerializer(serializers.Serializer):
     
     Used for POST /api/family/link endpoint.
     """
-    parent_id = serializers.CharField(required=True, help_text="Firebase UID of parent user")
-    child_id = serializers.CharField(required=True, help_text="Firebase UID of child user")
+    # Accept both legacy keys (parent_id/child_id) and preferred keys (parent_uid/child_uid).
+    parent_id = serializers.CharField(required=False, help_text="Firebase UID of parent user")
+    child_id = serializers.CharField(required=False, help_text="Firebase UID of child user")
+    parent_uid = serializers.CharField(required=False, help_text="Firebase UID of parent user (preferred)")
+    child_uid = serializers.CharField(required=False, help_text="Firebase UID of child user (preferred)")
+
+    # Optional verification/consent fields used by the setup UI.
+    parent_email = serializers.EmailField(required=False, help_text="Parent email used to confirm consent")
+    consent = serializers.BooleanField(required=False, help_text="Parent consent flag")
+
+    def validate(self, attrs):
+        parent = attrs.get("parent_uid") or attrs.get("parent_id")
+        child = attrs.get("child_uid") or attrs.get("child_id")
+        if not parent:
+            raise serializers.ValidationError({"parent_uid": "parent_uid (or parent_id) is required"})
+        if not child:
+            raise serializers.ValidationError({"child_uid": "child_uid (or child_id) is required"})
+        attrs["parent_id"] = parent
+        attrs["child_id"] = child
+        return attrs
 
 
 class FamilyLinkResponseSerializer(serializers.Serializer):
