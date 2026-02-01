@@ -14,7 +14,7 @@ async function safeJson(response) {
   }
 }
 
-async function linkParentChildAPI({ parentEmail, childUid, consent }) {
+async function linkParentChildAPI({ parentEmail, childEmail, consent }) {
   const user = auth.currentUser;
   const token = await user?.getIdToken();
   if (!token || !user?.uid) {
@@ -30,16 +30,15 @@ async function linkParentChildAPI({ parentEmail, childUid, consent }) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      parent_uid: user.uid,
-      child_uid: childUid,
       parent_email: parentEmail,
+      child_email: childEmail,
       consent,
     }),
   });
 
   if (!res.ok) {
     const body = await safeJson(res);
-    throw new Error(body?.error || body?.detail || "Failed to link parent and child.");
+    throw new Error(body?.error || body?.error_code || body?.message || body?.detail || "Failed to link parent and child.");
   }
 
   return await safeJson(res);
@@ -52,8 +51,9 @@ const ChildAccountSetupStep2 = () => {
   const [fadeIn, setFadeIn] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Get the child's UID (set in Step 1) from local storage
+  // Get the child's UID and email (set in Step 1) from local storage
   const childUid = localStorage.getItem("childUid");
+  const childEmail = localStorage.getItem("childEmail");
 
   // Trigger fade-in after component mounts
   useEffect(() => {
@@ -62,7 +62,7 @@ const ChildAccountSetupStep2 = () => {
 
   // Function to handle the form submission
   const handleSubmit = async () => {
-    if (!childUid) {
+    if (!childUid || !childEmail) {
       window.location.href = "/setup1";
       return;
     }
@@ -76,7 +76,7 @@ const ChildAccountSetupStep2 = () => {
     setErrorMessage("");
 
     try {
-      await linkParentChildAPI({ parentEmail: email.trim(), childUid, consent: true });
+      await linkParentChildAPI({ parentEmail: email.trim(), childEmail, consent: true });
 
       // Redirect to Step 3 upon successful link
       window.location.href = "/setup3";

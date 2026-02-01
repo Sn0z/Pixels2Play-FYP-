@@ -14,6 +14,15 @@ import os
 from pathlib import Path
 from corsheaders.defaults import default_headers  # Use CORS defaults to avoid missing headers.
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).resolve().parent.parent / '.env'
+    load_dotenv(env_path)
+except ImportError:
+    # python-dotenv not installed, will use environment variables or defaults
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -55,6 +64,7 @@ INSTALLED_APPS = [
     "progress",  # Progress Tracking
     "analytics",  # Admin Analytics
     "evaluation",  # Research Evaluation
+    "eye_tracker",  # Eye tracking API (frame-based)
 ]
 
 MIDDLEWARE = [
@@ -175,4 +185,35 @@ REST_FRAMEWORK = {
         'users.authentication.FirebaseAuthentication',  # Use Firebase tokens for DRF auth.
     ],
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+}
+
+# ---------------------------------------------------------------------------
+# Email (SMTP) for OTP and transactional emails
+# ---------------------------------------------------------------------------
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.smtp.EmailBackend',
+)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'true').lower() in ('true', '1', 'yes')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@example.com')
+
+# ---------------------------------------------------------------------------
+# OTP (email-based) settings
+# ---------------------------------------------------------------------------
+OTP_LENGTH = int(os.environ.get('OTP_LENGTH', '6'))
+OTP_VALID_SECONDS = int(os.environ.get('OTP_VALID_SECONDS', '600'))   # 10 minutes
+OTP_RATE_LIMIT_COUNT = int(os.environ.get('OTP_RATE_LIMIT_COUNT', '3'))   # max sends per window
+OTP_RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get('OTP_RATE_LIMIT_WINDOW_SECONDS', '900'))   # 15 minutes
+
+# Cache for OTP storage (uses default cache; set CACHES['default'] to Redis in production)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'default',
+        'OPTIONS': {'MAX_ENTRIES': 10000},
+    },
 }

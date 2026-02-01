@@ -30,87 +30,79 @@ class UserService:
     ) -> Dict[str, Any]:
         """
         Get existing user or create new user with UNASSIGNED role.
-        
-        This is called during login/signup flow. Users are always created
-        with role = "UNASSIGNED" initially. Roles are assigned later through
-        parent-child linking.
-        
-        Args:
-            firebase_uid: Firebase Auth UID
-            email: User email address
-            name: User display name
-            auth_provider: Authentication provider (google or email)
-            
-        Returns:
-            User document as dict
         """
-        # Check if user exists
-        user = FirestoreService.get_user(firebase_uid)
-        
-        if user:
-            # User exists: keep profile fields fresh on every login (non-destructive merge).
-            FirestoreService.upsert_user(
-                firebase_uid,
-                {
-                    'email': email,
+        try:
+            print(f"[DEBUG] UserService.get_or_create_user called with:")
+            print(f"  firebase_uid: {firebase_uid}")
+            print(f"  email: {email}")
+            print(f"  name: {name}")
+            print(f"  auth_provider: {auth_provider}")
+            print(f"  picture: {picture}")
+            
+            email_normalized = email.lower().strip()
+            print(f"[DEBUG] Normalized email: {email_normalized}")
+            
+            # Check if user exists by email
+            print(f"[DEBUG] Checking if user exists by email...")
+            user = FirestoreService.get_user_by_email(email_normalized)
+            print(f"[DEBUG] get_user_by_email returned: {user}")
+            
+            if user:
+                print(f"[DEBUG] User exists, updating...")
+                # User exists: keep profile fields fresh on every login
+                update_data = {
+                    'email': email_normalized,
                     'name': name,
+                    'username': name,
                     'auth_provider': auth_provider,
-                    'photo_url': picture or user.get('photo_url', ''),
                     'last_login': firestore.SERVER_TIMESTAMP,
-                },
+                }
+                if picture:
+                    update_data['photo_url'] = picture
+                
+                print(f"[DEBUG] Update data: {update_data}")
+                FirestoreService.upsert_user(
+                    firebase_uid,
+                    email_normalized,
+                    update_data
+                )
+                # Retrieve the updated user to return fresh data
+                print(f"[DEBUG] Retrieving updated user...")
+                updated_user = FirestoreService.get_user_by_email(email_normalized)
+                result = updated_user if updated_user else user
+                print(f"[DEBUG] Returning updated user: {result}")
+                return result
+            
+            # User doesn't exist, create new user with UNASSIGNED role
+            print(f"[DEBUG] User does not exist, creating new user...")
+            created_user = FirestoreService.create_user(
+                user_id=firebase_uid,
+                email=email_normalized,
+                name=name,
+                auth_provider=auth_provider,
+                picture=picture
             )
-            return FirestoreService.get_user(firebase_uid) or user
-        
-        # User doesn't exist, create new user with UNASSIGNED role
-        user = FirestoreService.create_user(
-            user_id=firebase_uid,
-            email=email,
-            name=name,
-            auth_provider=auth_provider
-        )
-
-        # Store optional profile fields for new users too.
-        if picture:
-            FirestoreService.upsert_user(firebase_uid, {'photo_url': picture})
-        
-        return user
+            print(f"[DEBUG] User created: {created_user}")
+            return created_user
+            
+        except Exception as e:
+            print(f"[ERROR] Exception in UserService.get_or_create_user: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
     
     @staticmethod
-    def get_user_profile(firebase_uid: str) -> Optional[Dict[str, Any]]:
+    def get_user_profile(firebase_uid: str, email: str = None) -> Optional[Dict[str, Any]]:
         """
-        Get user profile by Firebase UID.
-        
-        Args:
-            firebase_uid: Firebase Auth UID
-            
-        Returns:
-            User document as dict, or None if not found
+        Get user profile by email or Firebase UID.
         """
+        if email:
+            return FirestoreService.get_user_by_email(email)
         return FirestoreService.get_user(firebase_uid)
-    
-    @staticmethod
-    def update_user_role(firebase_uid: str, role: str) -> bool:
-        """
-        Update user role.
-        
-        Args:
-            firebase_uid: Firebase Auth UID
-            role: New role (CHILD, PARENT, ADMIN)
-            
-        Returns:
-            True if successful, False otherwise
-        """
-        return FirestoreService.update_user_role(firebase_uid, role)
     
     @staticmethod
     def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
         """
-        Find a user by email address.
-        
-        Args:
-            email: User email address
-            
-        Returns:
-            User document as dict, or None if not found
+        Get user by email address.
         """
         return FirestoreService.get_user_by_email(email)

@@ -29,4 +29,5 @@ urlpatterns = [
     # Existing endpoints
     path("api/payments/", include("payments.urls")),  # /api/payments/* - Khalti Payments
     path("api/courses/", include("courses.urls")),  # /api/courses/* - Video Courses
+    path("api/eye-tracker/", include("eye_tracker.urls")),  # /api/eye-tracker/* - Eye tracking
 ]

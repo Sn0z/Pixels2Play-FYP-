@@ -17,95 +17,166 @@ from family.serializers import (
 )
 from family.services import FamilyService
 from utils.firestore import FirestoreService
-from utils.constants import ROLE_PARENT, ROLE_CHILD, ROLE_ADMIN
+from utils.constants import (
+    ROLE_PARENT,
+    ROLE_CHILD,
+    ROLE_ADMIN,
+    ERROR_AUTH_FAILED,
+    ERROR_INVALID_REQUESTER,
+    ERROR_CHILD_NOT_AVAILABLE,
+    ERROR_PARENT_VERIFICATION_FAILED,
+    ERROR_SELF_LINK_BLOCKED,
+    ERROR_TRANSACTION_FAILED,
+    SUCCESS_LINK_SUCCESS,
+)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticatedFirebase])
 def link_parent_child(request):
     """
-    Create a parent-child link and assign roles.
+    Create a parent-child link and assign roles with OTP verification.
     
-    This endpoint:
-    1. Validates both users exist
-    2. Assigns PARENT role to parent user
-    3. Assigns CHILD role to child user
-    4. Creates family_links document
+    Implements OTP-gated parent-child linking with 8-step validation flow:
+    1. Authenticate request sender (via Firebase token)
+    2. Verify OTP for configurable email (default: child_email, purpose=email_verify)
+    3. Verify requester exists and role is not CHILD
+    4. Verify child account exists with UNASSIGNED role
+    5. Verify parent email matches requester's email
+    6. Prevent self-linking
+    7. Execute transaction to assign roles and create link (only after OTP)
+    8. Return proper error codes
+    
+    SECURITY:
+    - OTP must be valid and unused (single-use enforcement)
+    - OTP verification happens BEFORE transaction (critical for atomicity)
+    - No linking can occur without OTP verification
+    - Backend enforces all security checks server-side
     
     Request:
         Headers:
             Authorization: Bearer <firebase_id_token>
         Body:
             {
-                "parent_id": "uid123",
-                "child_id": "uid456"
+                "parent_email": "parent@example.com",
+                "child_email": "child@example.com",
+                "otp": "123456",
+                "otp_target": "child" (optional, default: "child", can be "parent"),
+                "consent": true (optional)
             }
     
-    Response:
+    Response (Success):
         {
             "status": "linked",
             "parent_role": "PARENT",
             "child_role": "CHILD",
+            "link_id": "parent@example.com_child@example.com",
             "message": "Parent and child linked successfully"
         }
     
-    Errors:
-        - 400: Validation error (users not found, link exists, etc.)
-        - 401: Authentication required
+    Response (Error):
+        {
+            "error_code": "ERROR_CODE",
+            "message": "Human-readable error message"
+        }
+    
+    Error Codes:
+        - AUTH_FAILED: Authentication required
+        - INVALID_REQUEST: Missing required fields (parent_email, child_email, otp)
+        - INVALID_OTP: OTP invalid/expired/already used
+        - INVALID_REQUESTER: Requester not found or has CHILD role
+        - CHILD_NOT_AVAILABLE: Child not found or already linked
+        - PARENT_VERIFICATION_FAILED: Parent email doesn't match requester
+        - SELF_LINK_BLOCKED: Cannot link account to itself
+        - TRANSACTION_FAILED: Failed to create transaction
     """
-    # Get current user (set by FirebaseAuthentication + middleware)
+    
+    # STEP 1: Authenticate Request Sender
+    # (Already done by FirebaseAuthentication middleware + IsAuthenticatedFirebase permission)
     firebase_user = getattr(request, "firebase_user", None)
     if not firebase_user:
-        return Response({'error': getattr(request, "firebase_auth_error", None) or 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-    
-    # Validate request data
-    serializer = FamilyLinkRequestSerializer(data=request.data)
-    if not serializer.is_valid():
+        error_msg = getattr(request, "firebase_auth_error", None) or 'Authentication required'
         return Response(
-            serializer.errors,
+            {
+                'error_code': ERROR_AUTH_FAILED,
+                'message': error_msg,
+            },
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    requester_uid = firebase_user.get("uid")
+    requester_email = firebase_user.get("email")
+    
+    if not requester_uid or not requester_email:
+        return Response(
+            {
+                'error_code': ERROR_AUTH_FAILED,
+                'message': 'Invalid authentication token',
+            },
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Extract parent_email, child_email, OTP, and OTP target from request
+    parent_email = request.data.get('parent_email', '').strip()
+    child_email = request.data.get('child_email', '').strip()
+    otp = request.data.get('otp', '').strip()
+    otp_target = request.data.get('otp_target', 'child').lower().strip()  # 'child' or 'parent'
+    consent = request.data.get('consent', False)
+    
+    if not parent_email or not child_email or not otp:
+        return Response(
+            {
+                'error_code': 'INVALID_REQUEST',
+                'message': 'parent_email, child_email, and otp are required',
+            },
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    parent_id = serializer.validated_data['parent_id']
-    child_id = serializer.validated_data['child_id']
-    consent = serializer.validated_data.get("consent", None)
-    parent_email = serializer.validated_data.get("parent_email", None)
-
-    # Security: the authenticated user must be the parent (unless ADMIN).
-    caller_uid = firebase_user.get("uid")
-    caller = FirestoreService.get_user(caller_uid) if caller_uid else None
-    caller_role = caller.get("role") if caller else None
-    if caller_role != ROLE_ADMIN and caller_uid != parent_id:
-        return Response({'error': 'You can only link a child to your own parent account.'}, status=status.HTTP_403_FORBIDDEN)
-
-    # Optional: consent + parent email verification (matches the signed-in account).
-    if consent is False:
-        return Response({'error': 'Parent consent is required.'}, status=status.HTTP_400_BAD_REQUEST)
-    if parent_email and firebase_user.get("email") and parent_email.lower().strip() != firebase_user.get("email").lower().strip():
-        return Response({'error': 'Parent email does not match the signed-in account.'}, status=status.HTTP_400_BAD_REQUEST)
+    # CRITICAL: Verify and consume OTP BEFORE any linking operations
+    # otp_target determines which email receives OTP (configurable for flexibility)
+    otp_email = child_email if otp_target == 'child' else parent_email
     
-    # Create family link
-    try:
-        result = FamilyService.create_family_link(parent_id, child_id)
-        
-        response_data = {
-            'status': result['status'],
-            'parent_role': result['parent_role'],
-            'child_role': result['child_role'],
-            'message': 'Parent and child linked successfully'
-        }
-        
+    print(f"[LINKING] Step 1: Verifying OTP for {otp_target} email={otp_email}, purpose=email_verify")
+    from users.otp import consume_otp_if_valid, OTP_PURPOSE_EMAIL_VERIFY
+    
+    otp_valid = consume_otp_if_valid(otp_email, otp, OTP_PURPOSE_EMAIL_VERIFY)
+    if not otp_valid:
+        print(f"[LINKING] OTP verification failed for {otp_email}")
+        return Response(
+            {
+                'error_code': 'INVALID_OTP',
+                'message': 'Invalid or expired OTP. Please request a new code.',
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    print(f"[LINKING] OTP verified and consumed successfully")
+    
+    # STEP 2-6: Execute validation and linking flow
+    result = FamilyService.link_parent_child_with_verification(
+        requester_uid=requester_uid,
+        requester_email=requester_email,
+        parent_email=parent_email,
+        child_email=child_email,
+        consent=consent,
+    )
+    
+    # Handle result
+    if result.get('status') == 'success':
+        # STEP 8: Return success response
+        response_data = result.get('result', {})
         return Response(response_data, status=status.HTTP_201_CREATED)
+    else:
+        # Return error response with proper error code
+        error_code = result.get('error_code', 'UNKNOWN_ERROR')
+        message = result.get('message', 'An error occurred')
         
-    except ValueError as e:
         return Response(
-            {'error': str(e)},
+            {
+                'error_code': error_code,
+                'message': message,
+            },
             status=status.HTTP_400_BAD_REQUEST
-        )
-    except Exception as e:
-        return Response(
-            {'error': f'Internal server error: {str(e)}'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -139,7 +210,10 @@ def get_family_links(request):
     """
     firebase_user = getattr(request, "firebase_user", None)
     if not firebase_user:
-        return Response({'error': getattr(request, "firebase_auth_error", None) or 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            {'error': getattr(request, "firebase_auth_error", None) or 'Authentication required'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
     
     current_user_id = firebase_user['uid']
     current_user = FirestoreService.get_user(current_user_id)
