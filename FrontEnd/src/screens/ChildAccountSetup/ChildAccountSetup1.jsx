@@ -106,14 +106,16 @@ const ChildAccountSetup1 = () => {
       const res = await findChildAccountAPI(email.trim());
 
       if (!res.childExists) {
-        setErrorMessage("We couldn’t find a child account with that email.");
+        setErrorMessage(
+          "We couldn't find an account with that email. Please ensure your child has logged in and created an account first."
+        );
         setLinking(false);
         return;
       }
       
       setChildUid(res.childUid);
       
-      goNext(res.childUid); 
+      goNext(res.childUid, email.trim()); 
 
     } catch (error) {
       if (error.name === "UnauthenticatedError") {
@@ -127,8 +129,9 @@ const ChildAccountSetup1 = () => {
     }
   };
 
-  const goNext = (uid) => {
+  const goNext = (uid, childEmail) => {
     localStorage.setItem("childUid", uid);
+    localStorage.setItem("childEmail", childEmail);
     window.location.href = "/setup2";
   };
 

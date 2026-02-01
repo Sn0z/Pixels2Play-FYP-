@@ -1,13 +1,13 @@
 import { EyeIcon, LockIcon, UserIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { doSignInWithEmailAndPassword, doSignInWithGoogle, doPasswordReset } from '../../FireBase/auth'
 import { useAuth } from '../../contexts/authContext'
 import { Navigate } from "react-router-dom";
 import "./Login.css";
 
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../FireBase/firebase";
+import { login, requestPasswordReset, loginWithGoogle } from '../../api/auth'
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../FireBase/firebase";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -25,17 +25,9 @@ const Login = () => {
         const isEmail = identifier.includes("@");
         if (isEmail) return identifier;
 
-        const q = query(
-            collection(db, "users"),
-            where("username", "==", identifier)
-        );
-        const snap = await getDocs(q);
-
-        if (!snap.empty) {
-            return snap.docs[0].data().email;
-        } else {
-            throw new Error("Username not found");
-        }
+        // For username lookup, we would need to call a backend endpoint
+        // For now, just treat it as an email if it contains @
+        throw new Error("Please use your email to log in");
     }
 
     const onSubmit = async (e) => {
@@ -46,8 +38,23 @@ const Login = () => {
 
             try {
                 const emailToUse = await resolveEmail();
-                await doSignInWithEmailAndPassword(emailToUse, password);
-                navigate("/")
+                
+                // Step 1: Verify credentials with backend
+                const response = await login(emailToUse, password);
+                
+                if (response.user) {
+                    // Step 2: Sign in with Firebase Auth to establish Firebase Auth state and get ID token
+                    try {
+                        await signInWithEmailAndPassword(auth, emailToUse, password);
+                        // Firebase auth state change will trigger authContext's initializeUser()
+                        // which will sync with backend and get the user profile
+                    } catch (firebaseError) {
+                        console.error("Firebase auth error (backend login succeeded):", firebaseError);
+                        // Even if Firebase login fails, backend verified credentials
+                        // Continue and let authContext handle state sync
+                    }
+                    navigate("/");
+                }
             } catch (err) {
                 setErrorMessage(err.message);
                 setIsSigningIn(false);
@@ -55,13 +62,30 @@ const Login = () => {
         }
     };
 
-    const onGoogleSignIn = (e) => {
+    const onGoogleSignIn = async (e) => {
         e.preventDefault();
         if (!isSigningIn) {
             setIsSigningIn(true);
-            doSignInWithGoogle().catch(() => {
+            setErrorMessage("");
+            try {
+                const provider = new GoogleAuthProvider();
+                // Step 1: Get Google credential from Firebase popup
+                // This automatically signs in the user with Firebase Auth
+                const userCredential = await signInWithPopup(auth, provider);
+                const googleToken = await userCredential.user.getIdToken();
+                
+                // Step 2: Verify with backend
+                const response = await loginWithGoogle(googleToken);
+                
+                if (response.user) {
+                    // Firebase Auth is already signed in via signInWithPopup
+                    // The authContext will detect the auth state change and sync with backend
+                    navigate("/");
+                }
+            } catch (err) {
+                setErrorMessage(err.message);
                 setIsSigningIn(false);
-            });
+            }
         }
     };
 
@@ -72,7 +96,7 @@ const Login = () => {
             return setResetMessage("Please enter a valid email.");
         }
         try {
-            await doPasswordReset(resetEmail);
+            await requestPasswordReset(resetEmail);
             setResetMessage("✅ Password reset email sent!");
         } catch (err) {
             setResetMessage("❌ Failed: " + err.message);

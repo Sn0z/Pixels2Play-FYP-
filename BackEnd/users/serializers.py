@@ -15,7 +15,9 @@ class UserSerializer(serializers.Serializer):
     Used for GET /api/users/me endpoint.
     """
     id = serializers.CharField(read_only=True)
+    uid = serializers.CharField(read_only=True)  # Expose explicit UID
     email = serializers.EmailField(read_only=True)
+    username = serializers.CharField(read_only=True) # Expose username
     name = serializers.CharField(read_only=True)
     role = serializers.ChoiceField(choices=VALID_ROLES, read_only=True)
     auth_provider = serializers.ChoiceField(choices=VALID_AUTH_PROVIDERS, read_only=True)
