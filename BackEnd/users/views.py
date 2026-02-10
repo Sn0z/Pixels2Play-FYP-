@@ -686,7 +686,8 @@ def verify_otp(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    success, msg = otp_verify(email, code, purpose)
+    # Verify without consuming (peek) so it's still available for the actual action (e.g. signup)
+    success, msg = otp_verify(email, code, purpose, consume=False)
     if not success:
         return Response({'error': msg}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'message': msg}, status=status.HTTP_200_OK)

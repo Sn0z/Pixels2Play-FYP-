@@ -38,10 +38,10 @@ const Login = () => {
 
             try {
                 const emailToUse = await resolveEmail();
-                
+
                 // Step 1: Verify credentials with backend
                 const response = await login(emailToUse, password);
-                
+
                 if (response.user) {
                     // Step 2: Sign in with Firebase Auth to establish Firebase Auth state and get ID token
                     try {
@@ -73,10 +73,10 @@ const Login = () => {
                 // This automatically signs in the user with Firebase Auth
                 const userCredential = await signInWithPopup(auth, provider);
                 const googleToken = await userCredential.user.getIdToken();
-                
+
                 // Step 2: Verify with backend
                 const response = await loginWithGoogle(googleToken);
-                
+
                 if (response.user) {
                     // Firebase Auth is already signed in via signInWithPopup
                     // The authContext will detect the auth state change and sync with backend

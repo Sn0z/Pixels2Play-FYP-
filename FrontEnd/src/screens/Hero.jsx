@@ -13,7 +13,12 @@ export default function Hero() {
           </p>
 
           <div className="hero-cta">
-            <a href="#" className="btn btn-primary">Start Learning Free</a>
+            <button
+              className="btn btn-primary"
+              onClick={() => window.location.href = "http://localhost:5173/setup1"}
+            >
+              Link Your Child
+            </button>
             <a href="#" className="btn btn-secondary">Watch Demo Video</a>
           </div>
 

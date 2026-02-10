@@ -14,7 +14,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
  * @param {string} name - User display name
  * @returns {Promise<Object>} User data and response
  */
-export const signup = async (email, password, name) => {
+export const signup = async (email, password, name, otp) => {
   const response = await fetch(`${API_URL}/auth/signup`, {
     method: 'POST',
     headers: {
@@ -24,6 +24,7 @@ export const signup = async (email, password, name) => {
       email: email.trim().toLowerCase(),
       password,
       name: name.trim(),
+      otp: otp.trim(),
     }),
   });
 

@@ -17,6 +17,24 @@ class Module(models.Model):
     required_percent = models.FloatField(default=0.95)
     quiz_passing_score = models.FloatField(default=0.7)
     published = models.BooleanField(default=True)
+    
+    # Course-level metadata
+    category = models.CharField(max_length=100, default='Coding')
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=99.00)
+    currency = models.CharField(max_length=10, default='Rs')
+    age_min = models.IntegerField(default=8)
+    age_max = models.IntegerField(default=12)
+    duration_weeks = models.IntegerField(default=6)
+    format_type = models.CharField(max_length=100, default='Live Online Classes')
+    course_image = models.URLField(max_length=1024, blank=True)
+    short_description = models.TextField(blank=True)
+    long_description = models.TextField(blank=True)
+    
+    # Icon URLs for course details display
+    icon_age = models.URLField(max_length=1024, blank=True, default='https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-4.svg')
+    icon_duration = models.URLField(max_length=1024, blank=True, default='https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image.svg')
+    icon_format = models.URLField(max_length=1024, blank=True, default='https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-1.svg')
+    icon_certificate = models.URLField(max_length=1024, blank=True, default='https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-3.svg')
 
     class Meta:
         ordering = ['order']
