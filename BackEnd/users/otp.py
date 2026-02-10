@@ -113,14 +113,16 @@ def send_otp(email: str, purpose: str) -> tuple[bool, str]:
     return True, 'OTP sent to your email.'
 
 
-def verify_otp(email: str, code: str, purpose: str) -> tuple[bool, str]:
+def verify_otp(email: str, code: str, purpose: str, consume: bool = True) -> tuple[bool, str]:
     """
-    Verify OTP for the given email and purpose. OTP is consumed (single-use).
-
+    Verify OTP for the given email and purpose.
+    
     Args:
         email: Email that received the OTP.
         code: User-supplied OTP code.
         purpose: Same purpose used when sending.
+        consume: If True (default), deletes the OTP after successful verification.
+                 If False, keeps the OTP (peek mode) for later consumption.
 
     Returns:
         (success: bool, message: str)
@@ -136,7 +138,10 @@ def verify_otp(email: str, code: str, purpose: str) -> tuple[bool, str]:
     stored_code = (data.get('code') or '').strip()
     if not stored_code or stored_code != code.strip():
         return False, 'Invalid or expired code.'
-    cache.delete(cache_key)
+    
+    if consume:
+        cache.delete(cache_key)
+    
     return True, 'Verification successful.'
 
 

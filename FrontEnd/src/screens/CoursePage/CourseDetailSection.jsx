@@ -22,9 +22,63 @@ async function safeJson(response) {
 export default function CourseDetailSection() {
   const navigate = useNavigate();
 
-  const [purchased, setPurchased] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // 🚨 TEMPORARY: Payment bypassed - always set to true to allow course access
+  // TODO: Re-enable payment by changing 'true' back to 'false' below
+  const [purchased, setPurchased] = useState(true); // Was: false
+  const [loading, setLoading] = useState(false); // Was: true (no need to check when bypassed)
 
+  // Payment Verification Logic
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pidx = params.get("pidx");
+
+    if (pidx) {
+      async function verify() {
+        setLoading(true);
+        try {
+          const auth = getAuth();
+          const user = auth.currentUser;
+          if (!user) return;
+
+          const token = await user.getIdToken();
+          const res = await fetch(`${API_BASE}/payments/verify/`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ pidx }),
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            setPurchased(true);
+            alert("Payment successful! You can now access the course.");
+            // Determine behavior: scroll to content or stay put
+            // Remove query params to prevent re-verification
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } else {
+            alert("Payment verification failed: " + (data.status || "Unknown error"));
+          }
+        } catch (err) {
+          console.error("Verification error:", err);
+          alert("Error verifying payment. Please contact support.");
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      // Wait for auth to be ready
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) verify();
+      });
+      return () => unsubscribe();
+    }
+  }, []);
+
+  // 🚨 TEMPORARY: Payment check disabled
+  // TODO: Uncomment this useEffect to re-enable payment verification
+  /*
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
@@ -50,45 +104,104 @@ export default function CourseDetailSection() {
 
     return () => unsubscribe();
   }, []);
+  */
 
-// Module preview state: fetch first published module and show WatchAndQuiz inline
-const { moduleId: paramModuleId } = useParams();
-  const [modules, setModules] = useState([]);
+  // Fetch course/module data dynamically from Firestore
+  const { moduleId: paramModuleId } = useParams();
+  const [courseData, setCourseData] = useState(null);
+  const [modules, setModules] = useState([]); // Keep modules for the list if needed
   const [module, setModule] = useState(null);
   const [moduleLoading, setModuleLoading] = useState(true);
 
   useEffect(() => {
-    async function loadModules() {
+    async function loadCourseFromFirestore() {
+      if (!paramModuleId) {
+        setModuleLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetch(`${API_BASE}/courses/modules/`); // Use shared API base for consistency.
-        if (!res.ok) return setModuleLoading(false);
-        const data = await res.json();
-        if (Array.isArray(data) && data.length) {
-          setModules(data);
-          // If route param provided, fetch that module or pick from list
-          if (paramModuleId) {
-            const found = data.find((m) => String(m.id) === String(paramModuleId));
-            if (found) setModule(found);
-            else {
-              // fetch by id fallback
-              const r = await fetch(`${API_BASE}/courses/modules/${paramModuleId}/`); // Use shared API base for consistency.
-              if (r.ok) setModule(await r.json());
-            }
-          } else {
-            setModule(data[0]);
-          }
+        // 1. Fetch the specific course document from Firestore
+        const { doc, getDoc } = await import("firebase/firestore");
+        const { db } = await import("../../FireBase/firebase");
+
+        const docRef = doc(db, "courses", paramModuleId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const firestoreCourse = {
+            id: docSnap.id,
+            title: data.name, // Map name -> title
+            description: data.details, // Map details -> description
+            price: data.price,
+            category: data.category,
+            age_min: data.ageRange ? data.ageRange.split('-')[0] : '8',
+            age_max: data.ageRange ? data.ageRange.split('-')[1] : '12',
+            duration_weeks: data.duration,
+            course_image: data.thumbnail,
+            // Add defaults for missing fields
+            format_type: "Live Online Classes",
+            currency: "USD", // Firestore example showed USD
+            icon_age: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-4.svg",
+            icon_duration: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image.svg",
+            icon_format: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-1.svg",
+            icon_certificate: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-3.svg",
+            // Video placeholder (Firestore courses might not have video_url set yet)
+            video_host: 'youtube',
+            video_url: 'dQw4w9WgXcQ'
+          };
+
+          setCourseData(firestoreCourse);
+          setModule(firestoreCourse); // Use course as current module for now
+        } else {
+          console.log("No such course!");
         }
       } catch (err) {
-        console.error('Failed to load modules', err);
+        console.error("Failed to load course from Firestore", err);
       } finally {
         setModuleLoading(false);
       }
     }
-    loadModules();
+    loadCourseFromFirestore();
   }, [paramModuleId]);
 
+  const handleEnroll = async () => {
+    if (!courseData) return;
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please sign in to enroll.");
+      return;
+    }
+    try {
+      setLoading(true);
+      const token = await user.getIdToken();
+      // Note: Payment backend might expect numeric amount. Firestore price is usually string
+      const amount = parseFloat(courseData.price) || 0;
+
+      const res = await fetch(`${API_BASE}/payments/initiate/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          amount: amount,
+          product_name: courseData.title
+        }),
+      });
+      const data = await res.json();
+      if (data.payment_url) {
+        window.location.href = data.payment_url;
+      } else {
+        alert('Payment initiation failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Error initiating payment: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   function getVideoId(mod) {
-    if (!mod) return ''; 
+    if (!mod) return '';
     if (mod.video_host === 'youtube') {
       const u = mod.video_url || '';
       const m = u.match(/[?&]v=([^&]+)/);
@@ -100,64 +213,67 @@ const { moduleId: paramModuleId } = useParams();
     return mod.video_url;
   }
 
-const courseDetails = [
-  {
-    icon: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-4.svg",
-    text: "Ages: 8-12 Years Old",
-  },
-  {
-    icon: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image.svg",
-    text: "Duration: 6 Weeks",
-  },
-  {
-    icon: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-1.svg",
-    text: "Format: Live Online Classes",
-  },
-  {
-    icon: "https://c.animaapp.com/miv5b7ziJolmTE/img/frame----image-3.svg",
-    text: "Certificate of Completion",
-  },
-];
+  // Build course details array dynamically from courseData
+  const courseDetails = courseData ? [
+    {
+      icon: courseData.icon_age,
+      text: `Ages: ${courseData.age_min}-${courseData.age_max} Years Old`,
+    },
+    {
+      icon: courseData.icon_duration,
+      text: `Duration: ${courseData.duration_weeks} Weeks`,
+    },
+    {
+      icon: courseData.icon_format,
+      text: `Format: ${courseData.format_type}`,
+    },
+    {
+      icon: courseData.icon_certificate,
+      text: "Certificate of Completion",
+    },
+  ] : [];
 
-return (
+  return (
     <>
       <NavigationBarSection />
 
       <section className="course-detail-container">
         <div className="course-detail-main">
-          <span className="course-badge">Coding</span>
+          {moduleLoading ? (
+            <div>Loading course...</div>
+          ) : courseData ? (
+            <>
+              <span className="course-badge">{courseData.category}</span>
 
-          <h1 className="course-title">Creative Coding with Scratch</h1>
+              <h1 className="course-title">{courseData.title}</h1>
 
-          <p className="course-description">
-            Go from a coding beginner to a game-designing pro by creating
-            awesome animations, stories, and games.
-          </p>
-
-          <div className="course-image-card">
-            <img
-              className="course-main-image"
-              alt="Creative Coding with Scratch course"
-              src="https://c.animaapp.com/miv5b7ziJolmTE/img/rectangle.png"
-            />
-
-            <div className="course-info-content">
-              <h2 className="course-subtitle">About this course</h2>
-
-              <p className="course-info-text">
-                This course is the perfect introduction to the world of coding
-                for young minds. Using Scratch, a visual programming language
-                developed by MIT, students will learn the fundamentals of
-                programming logic through hands-on creativity. They’ll build
-                interactive stories, animations, and video games — becoming not
-                just consumers of technology but creators!
+              <p className="course-description">
+                {courseData.short_description || courseData.description}
               </p>
-            </div>
-          </div>
+
+              <div className="course-image-card">
+                <img
+                  className="course-main-image"
+                  alt={`${courseData.title} course`}
+                  src={courseData.course_image || "https://c.animaapp.com/miv5b7ziJolmTE/img/rectangle.png"}
+                />
+
+                <div className="course-info-content">
+                  <h2 className="course-subtitle">About this course</h2>
+
+                  <p className="course-info-text">
+                    {courseData.long_description || courseData.description}
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div>Course not found</div>
+          )}
 
           {/* Inline module preview and WatchAndQuiz */}
           {!moduleLoading && module && (
-            <div style={{ marginTop: 24 }}>
+            <div id="module-preview" style={{ marginTop: 24 }}>
               <h3 style={{ marginBottom: 8 }}>Module Preview: {module.title}</h3>
               <WatchAndQuiz videoId={getVideoId(module)} moduleId={module.id} />
             </div>
@@ -168,18 +284,26 @@ return (
         <aside className="course-sidebar">
           <div className="sidebar-card">
             <div className="sidebar-price">
-              <span className="price">Rs 99</span>
+              <span className="price">
+                {courseData ? `${courseData.currency} ${courseData.price}` : 'Rs 99'}
+              </span>
               <span className="per-course">/ course</span>
             </div>
 
             <button
-              className={`enroll-btn ${purchased ? "disabled" : ""}`}
-              disabled={loading || purchased}
+              className={`enroll-btn ${purchased ? "start-learning-btn" : ""}`}
+              disabled={loading}
               onClick={() => {
-                if (!purchased) navigate("/checkout");
+                if (purchased) {
+                  // Scroll to module preview or specific section
+                  const element = document.getElementById("module-preview");
+                  if (element) element.scrollIntoView({ behavior: "smooth" });
+                } else {
+                  navigate("/checkout");
+                }
               }}
             >
-              {loading ? "Checking..." : purchased ? "Purchased" : "Enroll Now"}
+              {loading ? "Checking..." : purchased ? "Start Learning" : "Enroll Now"}
             </button>
 
             {/* Module selector */}

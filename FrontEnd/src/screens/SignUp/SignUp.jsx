@@ -32,10 +32,11 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [verifiedOtp, setVerifiedOtp] = useState("");
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otpError, setOtpError] = useState("");
   const [otpSuccess, setOtpSuccess] = useState("");
-  
+
   // Form States
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -73,7 +74,7 @@ const SignUp = () => {
     try {
       setIsSendingOtp(true);
       const [ok, msg] = await sendOtp(email, "signup");
-      
+
       if (ok) {
         setOtpSent(true);
         setShowOTPModal(true);
@@ -98,9 +99,10 @@ const SignUp = () => {
     try {
       setIsVerifyingOtp(true);
       const [ok, msg] = await verifyOtp(email, otpValue, "signup");
-      
+
       if (ok) {
         setOtpVerified(true);
+        setVerifiedOtp(otpValue);
         setOtpSuccess("Email verified! Now create your password.");
         setShowOTPModal(false);
         setCurrentStep("details");
@@ -125,7 +127,7 @@ const SignUp = () => {
     try {
       setIsResendingOtp(true);
       const [ok, msg] = await sendOtp(email, "signup");
-      
+
       if (ok) {
         setOtpError("");
         // Timer will reset automatically in OTPModal component
@@ -168,7 +170,7 @@ const SignUp = () => {
       setIsRegistering(true);
 
       // Backend will verify OTP hasn't been used twice (single-use enforcement)
-      const response = await signup(email, password, username);
+      const response = await signup(email, password, username, verifiedOtp);
 
       if (response.user) {
         try {
@@ -193,13 +195,13 @@ const SignUp = () => {
     setErrorMessage("");
     try {
       setIsSigningIn(true);
-      
+
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
       const googleToken = await userCredential.user.getIdToken();
-      
+
       const response = await loginWithGoogle(googleToken);
-      
+
       if (response.user) {
         setIsSigningIn(false);
         navigate("/");

@@ -278,7 +278,9 @@ def module_detail(request, module_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsChild])  # Only CHILD can watch courses
+# 🚨 TEMPORARY: Changed from IsChild to IsAuthenticatedFirebase for development
+# TODO: Change back to @permission_classes([IsChild]) to restrict to children only
+@permission_classes([IsAuthenticatedFirebase])  # Was: IsChild
 def update_watch(request, module_id):
     """
     Update watch progress for a module.
@@ -294,13 +296,15 @@ def update_watch(request, module_id):
     
     firebase_uid = firebase_user['uid']
     
-    # Additional check: verify user has CHILD role
-    user = FirestoreService.get_user(firebase_uid)
-    if not user or user.get('role') != ROLE_CHILD:
-        return Response(
-            {'error': 'Only children can watch courses. Please complete parent-child linking.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
+    # 🚨 TEMPORARY: Role check bypassed for development
+    # TODO: Uncomment this to re-enable CHILD-only restriction
+    # # Additional check: verify user has CHILD role
+    # user = FirestoreService.get_user(firebase_uid)
+    # if not user or user.get('role') != ROLE_CHILD:
+    #     return Response(
+    #         {'error': 'Only children can watch courses. Please complete parent-child linking.'},
+    #         status=status.HTTP_403_FORBIDDEN
+    #     )
 
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -346,7 +350,9 @@ def update_watch(request, module_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsChild])  # Only CHILD can access quizzes
+# 🚨 TEMPORARY: Changed from IsChild to IsAuthenticatedFirebase for development
+# TODO: Change back to @permission_classes([IsChild])
+@permission_classes([IsAuthenticatedFirebase])  # Was: IsChild
 def quiz(request, module_id):
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -359,7 +365,9 @@ def quiz(request, module_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsChild])  # Only CHILD can submit quizzes
+# 🚨 TEMPORARY: Changed from IsChild to IsAuthenticatedFirebase for development
+# TODO: Change back to @permission_classes([IsChild])
+@permission_classes([IsAuthenticatedFirebase])  # Was: IsChild
 def submit_quiz(request, module_id):
     """
     Submit quiz answers for a module.
@@ -375,13 +383,15 @@ def submit_quiz(request, module_id):
     
     firebase_uid = firebase_user['uid']
     
-    # Additional check: verify user has CHILD role
-    user = FirestoreService.get_user(firebase_uid)
-    if not user or user.get('role') != ROLE_CHILD:
-        return Response(
-            {'error': 'Only children can submit quizzes. Please complete parent-child linking.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
+    # 🚨 TEMPORARY: Role check bypassed for development
+    # TODO: Uncomment this to re-enable CHILD-only restriction
+    # # Additional check: verify user has CHILD role
+    # user = FirestoreService.get_user(firebase_uid)
+    # if not user or user.get('role') != ROLE_CHILD:
+    #     return Response(
+    #         {'error': 'Only children can submit quizzes. Please complete parent-child linking.'},
+    #         status=status.HTTP_403_FORBIDDEN
+    #     )
 
     try:
         module = Module.objects.get(pk=module_id, published=True)
