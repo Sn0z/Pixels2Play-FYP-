@@ -12,9 +12,13 @@ export default function Header() {
   useEffect(() => {
     async function fetchUsername() {
       if (currentUser?.uid) {
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        if (userDoc.exists()) {
-          setUsername(userDoc.data().username || "");
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            setUsername(userDoc.data().username || "");
+          }
+        } catch {
+          // Silently fall back to displayName / email if Firestore read is denied
         }
       }
     }
@@ -41,7 +45,7 @@ export default function Header() {
             <li><a href="/courses">Courses</a></li>
             <li><a href="#projects">Projects</a></li>
             <li><a href="/contact">Contact Us</a></li>
-            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="/pricing">Pricing</a></li>
           </ul>
         </nav>
 

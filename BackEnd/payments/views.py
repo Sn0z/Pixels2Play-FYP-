@@ -45,20 +45,27 @@ def initiate_payment(request):
         )
 
     course_id = request.data.get("course_id")
+    plan_id = request.data.get("plan_id")
+    billing_cycle = request.data.get("billing_cycle", "monthly")
     amount = request.data.get("amount")  # paisa
 
-    if not course_id or not amount:
+    # Accept either plan_id (subscription) or course_id (one-time purchase)
+    order_id = plan_id or course_id
+    if not order_id or not amount:
         return Response(
-            {"error": "course_id and amount are required"},
+            {"error": "plan_id (or course_id) and amount are required"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    order_name = f"Subscription – {plan_id} ({billing_cycle})" if plan_id else "Course Purchase"
+
+
     payload = {
-        "return_url": "http://localhost:5173/coursedetails",
+        "return_url": f"http://localhost:5173/coursedetails/{order_id}",
         "website_url": "http://localhost:5173",
         "amount": int(amount),
-        "purchase_order_id": str(course_id),
-        "purchase_order_name": "Course Purchase",
+        "purchase_order_id": str(order_id),
+        "purchase_order_name": order_name,
     }
 
     headers = {
@@ -80,7 +87,7 @@ def initiate_payment(request):
     # Store payment in Django model (for backward compatibility)
     payment = Payment.objects.create(
         firebase_uid=uid,
-        course_id=course_id,
+        course_id=str(order_id),
         amount=amount,
         khalti_pidx=data["pidx"],
         status="PENDING"
@@ -94,7 +101,9 @@ def initiate_payment(request):
     payment_data = {
         'payment_id': data["pidx"],
         'parent_id': uid,
-        'course_id': course_id,
+        'course_id': str(order_id),
+        'plan_id': plan_id,
+        'billing_cycle': billing_cycle,
         'amount': int(amount),
         'status': 'PENDING',
         'provider': 'KHALTI',
@@ -108,6 +117,7 @@ def initiate_payment(request):
         "payment_url": data["payment_url"],
         "pidx": data["pidx"]
     })
+
 
 
 @api_view(['POST'])
@@ -265,3 +275,53 @@ def course_purchase_status(request, course_id):
     return Response({"purchased": False})
 
 
+
+@api_view(["GET"])
+def subscription_status(request):
+    """
+    Check if the current user has an active subscription.
+    Returns {subscribed: true/false, plan_id, billing_cycle}.
+    A subscription is considered active if there is any COMPLETED
+    payment that has a plan_id (i.e. came from the subscription checkout).
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({"subscribed": False}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded["uid"]
+
+    # Check Django payment records for a completed subscription payment
+    payment = Payment.objects.filter(
+        firebase_uid=uid,
+        status="COMPLETED",
+    ).exclude(course_id__in=["scratch-101"]).first()
+
+    # Also check Firestore payments for a plan_id-based completed payment
+    try:
+        from firebase_admin import firestore as fs
+        db = fs.client()
+        payments_ref = db.collection("payments") \
+            .where("parent_id", "==", uid) \
+            .where("status", "==", "COMPLETED") \
+            .stream()
+
+        for doc in payments_ref:
+            data = doc.to_dict()
+            if data.get("plan_id"):
+                return Response({
+                    "subscribed": True,
+                    "plan_id": data.get("plan_id"),
+                    "billing_cycle": data.get("billing_cycle", "monthly"),
+                })
+    except Exception as e:
+        print(f"[subscription_status] Firestore error: {e}")
+
+    # Fallback: check Django model for any non-course payment marked COMPLETED
+    if payment:
+        return Response({
+            "subscribed": True,
+            "plan_id": payment.course_id,
+            "billing_cycle": "monthly",
+        })
+
+    return Response({"subscribed": False})

@@ -13,9 +13,17 @@ from .views import (
     approve_link,
     attention_event,
     attention_status,
+    firestore_courses_list,
+    firestore_course_detail,
+    firestore_modules_list,
+    firestore_module_detail,
 )
 
 urlpatterns = [
+    # Firestore courses proxy (reads from Firestore, served via Django)
+    path("firestore-courses/", firestore_courses_list),
+    path("firestore-courses/<str:course_id>/", firestore_course_detail),
+
     path("modules/", module_list),
     path("modules/<int:module_id>/", module_detail),
     path("modules/<int:module_id>/watch/", update_watch),
@@ -33,4 +41,14 @@ urlpatterns = [
     path("parent-link/request/", request_parent_link),
     path("parent-link/approve/", approve_link),
     path("parent-link/", parent_links),
+
+    # Nested Firestore module endpoints — MUST come before the catch-all <course_id>/ pattern
+    path("<str:course_id>/modules/", firestore_modules_list, name="course-modules-list"),
+    path("<str:course_id>/modules/<str:module_id>/", firestore_module_detail, name="course-module-detail"),
+
+    # Short aliases: GET /api/courses/  and  GET /api/courses/<id>/
+    # IMPORTANT: these catch-all string patterns must come LAST
+    # so they don't shadow the fixed prefixes above (modules/, firestore-courses/, etc.)
+    path("", firestore_courses_list,            name="courses-list"),
+    path("<str:course_id>/", firestore_course_detail, name="courses-detail"),
 ]

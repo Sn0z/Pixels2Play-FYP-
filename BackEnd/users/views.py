@@ -802,3 +802,167 @@ def firebase_health_check(request):
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_parent_dashboard(request):
+    """
+    Get parent dashboard data: parent profile + linked child profile, progress and badges.
+
+    Access: PARENT role only (403 for any other role).
+
+    Response (200 OK):
+        {
+            "parent": { "name": "Jane", "photo_url": "..." },
+            "child": {
+                "name": "Sparky",
+                "photo_url": "...",
+                "level": 3,
+                "progress": [{"label": "Pattern Recognition", "value": 75}, ...],
+                "badges": [{"id": "first_game", "name": "First Steps", "description": "..."}, ...]
+            }
+        }
+        If no child is linked: child is null.
+    """
+    from utils.firestore import FirestoreService
+    from utils.constants import ROLE_PARENT
+    from progress.services import ProgressService, BADGES
+
+    firebase_user = request.firebase_user
+    if not firebase_user:
+        return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    parent_uid = firebase_user['uid']
+
+    # Fetch parent Firestore profile and enforce PARENT role
+    parent_doc = FirestoreService.get_user(parent_uid)
+    if not parent_doc or parent_doc.get('role') != ROLE_PARENT:
+        return Response(
+            {'error': 'Access denied. Only parents can view the child profile dashboard.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    parent_data = {
+        'name': parent_doc.get('name', ''),
+        'photo_url': parent_doc.get('photo_url', ''),
+    }
+
+    # Look up family link to find linked child
+    links = FirestoreService.get_family_links_by_parent(parent_uid)
+    if not links:
+        return Response({'parent': parent_data, 'child': None}, status=status.HTTP_200_OK)
+
+    child_uid = links[0].get('child_id')
+    if not child_uid:
+        return Response({'parent': parent_data, 'child': None}, status=status.HTTP_200_OK)
+
+    child_doc = FirestoreService.get_user(child_uid)
+    if not child_doc:
+        return Response({'parent': parent_data, 'child': None}, status=status.HTTP_200_OK)
+
+    # Fetch child progress summary and concept mastery
+    try:
+        progress_summary = ProgressService.get_progress_summary(child_uid)
+        concept_mastery = ProgressService.get_concept_mastery(child_uid)
+    except Exception as e:
+        print(f"[DASHBOARD] Error fetching progress for child {child_uid}: {e}")
+        progress_summary = {}
+        concept_mastery = []
+
+    # Build progress list from concept mastery (0-100 for frontend progress bars)
+    progress_list = [
+        {
+            'label': item['concept'],
+            'value': round(item['mastery_level'] * 100),
+        }
+        for item in concept_mastery
+    ]
+
+    # Derive level from overall mastery (0.2 mastery = 1 level, cap at 5)
+    mastery_level = progress_summary.get('mastery_level', 0.0)
+    level = max(1, min(5, int(mastery_level / 0.2) + 1))
+
+    # Build badge list with full metadata
+    earned_badge_ids = progress_summary.get('badges', [])
+    badge_list = []
+    for badge_id in earned_badge_ids:
+        badge_meta = BADGES.get(badge_id, {})
+        badge_list.append({
+            'id': badge_id,
+            'name': badge_meta.get('name', badge_id),
+            'description': badge_meta.get('description', ''),
+        })
+
+    child_data = {
+        'name': child_doc.get('name', ''),
+        'photo_url': child_doc.get('photo_url', ''),
+        'level': level,
+        'progress': progress_list,
+        'badges': badge_list,
+    }
+
+    return Response({'parent': parent_data, 'child': child_data}, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_child_profile(request):
+    """
+    Allow a parent to update their linked child's name and/or profile photo.
+
+    Access: PARENT role only; parent must be linked to the child.
+
+    Request Body (partial update):
+        { "name": "New Name", "photo_url": "https://..." }
+
+    Response (200):
+        { "message": "Child profile updated", "name": "...", "photo_url": "..." }
+    """
+    from utils.firestore import FirestoreService
+    from utils.constants import ROLE_PARENT
+
+    firebase_user = request.firebase_user
+    if not firebase_user:
+        return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    parent_uid = firebase_user['uid']
+
+    parent_doc = FirestoreService.get_user(parent_uid)
+    if not parent_doc or parent_doc.get('role') != ROLE_PARENT:
+        return Response(
+            {'error': 'Access denied. Only parents can update the child profile.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    links = FirestoreService.get_family_links_by_parent(parent_uid)
+    if not links:
+        return Response({'error': 'No linked child found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    child_uid = links[0].get('child_id')
+    child_email = links[0].get('child_email')
+    if not child_uid or not child_email:
+        return Response({'error': 'Child link data is incomplete.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Build update payload from allowed fields only
+    updates = {}
+    new_name = (request.data.get('name') or '').strip()
+    new_photo = (request.data.get('photo_url') or '').strip()
+
+    if new_name:
+        updates['name'] = new_name
+        updates['username'] = new_name
+    if new_photo:
+        updates['photo_url'] = new_photo
+
+    if not updates:
+        return Response(
+            {'error': 'No valid fields provided. Accepted: name, photo_url.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    success = FirestoreService.upsert_user(child_uid, child_email, updates)
+    if not success:
+        return Response({'error': 'Failed to update child profile.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({'message': 'Child profile updated', **updates}, status=status.HTTP_200_OK)

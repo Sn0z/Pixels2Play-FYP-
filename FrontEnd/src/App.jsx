@@ -14,6 +14,9 @@ import CheckOut from "./screens/CheckOut/CheckOut";
 import WatchDemo from "./screens/WatchDemo";
 import AdminModules from "./screens/Admin/AdminModules";
 import KidsHome from "./screens/ChildHomePage/ChildHomePage";
+import Dashboard from "./screens/Profile/UserProfileDashboardSection";
+import ChildSettings from "./screens/Profile/ChildSettings";
+import Pricing from "./screens/Pricing/Pricing";
 import { AuthProvider } from "./contexts/authContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
@@ -40,6 +43,9 @@ function App() {
             <Route path="/chatbot" element={<ChatBot />} />
             <Route path="/checkout" element={<CheckOut />} />
             <Route path="/kidshome" element={<KidsHome />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/settings" element={<ChildSettings />} />
+            <Route path="/pricing" element={<Pricing />} />
           </Routes>
         </Router>
       </ErrorBoundary>

@@ -7,6 +7,7 @@ from users.views import (
     login, signup, password_reset, get_current_user,
     search_user_by_email, firebase_health_check,
     send_otp, verify_otp,
+    get_parent_dashboard, update_child_profile,
 )
 
 urlpatterns = [
@@ -22,4 +23,8 @@ urlpatterns = [
     path('users/search', search_user_by_email, name='search_user_by_email'),
     # Health check: /api/health/firebase
     path('health/firebase', firebase_health_check, name='firebase_health_check'),
+    # Parent dashboard: /api/profile/parent-dashboard/
+    path('profile/parent-dashboard/', get_parent_dashboard, name='parent_dashboard'),
+    # Parent updates linked child: /api/profile/linked-child/
+    path('profile/linked-child/', update_child_profile, name='update_child_profile'),
 ]

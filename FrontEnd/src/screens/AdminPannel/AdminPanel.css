@@ -1,0 +1,696 @@
+/* ═══════════════════════════════════════════════════════════════
+   AdminPanel.css  —  Pixels2Play Admin Panel
+   Design tokens: Inter font, #0f162a text, #8b5cf6/#3b82f6 accents
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+/* ── Reset ───────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Shell ───────────────────────────────────────────────────── */
+.ap-shell {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+    font-family: "Inter", sans-serif;
+    color: #0f162a;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.ap-sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #ffffff;
+    border-right: 1px solid #e1e8ef;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.ap-sidebar-brand {
+    padding: 1.5rem 1.25rem;
+    border-bottom: 1px solid #e1e8ef;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.ap-brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.ap-brand-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f162a;
+    line-height: 1.1;
+}
+
+.ap-brand-sub {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #63748a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.ap-nav {
+    flex: 1;
+    padding: 1rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.ap-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #63748a;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+}
+
+.ap-nav-item:hover {
+    background: #f0f4ff;
+    color: #4f46e4;
+}
+
+.ap-nav-item.active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(59, 130, 246, 0.08));
+    color: #5b21b6;
+    font-weight: 700;
+}
+
+.ap-nav-icon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.ap-sidebar-footer {
+    padding: 1rem 0.75rem;
+    border-top: 1px solid #e1e8ef;
+}
+
+.ap-sign-out-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border-radius: 10px;
+    background: none;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.ap-sign-out-btn:hover {
+    background: #fef2f2;
+}
+
+/* ── Main Content ────────────────────────────────────────────── */
+.ap-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ── Top Header ──────────────────────────────────────────────── */
+.ap-topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e1e8ef;
+    padding: 0 1.75rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+}
+
+.ap-topbar-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f162a;
+}
+
+.ap-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ap-admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(59, 130, 246, 0.08));
+    color: #5b21b6;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    border-radius: 99px;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.ap-topbar-email {
+    font-size: 0.82rem;
+    color: #63748a;
+    font-weight: 500;
+}
+
+/* ── Content Area ────────────────────────────────────────────── */
+.ap-content {
+    flex: 1;
+    padding: 2rem 1.75rem;
+    overflow-y: auto;
+}
+
+/* ── Page Title ──────────────────────────────────────────────── */
+.ap-page-header {
+    margin-bottom: 1.75rem;
+}
+
+.ap-page-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f162a;
+    margin-bottom: 0.25rem;
+}
+
+.ap-page-sub {
+    font-size: 0.88rem;
+    color: #63748a;
+}
+
+/* ── Stat Cards ──────────────────────────────────────────────── */
+.ap-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.ap-stat-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ap-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.ap-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.ap-stat-icon.purple {
+    background: rgba(139, 92, 246, 0.12);
+}
+
+.ap-stat-icon.blue {
+    background: rgba(59, 130, 246, 0.12);
+}
+
+.ap-stat-icon.green {
+    background: rgba(16, 185, 129, 0.12);
+}
+
+.ap-stat-icon.amber {
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.ap-stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f162a;
+    line-height: 1;
+}
+
+.ap-stat-label {
+    font-size: 0.78rem;
+    color: #63748a;
+    font-weight: 500;
+    margin-top: 0.15rem;
+}
+
+/* ── Quick Action Cards ──────────────────────────────────────── */
+.ap-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.ap-action-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 14px;
+    padding: 1.25rem;
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.ap-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(79, 70, 228, 0.12);
+    border-color: #c4b5fd;
+}
+
+.ap-action-icon {
+    font-size: 2rem;
+}
+
+.ap-action-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0f162a;
+}
+
+.ap-action-desc {
+    font-size: 0.78rem;
+    color: #63748a;
+}
+
+/* ── Section Header ─────────────────────────────────────────── */
+.ap-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.ap-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f162a;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.ap-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    text-decoration: none;
+}
+
+.ap-btn:hover {
+    transform: translateY(-1px);
+}
+
+.ap-btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.ap-btn-primary:hover {
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+}
+
+.ap-btn-outline {
+    background: transparent;
+    border: 1px solid #e1e8ef;
+    color: #334154;
+}
+
+.ap-btn-outline:hover {
+    background: #f8fafc;
+    border-color: #8b5cf6;
+    color: #5b21b6;
+}
+
+.ap-btn-danger {
+    background: transparent;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+}
+
+.ap-btn-danger:hover {
+    background: #fef2f2;
+}
+
+.ap-btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.78rem;
+}
+
+/* ── Course Cards Grid ───────────────────────────────────────── */
+.ap-courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+}
+
+.ap-course-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ap-course-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.ap-course-thumb {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(59, 130, 246, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+}
+
+.ap-course-body {
+    padding: 1rem 1.25rem;
+}
+
+.ap-course-name {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: #0f162a;
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ap-course-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.ap-course-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 99px;
+    background: rgba(139, 92, 246, 0.1);
+    color: #5b21b6;
+}
+
+.ap-course-tag.blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+}
+
+.ap-course-tag.green {
+    background: rgba(16, 185, 129, 0.1);
+    color: #065f46;
+}
+
+.ap-course-price {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #4f46e4;
+    margin-bottom: 0.75rem;
+}
+
+.ap-course-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ── Empty State ─────────────────────────────────────────────── */
+.ap-empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #ffffff;
+    border: 1px dashed #e1e8ef;
+    border-radius: 16px;
+    color: #63748a;
+}
+
+.ap-empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.ap-empty h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f162a;
+    margin-bottom: 0.4rem;
+}
+
+/* ── Form ────────────────────────────────────────────────────── */
+.ap-form-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 680px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.ap-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.ap-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ap-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.ap-form-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334154;
+}
+
+.ap-form-input,
+.ap-form-textarea,
+.ap-form-select {
+    width: 100%;
+    height: 44px;
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 0 0.9rem;
+    font-size: 0.88rem;
+    color: #0f162a;
+    font-family: "Inter", sans-serif;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.ap-form-textarea {
+    height: 100px;
+    padding: 0.7rem 0.9rem;
+    resize: vertical;
+}
+
+.ap-form-input:focus,
+.ap-form-textarea:focus,
+.ap-form-select:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.ap-form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* ── Alert / Message Banner ──────────────────────────────────── */
+.ap-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.1rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+}
+
+.ap-alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #065f46;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.ap-alert-error {
+    background: rgba(220, 38, 38, 0.08);
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* ── Access Denied / Loading ─────────────────────────────────── */
+.ap-denied-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #f8fafc;
+    font-family: "Inter", sans-serif;
+}
+
+.ap-denied-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.ap-denied-icon {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.ap-denied-card h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f162a;
+    margin-bottom: 0.5rem;
+}
+
+.ap-denied-card p {
+    color: #63748a;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+/* ── Loading spinner ─────────────────────────────────────────── */
+@keyframes ap-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.ap-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e1e8ef;
+    border-top-color: #8b5cf6;
+    border-radius: 50%;
+    animation: ap-spin 0.7s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .ap-shell {
+        flex-direction: column;
+    }
+
+    .ap-sidebar {
+        width: 100%;
+        min-height: auto;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid #e1e8ef;
+    }
+
+    .ap-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.5rem;
+        gap: 0.25rem;
+    }
+
+    .ap-nav-item {
+        flex-shrink: 0;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .ap-sidebar-footer {
+        display: none;
+    }
+
+    .ap-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ap-stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}

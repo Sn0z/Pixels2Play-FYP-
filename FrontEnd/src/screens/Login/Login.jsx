@@ -1,5 +1,5 @@
 import { EyeIcon, LockIcon, UserIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../../contexts/authContext'
 import { Navigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import { auth } from "../../FireBase/firebase";
 
 const Login = () => {
     const navigate = useNavigate();
-    const { userLoggedIn } = useAuth()
+    const { userLoggedIn, userProfile, profileLoading } = useAuth()
     const [identifier, setIdentifier] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +20,21 @@ const Login = () => {
     const [showReset, setShowReset] = useState(false)
     const [resetEmail, setResetEmail] = useState('')
     const [resetMessage, setResetMessage] = useState('')
+    const [waitingForProfile, setWaitingForProfile] = useState(false)
+
+    // Once logged in, wait for the Django profile sync to complete,
+    // then route admin users to /admin and everyone else to /.
+    useEffect(() => {
+        if (userLoggedIn && !profileLoading) {
+            if (userProfile?.role === 'admin') {
+                navigate('/admin', { replace: true })
+            } else if (waitingForProfile) {
+                // Only auto-navigate if we were waiting (i.e. just logged in)
+                navigate('/', { replace: true })
+            }
+            setWaitingForProfile(false)
+        }
+    }, [userLoggedIn, profileLoading, userProfile])
 
     const resolveEmail = async () => {
         const isEmail = identifier.includes("@");
@@ -43,17 +58,15 @@ const Login = () => {
                 const response = await login(emailToUse, password);
 
                 if (response.user) {
-                    // Step 2: Sign in with Firebase Auth to establish Firebase Auth state and get ID token
+                    // Step 2: Sign in with Firebase Auth
                     try {
                         await signInWithEmailAndPassword(auth, emailToUse, password);
-                        // Firebase auth state change will trigger authContext's initializeUser()
-                        // which will sync with backend and get the user profile
                     } catch (firebaseError) {
                         console.error("Firebase auth error (backend login succeeded):", firebaseError);
-                        // Even if Firebase login fails, backend verified credentials
-                        // Continue and let authContext handle state sync
                     }
-                    navigate("/");
+                    // Mark that we are waiting for the profile so the
+                    // useEffect above can redirect to /admin or / accordingly.
+                    setWaitingForProfile(true)
                 }
             } catch (err) {
                 setErrorMessage(err.message);
@@ -69,18 +82,14 @@ const Login = () => {
             setErrorMessage("");
             try {
                 const provider = new GoogleAuthProvider();
-                // Step 1: Get Google credential from Firebase popup
-                // This automatically signs in the user with Firebase Auth
                 const userCredential = await signInWithPopup(auth, provider);
                 const googleToken = await userCredential.user.getIdToken();
 
-                // Step 2: Verify with backend
                 const response = await loginWithGoogle(googleToken);
 
                 if (response.user) {
-                    // Firebase Auth is already signed in via signInWithPopup
-                    // The authContext will detect the auth state change and sync with backend
-                    navigate("/");
+                    // Mark waiting; useEffect will route to /admin or / once profile loads
+                    setWaitingForProfile(true)
                 }
             } catch (err) {
                 setErrorMessage(err.message);
@@ -105,7 +114,10 @@ const Login = () => {
 
     return (
         <div>
-            {userLoggedIn && (<Navigate to={'/'} replace={true} />)}
+            {/* Redirect already-logged-in users away from the login page */}
+            {userLoggedIn && !waitingForProfile && !profileLoading && (
+                <Navigate to={userProfile?.role === 'admin' ? '/admin' : '/'} replace={true} />
+            )}
             {/* Password Reset Popup */}
             {showReset && (
                 <div className="reset-overlay">

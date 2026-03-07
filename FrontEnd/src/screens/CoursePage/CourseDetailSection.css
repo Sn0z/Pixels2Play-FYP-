@@ -158,3 +158,11 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+.enroll-btn.start-learning-btn {
+  background: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+}
+
+.enroll-btn.start-learning-btn:hover {
+  opacity: 0.9;
+}

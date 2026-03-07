@@ -15,9 +15,125 @@ from .models import (
 from .serializers import ModuleSerializer, QuizQuestionSerializer, ParentChildLinkSerializer
 from payments.firebase import verify_firebase_token
 from users.permissions import IsChild, IsParentOrAdmin, IsAdmin, IsAuthenticatedFirebase
-from utils.firestore import FirestoreService
+from utils.firestore import FirestoreService, get_db
 from utils.constants import ROLE_CHILD, ROLE_UNASSIGNED
 from django.utils import timezone
+
+
+FIRESTORE_COURSES_COLLECTION = 'courses'
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_courses_list(request):
+    """
+    Fetch all courses from Firestore `courses` collection.
+    Also reads the `modules` subcollection (with lesson counts) for each course.
+    """
+    try:
+        db = get_db()
+        docs = db.collection(FIRESTORE_COURSES_COLLECTION).stream()
+        courses = []
+        for doc in docs:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            modules = []
+            for mod_doc in doc.reference.collection('modules').order_by('order').stream():
+                mod_data = mod_doc.to_dict()
+                mod_data['id'] = mod_doc.id
+                mod_data['lesson_count'] = len(list(mod_doc.reference.collection('lessons').stream()))
+                modules.append(mod_data)
+            data['modules'] = modules
+            data['module_count'] = len(modules)
+            courses.append(data)
+        return Response(courses)
+    except Exception as e:
+        print(f"[ERROR] firestore_courses_list: {e}")
+        return Response({'error': 'Failed to fetch courses'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_course_detail(request, course_id):
+    """
+    Fetch a single course from Firestore including its full modules + lessons subcollections.
+    """
+    try:
+        db = get_db()
+        doc_ref = db.collection(FIRESTORE_COURSES_COLLECTION).document(course_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = doc.to_dict()
+        data['id'] = doc.id
+        modules = []
+        for mod_doc in doc_ref.collection('modules').order_by('order').stream():
+            mod_data = mod_doc.to_dict()
+            mod_data['id'] = mod_doc.id
+            lessons = []
+            for les_doc in mod_doc.reference.collection('lessons').order_by('order').stream():
+                les_data = les_doc.to_dict()
+                les_data['id'] = les_doc.id
+                lessons.append(les_data)
+            mod_data['lessons'] = lessons
+            modules.append(mod_data)
+        data['modules'] = modules
+        return Response(data)
+    except Exception as e:
+        print(f"[ERROR] firestore_course_detail({course_id}): {e}")
+        return Response({'error': 'Failed to fetch course'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_modules_list(request, course_id):
+    """
+    Fetch all modules for a course from Firestore subcollection:
+       courses/<course_id>/modules/
+    """
+    try:
+        db = get_db()
+        modules_ref = (
+            db.collection(FIRESTORE_COURSES_COLLECTION)
+            .document(course_id)
+            .collection('modules')
+        )
+        docs = modules_ref.stream()
+        modules = []
+        for doc in docs:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            modules.append(data)
+        return Response(modules)
+    except Exception as e:
+        print(f"[ERROR] firestore_modules_list({course_id}): {e}")
+        return Response({'error': 'Failed to fetch modules'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_module_detail(request, course_id, module_id):
+    """
+    Fetch a single module from Firestore subcollection:
+       courses/<course_id>/modules/<module_id>
+    """
+    try:
+        db = get_db()
+        doc = (
+            db.collection(FIRESTORE_COURSES_COLLECTION)
+            .document(course_id)
+            .collection('modules')
+            .document(module_id)
+            .get()
+        )
+        if not doc.exists:
+            return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = doc.to_dict()
+        data['id'] = doc.id
+        return Response(data)
+    except Exception as e:
+        print(f"[ERROR] firestore_module_detail({course_id}, {module_id}): {e}")
+        return Response({'error': 'Failed to fetch module'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
