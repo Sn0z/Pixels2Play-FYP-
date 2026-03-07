@@ -1,0 +1,514 @@
+/* ───────────────────────────────────────────────────────────────
+   UserProfileDashboardSection.css  — Light Theme
+─────────────────────────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Shell ─────────────────────────────────────────────────── */
+.upd-shell {
+    min-height: 100vh;
+    background: #f8fafc;
+    font-family: "Inter", sans-serif;
+    color: #0f162a;
+}
+
+.upd-shell.upd-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.upd-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-bottom: 1px solid #e1e8ef;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.upd-header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.upd-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f162a;
+    text-decoration: none;
+}
+
+.upd-logo-icon {
+    font-size: 1.4rem;
+}
+
+.upd-nav {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.upd-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.upd-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 228, 0.18);
+}
+
+.upd-btn-primary {
+    background: #4f46e4;
+    color: #fff;
+}
+
+.upd-btn-primary:hover {
+    background: #4338ca;
+}
+
+.upd-btn-outline {
+    background: transparent;
+    border: 1px solid #4f46e4;
+    color: #4f46e4;
+}
+
+.upd-btn-outline:hover {
+    background: #f5f3ff;
+}
+
+.upd-btn-sm {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+}
+
+/* ── Main ──────────────────────────────────────────────────── */
+.upd-main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ── Parent card ───────────────────────────────────────────── */
+.upd-parent-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.upd-parent-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    border: 2px solid #e1e8ef;
+}
+
+.upd-parent-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upd-parent-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #63748a;
+    margin-bottom: 0.15rem;
+}
+
+.upd-parent-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f162a;
+}
+
+/* ── Child section ─────────────────────────────────────────── */
+.upd-child-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* No-child placeholder */
+.upd-no-child {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #ffffff;
+    border: 1px dashed #e1e8ef;
+    border-radius: 20px;
+}
+
+.upd-no-child-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.upd-no-child h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: #0f162a;
+}
+
+.upd-no-child p {
+    color: #63748a;
+    margin-bottom: 1.5rem;
+}
+
+/* Child card */
+.upd-child-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Child hero */
+.upd-child-hero {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.08));
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    border-bottom: 1px solid #e1e8ef;
+}
+
+.upd-child-avatar {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    border: 3px solid #e1e8ef;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+}
+
+.upd-child-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upd-level-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 2px solid #ffffff;
+    white-space: nowrap;
+}
+
+.upd-child-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f162a;
+    margin-bottom: 0.2rem;
+}
+
+.upd-child-sublabel {
+    font-size: 0.8rem;
+    color: #63748a;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* Sections inside child card */
+.upd-section {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e1e8ef;
+}
+
+.upd-section:last-child {
+    border-bottom: none;
+}
+
+.upd-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #63748a;
+    margin-bottom: 1.1rem;
+}
+
+/* Progress rows */
+.upd-progress-row {
+    margin-bottom: 1rem;
+}
+
+.upd-progress-row:last-child {
+    margin-bottom: 0;
+}
+
+.upd-progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+}
+
+.upd-progress-label {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #334154;
+}
+
+.upd-progress-pct {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #4f46e4;
+}
+
+.upd-progress-track {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.upd-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+    border-radius: 99px;
+    transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Badges grid */
+.upd-badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.upd-badge-card {
+    background: #f8fafc;
+    border: 1px solid #e1e8ef;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.upd-badge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.upd-badge-icon {
+    font-size: 2rem;
+    display: block;
+}
+
+.upd-badge-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1e293a;
+}
+
+.upd-badge-desc {
+    font-size: 0.72rem;
+    color: #63748a;
+    line-height: 1.3;
+}
+
+/* Empty text */
+.upd-empty-text {
+    color: #63748a;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* ── Error / denied cards ─────────────────────────────────── */
+.upd-error-card,
+.upd-denied-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.upd-error-icon,
+.upd-denied-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.upd-error-card h2,
+.upd-denied-card h2 {
+    font-size: 1.4rem;
+    color: #0f162a;
+    margin-bottom: 0.5rem;
+}
+
+.upd-error-card p,
+.upd-denied-card p {
+    color: #63748a;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Skeleton loader ──────────────────────────────────────── */
+@keyframes upd-shimmer {
+    0% {
+        background-position: -600px 0;
+    }
+
+    100% {
+        background-position: 600px 0;
+    }
+}
+
+.upd-skeleton {
+    background: linear-gradient(90deg,
+            #f0f0f0 25%,
+            #e0e0e0 50%,
+            #f0f0f0 75%);
+    background-size: 600px 100%;
+    animation: upd-shimmer 1.4s infinite linear;
+    border-radius: 8px;
+}
+
+.upd-parent-avatar-skel {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.upd-child-avatar-skel {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.upd-skel-line {
+    height: 14px;
+    border-radius: 6px;
+}
+
+.upd-skel-h2 {
+    width: 200px;
+    height: 28px;
+}
+
+.upd-skel-h3 {
+    width: 160px;
+    height: 20px;
+    margin-bottom: 0.5rem;
+}
+
+.upd-skel-p {
+    width: 120px;
+    height: 14px;
+}
+
+.upd-skel-label {
+    width: 140px;
+    height: 13px;
+    margin-bottom: 0.5rem;
+}
+
+.upd-skel-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 99px;
+}
+
+.upd-badge-skel {
+    height: 110px;
+    border-radius: 12px;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .upd-child-hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .upd-child-avatar {
+        width: 80px;
+        height: 80px;
+    }
+
+    .upd-child-name {
+        font-size: 1.4rem;
+    }
+
+    .upd-badges-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .upd-main {
+        padding: 1.5rem 1rem 3rem;
+    }
+}

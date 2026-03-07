@@ -10,6 +10,7 @@ from eye_tracker.views import (
     StopSessionView,
     ProcessFrameView,
     StatusView,
+    CheckFocusView,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path("stop/", StopSessionView.as_view(), name="eye_tracker_stop"),
     path("process-frame/", ProcessFrameView.as_view(), name="eye_tracker_process_frame"),
     path("status/", StatusView.as_view(), name="eye_tracker_status"),
+    path("check-focus/", CheckFocusView.as_view(), name="eye_tracker_check_focus"),
 ]

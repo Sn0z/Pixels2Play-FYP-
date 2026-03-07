@@ -1,0 +1,321 @@
+/* =========================================================
+   WatchPage.css  —  Course Video Watch Page
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ---------- Root / Page ---------- */
+.wp-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0d0d1a 0%, #111827 60%, #0d1b2a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 64px;
+  font-family: 'Inter', sans-serif;
+  color: #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative ambient blobs */
+.wp-page::before,
+.wp-page::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+.wp-page::before {
+  width: 500px; height: 500px;
+  background: rgba(99, 102, 241, 0.12);
+  top: -120px; left: -120px;
+}
+.wp-page::after {
+  width: 400px; height: 400px;
+  background: rgba(16, 185, 129, 0.08);
+  bottom: -80px; right: -80px;
+}
+
+/* ---------- Header / Nav ---------- */
+.wp-header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.wp-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #a5b4fc;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  backdrop-filter: blur(8px);
+}
+.wp-back-btn:hover {
+  background: rgba(99,102,241,0.2);
+  color: #c7d2fe;
+}
+
+.wp-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #a5b4fc, #67e8f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Video Container ---------- */
+.wp-video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  aspect-ratio: 16/9;
+  z-index: 2;
+}
+
+.wp-video-wrapper iframe,
+.wp-video-wrapper #wp-yt-player {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute;
+  inset: 0;
+  border: none;
+}
+
+/* ---------- Focus Warning Overlay ---------- */
+.wp-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 20, 0.82);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10;
+  animation: fadeIn 0.35s ease;
+  border-radius: 16px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.wp-overlay-icon {
+  font-size: 3.5rem;
+  animation: pulse-icon 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.12); opacity: 0.75; }
+}
+
+.wp-overlay-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-align: center;
+  letter-spacing: -0.3px;
+}
+
+.wp-overlay-subtitle {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* ---------- Timer Bar ---------- */
+.wp-timer-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wp-timer-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.wp-timer-track {
+  width: 200px;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.wp-timer-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #fbbf24, #ef4444);
+  transition: width 0.5s linear;
+}
+
+.wp-timer-seconds {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fbbf24;
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+/* ---------- Subtle Focus Status Bar (below video) ---------- */
+.wp-status-bar {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 14px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.07);
+  transition: background 0.3s, color 0.3s;
+  position: relative;
+  z-index: 2;
+}
+
+.wp-status-bar.looking {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+}
+.wp-status-bar.not-looking {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  animation: pulse-bar 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-bar {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+.wp-status-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.looking .wp-status-dot   { background: #34d399; box-shadow: 0 0 6px #34d399; }
+.not-looking .wp-status-dot { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; }
+
+/* ---------- Course Info ---------- */
+.wp-course-info {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 28px;
+  padding: 22px 28px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 2;
+}
+
+.wp-course-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+}
+.wp-course-desc {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* ---------- Camera Error Card ---------- */
+.wp-cam-error {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 14px;
+  padding: 16px 20px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: #fca5a5;
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Loading / Error States ---------- */
+.wp-loading,
+.wp-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 60vh;
+  position: relative;
+  z-index: 2;
+}
+
+.wp-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid rgba(99,102,241,0.2);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.wp-error-msg {
+  font-size: 1rem;
+  color: #f87171;
+  text-align: center;
+  max-width: 400px;
+}
+
+.wp-retry-btn {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.wp-retry-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+}

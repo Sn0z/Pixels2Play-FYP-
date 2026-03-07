@@ -10,13 +10,13 @@ export default function Courses() {
 
         <div className="course-cards-grid">
           {/* Elementary */}
-          <div className="course-card elementary">
+          <div className="home-course-card elementary">
             <div className="course-icon-wrapper">
               <img src="../public/assets/17_1442.png" alt="Elementary Icon" />
             </div>
             <h3>Elementary</h3>
             <span className="course-age">Ages 8-10</span>
-            <p className="course-description">
+            <p className="home-course-desc">
               Introduction to AI concepts through fun games, visual programming blocks, and interactive storytelling.
             </p>
             <ul className="course-features">
@@ -29,14 +29,14 @@ export default function Courses() {
           </div>
 
           {/* Middle */}
-          <div className="course-card middle popular">
+          <div className="home-course-card middle popular">
             <div className="popular-tag">Most Popular</div>
             <div className="course-icon-wrapper">
               <img src="../public/assets/17_1468.png" alt="Middle School Icon" />
             </div>
             <h3>Middle</h3>
             <span className="course-age">Ages 11-13</span>
-            <p className="course-description">
+            <p className="home-course-desc">
               Build real AI projects like chatbots and image classifiers with guided tutorials and creative challenges.
             </p>
             <ul className="course-features">
@@ -49,13 +49,13 @@ export default function Courses() {
           </div>
 
           {/* Advanced */}
-          <div className="course-card advanced">
+          <div className="home-course-card advanced">
             <div className="course-icon-wrapper">
               <img src="../public/assets/17_1493.png" alt="Advanced Icon" />
             </div>
             <h3>Advanced</h3>
             <span className="course-age">Ages 14-16</span>
-            <p className="course-description">
+            <p className="home-course-desc">
               Deep dive into machine learning, neural networks, and complex AI systems with real-world applications.
             </p>
             <ul className="course-features">

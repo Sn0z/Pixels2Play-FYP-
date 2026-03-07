@@ -17,7 +17,10 @@ class Module(models.Model):
     required_percent = models.FloatField(default=0.95)
     quiz_passing_score = models.FloatField(default=0.7)
     published = models.BooleanField(default=True)
-    
+
+    # Firestore document ID – used to link this Module stub to a Firestore course
+    firestore_id = models.CharField(max_length=128, blank=True, null=True, unique=True)
+
     # Course-level metadata
     category = models.CharField(max_length=100, default='Coding')
     price = models.DecimalField(max_digits=10, decimal_places=2, default=99.00)

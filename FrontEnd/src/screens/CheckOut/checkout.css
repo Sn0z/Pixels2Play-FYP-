@@ -290,3 +290,50 @@ body {
   content: "💬";
 }
 
+/* ================= SUBSCRIPTION EXTRAS ================= */
+.plan-icon-circle {
+  font-size: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: #f3f4f6;
+  border-radius: 20px;
+}
+
+/* Badge colour variants */
+.badge-starter {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.badge-pro {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+}
+
+.badge-family {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+/* Perks inside info-card */
+.subscription-perks h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  color: #111827;
+}
+
+.perks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  color: #374151;
+}
