@@ -1,0 +1,184 @@
+/* ═══════════════════════════════════════════════════
+   DINO CAMERA GAME
+   Pure React & HTML5 Canvas Endless Runner
+═══════════════════════════════════════════════════ */
+
+.dino-page {
+    /* Full-screen wrapper */
+    width: 100vw;
+    height: 100vh;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    position: relative;
+}
+
+/* ── Menu & Overlay Cards ── */
+.dino-card {
+    background: white;
+    padding: 3rem 2.5rem;
+    border-radius: 1.5rem;
+    max-width: 540px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    border: 2px solid #e2e8f0;
+}
+
+.dino-hero-temp {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: -1rem;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+
+.dino-title {
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: 900;
+    color: #1e293b;
+    font-family: 'Inter', sans-serif;
+}
+
+.dino-desc {
+    color: #64748b;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+.dino-btn {
+    background: #1e293b;
+    color: white;
+    padding: 1rem 2rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+}
+.dino-btn:hover {
+    background: #0f172a;
+    transform: translateY(-2px);
+}
+
+.dino-btn-link {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+.dino-btn-link:hover { color: #475569; }
+
+/* ── Calibration State ── */
+.calib-card { padding: 4rem 2.5rem; }
+.calib-card h2 { font-family: 'Inter', sans-serif; margin: 0; font-size: 2rem; color: #1e293b; }
+.calib-card p { font-family: 'Inter', sans-serif; color: #64748b; margin: 0; }
+.calib-success { color: #16a34a; font-family: 'Inter', sans-serif; font-size: 1.5rem; animation: pulse 1s infinite alternate;}
+@keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
+
+/* ── Game Over Overlay ── */
+.dino-go-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+.go-card h1 { font-family: 'Inter', sans-serif; font-size: 3rem; color: #dc2626; margin: 0; }
+.dino-score-big { font-size: 5rem; font-weight: 900; color: #1e293b; line-height: 1; }
+.dino-score-big span { font-size: 1.5rem; color: #94a3b8; font-family: 'Inter', sans-serif; margin-left: 5px; }
+
+
+/* ── Hidden video input for MediaPipe ── */
+.hidden-video {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Game Canvas Area ── */
+.dino-game-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+}
+.dino-game-container.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.dino-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* aspect ratio preserved */
+    max-width: 1280px;
+    max-height: 720px;
+    background: white;
+}
+
+/* ── Web Cam Picture in Picture ── */
+.dino-pip {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 240px;
+    height: 180px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    border: 4px solid white;
+    z-index: 50;
+    display: flex;
+}
+.pip-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* mirror */
+}
+.pip-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    text-align: center;
+    padding: 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: background 0.2s;
+}
+.pip-status.jump   { background: rgba(34, 197, 94, 0.9); }
+.pip-status.crouch { background: rgba(239, 68, 68, 0.9); }

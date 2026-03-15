@@ -1,54 +1,51 @@
 .kids-home-page {
   display: flex;
-  min-height: 5559.55px;
-  min-width: 1430px;
+  min-height: 100vh;
   width: 100%;
 }
 
 .kids-home-page .root {
-  background: linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(239, 246, 255, 1) 0%,
       rgba(250, 245, 255, 1) 50%,
-      rgba(253, 242, 248, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%),
-    linear-gradient(
-      0deg,
+      rgba(253, 242, 248, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%),
+    linear-gradient(0deg,
       rgba(255, 255, 255, 1) 0%,
-      rgba(255, 255, 255, 1) 100%
-    );
-  height: 5559.55px;
+      rgba(255, 255, 255, 1) 100%);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   position: relative;
-  width: 1430px;
+  width: 100%;
+  overflow-x: hidden;
+  align-items: center;
 }
 
 .kids-home-page .hero-section-frame-2 {
-  height: 370px;
-  left: 739px;
-  position: absolute;
-  top: 160px;
-  width: 616px;
+  max-width: 616px;
+  width: 50%;
 }
 
 /* Main Footer Styles */
 .main-footer {
   background-color: #111727;
   display: flex;
-  height: 369px;
-  left: 20px;
-  position: absolute;
-  top: 5191px;
-  width: 1390px;
+  height: auto;
+  min-height: 369px;
+  position: relative;
+  width: 100%;
+  margin-top: 40px;
+  justify-content: center;
 }
 
 .main-footer .frame {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  height: 273px;
-  margin-left: 55.2px;
   margin-top: 48px;
-  width: 1280px;
+  width: 100%;
+  max-width: 1280px;
+  padding: 0 40px;
 }
 
 .main-footer .div {
@@ -72,11 +69,9 @@
 }
 
 .main-footer .div-wrapper {
-  background: linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(192, 132, 252, 1) 0%,
-      rgba(244, 114, 182, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(244, 114, 182, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
   border-radius: 9999px;
   display: flex;
   height: 48px;
@@ -214,7 +209,9 @@
   border-top-width: 0.8px;
   display: flex;
   height: 61px;
-  width: 1280px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 40px;
 }
 
 .main-footer .text-wrapper-9 {
@@ -222,37 +219,32 @@
   font-family: "Fredoka", Helvetica;
   font-size: 18px;
   font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
   line-height: 28px;
   margin-top: 32.8px;
   text-align: center;
-  white-space: nowrap;
-  width: 1280px;
+  width: 100%;
 }
 
 /* CTA Section Styles */
 .cta-section {
-  background: linear-gradient(
-      90deg,
+  background: linear-gradient(90deg,
       rgba(147, 51, 234, 1) 0%,
-      rgba(219, 39, 119, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(219, 39, 119, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
   display: flex;
-  height: 356px;
-  left: 20px;
-  position: absolute;
-  top: 4835px;
-  width: 1390px;
+  height: auto;
+  padding: 60px 0;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
 }
 
 .cta-section .frame-3 {
   display: flex;
   flex-direction: column;
-  height: 196px;
-  margin-left: 247.2px;
-  margin-top: 80px;
-  width: 896px;
+  width: 100%;
+  max-width: 896px;
+  align-items: center;
 }
 
 .cta-section .text-wrapper-10 {
@@ -260,11 +252,7 @@
   font-family: "Fredoka", Helvetica;
   font-size: 47.9px;
   font-weight: 700;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 48px;
   text-align: center;
-  white-space: nowrap;
 }
 
 .cta-section .text-wrapper-11 {
@@ -272,19 +260,15 @@
   font-family: "Fredoka", Helvetica;
   font-size: 24px;
   font-weight: 400;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
   margin-top: 24px;
   text-align: center;
-  white-space: nowrap;
 }
 
 .cta-section .frame-4 {
   display: flex;
   gap: 15.8px;
   margin-top: 32px;
-  width: 896px;
+  justify-content: center;
 }
 
 .cta-section .button {
@@ -294,7 +278,6 @@
   box-sizing: border-box;
   display: flex;
   height: 60px;
-  margin-left: 201.8px;
   width: 253px;
 }
 
@@ -346,34 +329,33 @@
 
 /* Testimonials Styles */
 .testimonials {
-  background: linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(254, 252, 232, 1) 0%,
-      rgba(255, 247, 237, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(255, 247, 237, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
   display: flex;
-  height: 568px;
-  left: 20px;
-  position: absolute;
-  top: 4267px;
-  width: 1390px;
+  height: auto;
+  min-height: 568px;
+  padding-bottom: 60px;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
 }
 
 .testimonials .frame-5 {
   display: flex;
   flex-direction: column;
   gap: 64px;
-  height: 408px;
-  margin-left: 55.2px;
   margin-top: 80px;
-  width: 1280px;
+  width: 100%;
+  max-width: 1280px;
+  align-items: center;
 }
 
 .testimonials .section-header {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 92px;
 }
 
 .testimonials .what-kids-parents {
@@ -381,12 +363,7 @@
   font-family: "Fredoka", Helvetica;
   font-size: 47.9px;
   font-weight: 700;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 48px;
   text-align: center;
-  white-space: nowrap;
-  width: 1280px;
 }
 
 .testimonials .text-wrapper-14 {
@@ -394,18 +371,15 @@
   font-family: "Fredoka", Helvetica;
   font-size: 20px;
   font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
   text-align: center;
-  white-space: nowrap;
-  width: 1280px;
 }
 
 .testimonials .testimonials-grid {
   display: flex;
   gap: 32.3px;
-  width: 1280px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .testimonials .testimonial-card {
@@ -416,15 +390,17 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 252px;
-  width: 405px;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
 }
 
 .testimonials .img {
   height: 24px;
-  margin-left: 32px;
-  margin-top: 32px;
-  width: 341px;
+  width: auto;
+  margin-bottom: 8px;
 }
 
 .testimonials .text-wrapper-15 {
@@ -432,18 +408,15 @@
   font-family: "Fredoka", Helvetica;
   font-size: 17.8px;
   font-weight: 400;
-  height: 84px;
-  letter-spacing: 0;
   line-height: 28px;
-  margin-left: 32px;
-  width: 341px;
+  text-align: center;
 }
 
 .testimonials .frame-6 {
   display: flex;
   gap: 12px;
-  margin-left: 32px;
-  width: 341px;
+  align-items: center;
+  margin-top: 16px;
 }
 
 .testimonials .frame-7 {
@@ -585,28 +558,28 @@
 .why-choose-us {
   background-color: #ffffff;
   display: flex;
-  height: 600px;
-  left: 20px;
-  position: absolute;
-  top: 3667px;
-  width: 1390px;
+  height: auto;
+  padding-bottom: 60px;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
 }
 
 .why-choose-us .frame-13 {
   display: flex;
   flex-direction: column;
   gap: 64px;
-  height: 440px;
-  margin-left: 55.2px;
   margin-top: 80px;
-  width: 1280px;
+  width: 100%;
+  max-width: 1280px;
+  align-items: center;
 }
 
 .why-choose-us .section-header-2 {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 92px;
 }
 
 .why-choose-us .text-wrapper-22 {
@@ -614,12 +587,7 @@
   font-family: "Fredoka", Helvetica;
   font-size: 48px;
   font-weight: 700;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 48px;
   text-align: center;
-  white-space: nowrap;
-  width: 1280px;
 }
 
 .why-choose-us .text-wrapper-23 {
@@ -627,38 +595,35 @@
   font-family: "Fredoka", Helvetica;
   font-size: 20px;
   font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
   text-align: center;
-  white-space: nowrap;
-  width: 1280px;
 }
 
 .why-choose-us .features-grid {
   display: flex;
   gap: 32.3px;
-  width: 1280px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .why-choose-us .feature-card {
-  background: linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(239, 246, 255, 1) 0%,
-      rgba(219, 234, 254, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(219, 234, 254, 1) 100%);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  height: 284px;
-  width: 405px;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
 }
 
 .why-choose-us .feature-icon {
   height: 96px;
-  margin-left: 154.7px;
-  margin-top: 32px;
   width: 96px;
+  margin-bottom: 24px;
 }
 
 .why-choose-us .text-wrapper-24 {
@@ -666,14 +631,9 @@
   font-family: "Fredoka", Helvetica;
   font-size: 23.9px;
   font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
   line-height: 32px;
-  margin-left: 32px;
-  margin-top: 24px;
   text-align: center;
-  white-space: nowrap;
-  width: 341px;
+  margin-bottom: 12px;
 }
 
 .why-choose-us .text-wrapper-25 {
@@ -681,26 +641,22 @@
   font-family: "Fredoka", Helvetica;
   font-size: 17.8px;
   font-weight: 400;
-  height: 56px;
-  letter-spacing: 0;
   line-height: 28px;
-  margin-left: 32px;
-  margin-top: 12px;
   text-align: center;
-  width: 341px;
 }
 
 .why-choose-us .feature-card-2 {
-  background: linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(250, 245, 255, 1) 0%,
-      rgba(243, 232, 255, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(243, 232, 255, 1) 100%);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  height: 284px;
-  width: 405px;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
 }
 
 .why-choose-us .text-wrapper-26 {
@@ -708,1633 +664,150 @@
   font-family: "Fredoka", Helvetica;
   font-size: 18px;
   font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
   line-height: 28px;
-  margin-left: 32px;
-  margin-top: 12px;
   text-align: center;
-  white-space: nowrap;
-  width: 341px;
 }
 
 .why-choose-us .feature-card-3 {
-  background: linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(253, 242, 248, 1) 0%,
-      rgba(252, 231, 243, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(252, 231, 243, 1) 100%);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  height: 284px;
-  width: 405px;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
 }
 
-/* Course Details Styles */
-.course-details {
-  background: linear-gradient(
-      135deg,
+/* Games Section Styles */
+.games-section {
+  background: linear-gradient(135deg,
       rgba(243, 232, 255, 1) 0%,
-      rgba(252, 231, 243, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(252, 231, 243, 1) 100%);
   display: flex;
-  height: 1096px;
-  left: 20px;
-  position: absolute;
-  top: 2571px;
-  width: 1390px;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
+  padding: 60px 0;
 }
 
-.course-details .frame-14 {
+.games-section .frame-13 {
   display: flex;
   flex-direction: column;
-  gap: 64px;
-  height: 936px;
-  margin-left: 55.2px;
-  margin-top: 80px;
+  gap: 48px;
   width: 1280px;
+  align-items: center;
 }
 
-.course-details .section-header-3 {
+.games-section .section-header-2 {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 92px;
+  align-items: center;
 }
 
-.course-details .text-wrapper-27 {
+.games-section .text-wrapper-22 {
   color: #571c86;
   font-family: "Fredoka", Helvetica;
   font-size: 48px;
   font-weight: 700;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 48px;
   text-align: center;
-  white-space: nowrap;
-  width: 1280px;
 }
 
-.course-details .text-wrapper-28 {
+.games-section .text-wrapper-23 {
   color: #4a5462;
   font-family: "Fredoka", Helvetica;
   font-size: 20px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
   text-align: center;
-  white-space: nowrap;
-  width: 1280px;
 }
 
-.course-details .featured-course {
-  background-color: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0px 25px 50px -12px #00000040, 0px 0px 0px transparent, 0px 0px
-    0px transparent;
-  height: 780px;
-  overflow: hidden;
-  position: relative;
-}
-
-.course-details .frame-course-detail {
-  background-image: url(https://c.animaapp.com/mjz9fyhyo2NftK/img/rectangle.png);
-  background-position: 50% 50%;
-  background-size: cover;
-  height: 384px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 640px;
-}
-
-.course-details .frame-course-detail-2 {
+.games-section .features-grid {
   display: flex;
-  flex-direction: column;
-  height: 524px;
-  left: 640px;
-  position: absolute;
-  top: 0;
-  width: 640px;
-}
-
-.course-details .course-category {
-  background-color: #f3e8ff;
-  border-radius: 9999px;
-  display: flex;
-  height: 36px;
-  margin-left: 40px;
-  margin-top: 40px;
-  width: 105px;
-}
-
-.course-details .text-wrapper-29 {
-  color: #7d21ce;
-  font-family: "Fredoka", Helvetica;
-  font-size: 13.9px;
-  font-weight: 700;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-left: 16px;
-  margin-top: 8.0px;
-  white-space: nowrap;
-  width: 73.22px;
-}
-
-.course-details .text-wrapper-30 {
-  color: #1f2937;
-  font-family: "Fredoka", Helvetica;
-  font-size: 35.9px;
-  font-weight: 700;
-  height: 40px;
-  letter-spacing: 0;
-  line-height: 40px;
-  margin-left: 40px;
-  margin-top: 16px;
-  white-space: nowrap;
-  width: 560px;
-}
-
-.course-details .rating {
-  display: flex;
-  gap: 8px;
-  margin-left: 40px;
-  margin-top: 16px;
-  width: 560px;
-}
-
-.course-details .frame-15 {
-  height: 24px;
-  margin-top: 2px;
-  width: 136px;
-}
-
-.course-details .text-wrapper-31 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 18px;
-  font-weight: 700;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  white-space: nowrap;
-  width: 148px;
-}
-
-.course-details .text-wrapper-32 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.9px;
-  font-weight: 400;
-  height: 87.75px;
-  letter-spacing: 0;
-  line-height: 29px;
-  margin-left: 40px;
-  margin-top: 16px;
-  width: 560px;
-}
-
-.course-details .course-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  height: 96px;
-  margin-left: 40px;
-  margin-top: 24px;
-  width: 560px;
-}
-
-.course-details .frame-16 {
-  display: flex;
-  gap: 12px;
-  width: 560px;
-}
-
-.course-details .frame-image {
-  height: 24px;
-  width: 24px;
-}
-
-.course-details .text-wrapper-33 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.9px;
-  font-weight: 700;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 134px;
-}
-
-.course-details .text-wrapper-34 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 16px;
-  font-weight: 700;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 159px;
-}
-
-.course-details .text-wrapper-35 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.8px;
-  font-weight: 700;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 143px;
-}
-
-.course-details .price-cta {
-  display: flex;
-  gap: 15.7px;
-  margin-left: 40px;
-  margin-top: 24px;
-  width: 560px;
-}
-
-.course-details .text-wrapper-36 {
-  color: #9233ea;
-  font-family: "Fredoka", Helvetica;
-  font-size: 47.8px;
-  font-weight: 700;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 48px;
-  margin-top: 6px;
-  white-space: nowrap;
-  width: 73px;
-}
-
-.course-details .button-3 {
-  all: unset;
-  background: linear-gradient(
-      90deg,
-      rgba(168, 85, 247, 1) 0%,
-      rgba(236, 72, 153, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 60px;
-  width: 471px;
-}
-
-.course-details .text-wrapper-37 {
-  align-items: center;
-  color: #ffffff;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 19.8px;
-  font-weight: 700;
-  height: 28px;
+  gap: 32px;
+  width: 100%;
   justify-content: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 186.5px;
-  margin-top: 15.6px;
-  text-align: center;
-  white-space: nowrap;
-  width: 98.22px;
 }
 
-.course-details .curriculum-section {
-  background-color: #f9f5ff;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  height: 256px;
-  left: 0;
-  position: absolute;
-  top: 524px;
-  width: 1280px;
-}
-
-.course-details .what-you-ll-learn {
-  color: #571c86;
-  font-family: "Fredoka", Helvetica;
-  font-size: 30px;
-  font-weight: 700;
-  height: 36px;
-  letter-spacing: 0;
-  line-height: 36px;
-  margin-left: 40px;
-  margin-top: 40px;
-  white-space: nowrap;
-  width: 1200px;
-}
-
-.course-details .frame-17 {
-  height: 116px;
-  margin-left: 40px;
-  position: relative;
-  width: 1200px;
-}
-
-.course-details .frame-18 {
-  display: flex;
-  gap: 12px;
-  height: 28px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 592px;
-}
-
-.course-details .frame-19 {
-  height: 24px;
-  margin-top: 4px;
-  width: 24px;
-}
-
-.course-details .text-wrapper-38 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 18px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  white-space: nowrap;
-  width: 233px;
-}
-
-.course-details .frame-20 {
-  display: flex;
-  gap: 12px;
-  height: 28px;
-  left: 608px;
-  position: absolute;
-  top: 0;
-  width: 592px;
-}
-
-.course-details .text-wrapper-39 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.9px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  white-space: nowrap;
-  width: 203px;
-}
-
-.course-details .frame-21 {
-  display: flex;
-  gap: 12px;
-  height: 28px;
-  left: 0;
-  position: absolute;
-  top: 44px;
-  width: 592px;
-}
-
-.course-details .text-wrapper-40 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 18px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  white-space: nowrap;
-  width: 148px;
-}
-
-.course-details .frame-22 {
-  display: flex;
-  gap: 12px;
-  height: 28px;
-  left: 608px;
-  position: absolute;
-  top: 44px;
-  width: 592px;
-}
-
-.course-details .text-wrapper-41 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 18px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  white-space: nowrap;
-  width: 176px;
-}
-
-.course-details .frame-23 {
-  display: flex;
-  gap: 12px;
-  height: 28px;
-  left: 0;
-  position: absolute;
-  top: 88px;
-  width: 592px;
-}
-
-.course-details .text-wrapper-42 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 18px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  white-space: nowrap;
-  width: 155px;
-}
-
-.course-details .frame-24 {
-  display: flex;
-  gap: 12px;
-  height: 28px;
-  left: 608px;
-  position: absolute;
-  top: 88px;
-  width: 592px;
-}
-
-.course-details .text-wrapper-43 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.9px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  white-space: nowrap;
-  width: 126px;
-}
-
-/* All Courses Styles */
-.all-courses {
+.games-section .game-card {
   background-color: #ffffff;
-  display: flex;
-  height: 963px;
-  left: 20px;
-  position: absolute;
-  top: 1608px;
-  width: 1390px;
-}
-
-.all-courses .frame-25 {
+  border-radius: 16px;
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  height: 803px;
-  margin-left: 55.2px;
-  margin-top: 80px;
-  width: 1280px;
-}
-
-.all-courses .section-header-4 {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 92px;
-}
-
-.all-courses .text-wrapper-44 {
-  color: #571c86;
-  font-family: "Fredoka", Helvetica;
-  font-size: 47.9px;
-  font-weight: 700;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 48px;
-  text-align: center;
-  white-space: nowrap;
-  width: 1280px;
-}
-
-.all-courses .text-wrapper-45 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 20px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  text-align: center;
-  white-space: nowrap;
-  width: 1280px;
-}
-
-.all-courses .category-filters {
-  display: flex;
-  margin-top: 64px;
-  width: 1280px;
-}
-
-.all-courses .button-4 {
-  all: unset;
-  background-color: #a854f7;
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 55px;
-  margin-left: 259.5px;
-  width: 141px;
-}
-
-.all-courses .text-wrapper-46 {
+  height: 320px;
+  width: 380px;
   align-items: center;
-  color: #ffffff;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 18px;
-  font-weight: 700;
-  height: 28px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 24.0px;
-  margin-top: 13.6px;
-  text-align: center;
-  white-space: nowrap;
-  width: 93px;
+  padding: 32px 24px;
 }
 
-.all-courses .button-5 {
-  all: unset;
-  background-color: #ffffff;
-  border: 1.6px solid;
-  border-color: #c084fb;
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 55px;
-  margin-left: 16px;
-  width: 145px;
+.games-section .game-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
 }
 
-.all-courses .text-wrapper-47 {
-  align-items: center;
-  color: #9233ea;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.8px;
-  font-weight: 700;
-  height: 28px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 25.6px;
-  margin-top: 13.6px;
-  text-align: center;
-  white-space: nowrap;
-  width: 94.15px;
-}
-
-.all-courses .button-6 {
-  all: unset;
-  background-color: #ffffff;
-  border: 1.6px solid;
-  border-color: #f471b6;
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 55px;
-  margin-left: 16.3px;
-  width: 80px;
-}
-
-.all-courses .text-wrapper-48 {
-  align-items: center;
-  color: #db2777;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.6px;
-  font-weight: 700;
-  height: 28px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 25.6px;
-  margin-top: 13.6px;
-  text-align: center;
-  white-space: nowrap;
-  width: 28.3px;
-}
-
-.all-courses .button-7 {
-  all: unset;
-  background-color: #ffffff;
-  border: 1.6px solid;
-  border-color: #5fa4f9;
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 55px;
-  margin-left: 15.5px;
-  width: 113px;
-}
-
-.all-courses .text-wrapper-49 {
-  align-items: center;
-  color: #2462eb;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 18px;
-  font-weight: 700;
-  height: 28px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 25.6px;
-  margin-top: 13.6px;
-  text-align: center;
-  white-space: nowrap;
-  width: 61.84px;
-}
-
-.all-courses .button-8 {
-  all: unset;
-  background-color: #ffffff;
-  border: 1.6px solid;
-  border-color: #49de80;
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 55px;
-  margin-left: 16.0px;
-  width: 98px;
-}
-
-.all-courses .text-wrapper-50 {
-  align-items: center;
-  color: #15a249;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.8px;
-  font-weight: 700;
-  height: 28px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 25.6px;
-  margin-top: 13.6px;
-  text-align: center;
-  white-space: nowrap;
-  width: 46.41px;
-}
-
-.all-courses .button-9 {
-  all: unset;
-  background-color: #ffffff;
-  border: 1.6px solid;
-  border-color: #fa923b;
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 55px;
-  margin-left: 15.6px;
-  width: 104px;
-}
-
-.all-courses .text-wrapper-51 {
-  align-items: center;
-  color: #ea570b;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.8px;
-  font-weight: 700;
-  height: 28px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 25.6px;
-  margin-top: 13.6px;
-  text-align: center;
-  white-space: nowrap;
-  width: 53.26px;
-}
-
-.all-courses .course-grid {
-  height: 544px;
-  margin-top: 48.2px;
-  position: relative;
-}
-
-.all-courses .course-card {
-  background: linear-gradient(
-      135deg,
-      rgba(240, 253, 244, 1) 0%,
-      rgba(209, 250, 229, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 302px;
-}
-
-.all-courses .course-icon {
-  height: 64px;
-  margin-left: 24px;
-  margin-top: 24px;
-  width: 64px;
-}
-
-.all-courses .text-wrapper-52 {
-  color: #1f2937;
-  font-family: "Fredoka", Helvetica;
-  font-size: 19.9px;
-  font-weight: 700;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 24px;
-  margin-top: 16px;
-  white-space: nowrap;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-53 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.7px;
-  font-weight: 400;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 24px;
-  margin-left: 24px;
-  margin-top: 8px;
-  width: 254px;
-}
-
-.all-courses .frame-26 {
-  display: flex;
-  gap: 167.8px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-54 {
-  color: #15a249;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.4px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 36px;
-}
-
-.all-courses .text-wrapper-55 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 13.8px;
-  font-weight: 400;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-top: 6px;
-  white-space: nowrap;
-  width: 50px;
-}
-
-.all-courses .course-card-2 {
-  background: linear-gradient(
-      135deg,
-      rgba(254, 252, 232, 1) 0%,
-      rgba(255, 237, 213, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 326px;
-  position: absolute;
-  top: 0;
-  width: 302px;
-}
-
-.all-courses .frame-27 {
-  display: flex;
-  gap: 166.1px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-56 {
-  color: #ea570b;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.8px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 38px;
-}
-
-.all-courses .text-wrapper-57 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 14px;
-  font-weight: 400;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-top: 6px;
-  white-space: nowrap;
-  width: 50px;
-}
-
-.all-courses .course-card-3 {
-  background: linear-gradient(
-      135deg,
-      rgba(254, 242, 242, 1) 0%,
-      rgba(252, 231, 243, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 652px;
-  position: absolute;
-  top: 0;
-  width: 302px;
-}
-
-.all-courses .text-wrapper-58 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.9px;
-  font-weight: 400;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  margin-left: 24px;
-  margin-top: 8px;
-  white-space: nowrap;
-  width: 254px;
-}
-
-.all-courses .frame-28 {
-  display: flex;
-  gap: 160.9px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-59 {
-  color: #db2777;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.6px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 37px;
-}
-
-.all-courses .text-wrapper-60 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 13.8px;
-  font-weight: 400;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-top: 6px;
-  white-space: nowrap;
-  width: 56px;
-}
-
-.all-courses .course-card-4 {
-  background: linear-gradient(
-      135deg,
-      rgba(236, 254, 255, 1) 0%,
-      rgba(219, 234, 254, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 978px;
-  position: absolute;
-  top: 0;
-  width: 302px;
-}
-
-.all-courses .frame-29 {
-  display: flex;
-  gap: 163.8px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-61 {
-  color: #0791b1;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.5px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 34px;
-}
-
-.all-courses .course-card-5 {
-  background: linear-gradient(
-      135deg,
-      rgba(238, 242, 255, 1) 0%,
-      rgba(243, 232, 255, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 0;
-  position: absolute;
-  top: 284px;
-  width: 302px;
-}
-
-.all-courses .text-wrapper-62 {
-  color: #1f2937;
-  font-family: "Fredoka", Helvetica;
-  font-size: 20px;
-  font-weight: 700;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 24px;
-  margin-top: 16px;
-  white-space: nowrap;
-  width: 254px;
-}
-
-.all-courses .frame-30 {
-  display: flex;
-  gap: 166.8px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-63 {
-  color: #9233ea;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.5px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 37px;
-}
-
-.all-courses .course-card-6 {
-  background: linear-gradient(
-      135deg,
-      rgba(247, 254, 231, 1) 0%,
-      rgba(220, 252, 231, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 326px;
-  position: absolute;
-  top: 284px;
-  width: 302px;
-}
-
-.all-courses .text-wrapper-64 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.8px;
-  font-weight: 400;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 24px;
-  margin-left: 24px;
-  margin-top: 8px;
-  width: 254px;
-}
-
-.all-courses .frame-31 {
-  display: flex;
-  gap: 167.1px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-65 {
-  color: #64a20d;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.6px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 37px;
-}
-
-.all-courses .course-card-7 {
-  background: linear-gradient(
-      135deg,
-      rgba(253, 244, 255, 1) 0%,
-      rgba(252, 231, 243, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 652px;
-  position: absolute;
-  top: 284px;
-  width: 302px;
-}
-
-.all-courses .frame-32 {
-  display: flex;
-  gap: 167.9px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-66 {
-  color: #c025d2;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.8px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 36px;
-}
-
-.all-courses .course-card-8 {
-  background: linear-gradient(
-      135deg,
-      rgba(255, 251, 235, 1) 0%,
-      rgba(254, 249, 195, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 16px;
-  box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 260px;
-  left: 978px;
-  position: absolute;
-  top: 284px;
-  width: 302px;
-}
-
-.all-courses .frame-33 {
-  display: flex;
-  gap: 168.1px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 254px;
-}
-
-.all-courses .text-wrapper-67 {
-  color: #d97706;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.4px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  white-space: nowrap;
-  width: 36px;
-}
-
-/* Featured Courses Styles */
-.featured-courses {
-  display: flex;
-  flex-direction: column;
-  gap: 64px;
-  height: 658px;
-  left: 75px;
-  position: absolute;
-  top: 870px;
-  width: 1280px;
-}
-
-.featured-courses .section-header-5 {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 92px;
-}
-
-.featured-courses .text-wrapper-68 {
-  color: #571c86;
-  font-family: "Fredoka", Helvetica;
-  font-size: 48px;
-  font-weight: 700;
-  height: 48px;
-  letter-spacing: 0;
-  line-height: 48px;
-  text-align: center;
-  white-space: nowrap;
-  width: 1280px;
-}
-
-.featured-courses .text-wrapper-69 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 20px;
-  font-weight: 400;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  text-align: center;
-  white-space: nowrap;
-  width: 1280px;
-}
-
-.featured-courses .course-grid-2 {
-  display: flex;
-  gap: 32.3px;
-  width: 1280px;
-}
-
-.featured-courses .course-card-9 {
-  background-color: #ffffff;
-  border-radius: 24px;
-  box-shadow:
-    0px 8px 10px -6px #0000001a, 0px 20px 25px -5px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
-  display: flex;
-  flex-direction: column;
-  height: 502px;
-  overflow: hidden;
-  width: 405px;
-}
-
-.featured-courses .course-image {
-  display: flex;
-  height: 192px;
-  overflow: hidden;
-  width: 405px;
-}
-
-.featured-courses .image {
-  display: flex;
-  height: 502px;
-  width: 405px;
-}
-
-.featured-courses .rectangle {
-  height: 192px;
-  object-fit: cover;
-  width: 405px;
-}
-
-.featured-courses .course-content {
-  display: flex;
-  flex-direction: column;
-  height: 310px;
-}
-
-.featured-courses .course-badge {
-  background-color: #f3e8ff;
-  border-radius: 9999px;
-  display: flex;
-  height: 36px;
-  margin-left: 24px;
-  margin-top: 24px;
-  width: 105px;
-}
-
-.featured-courses .text-wrapper-70 {
-  color: #7d21ce;
-  font-family: "Fredoka", Helvetica;
-  font-size: 13.9px;
-  font-weight: 700;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-left: 16px;
-  margin-top: 8.0px;
-  white-space: nowrap;
-  width: 73.22px;
-}
-
-.featured-courses .text-wrapper-71 {
-  color: #1f2937;
-  font-family: "Fredoka", Helvetica;
-  font-size: 23.9px;
-  font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  margin-left: 24px;
-  margin-top: 12px;
-  white-space: nowrap;
-  width: 357px;
-}
-
-.featured-courses .text-wrapper-72 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 17.8px;
-  font-weight: 400;
-  height: 56px;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 24px;
-  margin-top: 12px;
-  width: 357px;
-}
-
-.featured-courses .course-meta {
-  display: flex;
-  gap: 233px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 357px;
-}
-
-.featured-courses .frame-34 {
-  display: flex;
-  gap: 8px;
-  width: 53px;
-}
-
-.featured-courses .frame-image-2 {
-  height: 24px;
-  width: 24px;
-}
-
-.featured-courses .text-wrapper-73 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.8px;
-  font-weight: 700;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 21px;
-}
-
-.featured-courses .text-wrapper-74 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.8px;
-  font-weight: 400;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 71px;
-}
-
-.featured-courses .course-footer {
-  border-color: #f3f4f6;
-  border-top-style: solid;
-  border-top-width: 1.6px;
-  display: flex;
-  gap: 185.7px;
-  height: 58px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 357px;
-}
-
-.featured-courses .text-wrapper-75 {
-  color: #9233ea;
-  font-family: "Fredoka", Helvetica;
-  font-size: 29.6px;
-  font-weight: 700;
-  height: 36px;
-  letter-spacing: 0;
-  line-height: 36px;
-  margin-top: 19.6px;
-  white-space: nowrap;
-  width: 45px;
-}
-
-.featured-courses .button-10 {
-  all: unset;
-  background: linear-gradient(
-      90deg,
-      rgba(168, 85, 247, 1) 0%,
-      rgba(236, 72, 153, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 40px;
-  margin-top: 17.6px;
-  width: 127px;
-}
-
-.featured-courses .text-wrapper-76 {
-  align-items: center;
-  color: #ffffff;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.9px;
-  font-weight: 700;
-  height: 24px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 24px;
-  margin-left: 24.0px;
-  margin-top: 8.0px;
-  text-align: center;
-  white-space: nowrap;
-  width: 78.59px;
-}
-
-.featured-courses .rectangle-2 {
-  height: 188px;
-  object-fit: cover;
-  width: 405px;
-}
-
-.featured-courses .art-creativity-wrapper {
-  background-color: #fbe7f3;
-  border-radius: 9999px;
-  display: flex;
-  height: 36px;
-  margin-left: 24px;
-  margin-top: 24px;
-  width: 135px;
-}
-
-.featured-courses .art-creativity {
-  color: #bd175d;
-  font-family: "Fredoka", Helvetica;
-  font-size: 13.9px;
-  font-weight: 700;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-left: 16.0px;
-  margin-top: 8.0px;
-  white-space: nowrap;
-  width: 103.12px;
-}
-
-.featured-courses .text-wrapper-77 {
+.games-section .text-wrapper-24 {
   color: #1f2937;
   font-family: "Fredoka", Helvetica;
   font-size: 24px;
   font-weight: 700;
-  height: 32px;
-  letter-spacing: 0;
-  line-height: 32px;
-  margin-left: 24px;
-  margin-top: 12px;
-  white-space: nowrap;
-  width: 357px;
-}
-
-.featured-courses .course-meta-2 {
-  display: flex;
-  gap: 233.6px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 357px;
-}
-
-.featured-courses .text-wrapper-78 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.7px;
-  font-weight: 700;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 21px;
-}
-
-.featured-courses .text-wrapper-79 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.9px;
-  font-weight: 400;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 71px;
-}
-
-.featured-courses .course-footer-2 {
-  border-color: #f3f4f6;
-  border-top-style: solid;
-  border-top-width: 1.6px;
-  display: flex;
-  gap: 184.8px;
-  height: 58px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 357px;
-}
-
-.featured-courses .text-wrapper-80 {
-  color: #db2777;
-  font-family: "Fredoka", Helvetica;
-  font-size: 29.9px;
-  font-weight: 700;
-  height: 36px;
-  letter-spacing: 0;
-  line-height: 36px;
-  margin-top: 19.6px;
-  white-space: nowrap;
-  width: 46px;
-}
-
-.featured-courses .button-11 {
-  all: unset;
-  background: linear-gradient(
-      90deg,
-      rgba(236, 72, 153, 1) 0%,
-      rgba(249, 115, 22, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 40px;
-  margin-top: 17.6px;
-  width: 127px;
-}
-
-.featured-courses .rectangle-wrapper {
-  display: flex;
-  height: 502px;
-  margin-left: 0.1px;
-  margin-top: -92px;
-  width: 405px;
-}
-
-.featured-courses .rectangle-3 {
-  height: 192px;
-  margin-top: 92px;
-  object-fit: cover;
-  width: 404.86px;
-}
-
-.featured-courses .course-badge-2 {
-  background-color: #dbeafd;
-  border-radius: 9999px;
-  display: flex;
-  height: 36px;
-  margin-left: 24px;
-  margin-top: 24px;
-  width: 80px;
-}
-
-.featured-courses .text-wrapper-81 {
-  color: #1d4ed7;
-  font-family: "Fredoka", Helvetica;
-  font-size: 13.7px;
-  font-weight: 700;
-  height: 20px;
-  letter-spacing: 0;
-  line-height: 20px;
-  margin-left: 16.0px;
-  margin-top: 8.0px;
-  white-space: nowrap;
-  width: 48.1px;
-}
-
-.featured-courses .course-meta-3 {
-  display: flex;
-  gap: 236.4px;
-  margin-left: 24px;
-  margin-top: 16px;
-  width: 357px;
-}
-
-.featured-courses .text-wrapper-82 {
-  color: #374151;
-  font-family: "Fredoka", Helvetica;
-  font-size: 16px;
-  font-weight: 700;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 21px;
-}
-
-.featured-courses .text-wrapper-83 {
-  color: #4a5462;
-  font-family: "Fredoka", Helvetica;
-  font-size: 16px;
-  font-weight: 400;
-  height: 24px;
-  letter-spacing: 0;
-  line-height: 24px;
-  white-space: nowrap;
-  width: 68px;
-}
-
-.featured-courses .text-wrapper-84 {
-  color: #2462eb;
-  font-family: "Fredoka", Helvetica;
-  font-size: 29.7px;
-  font-weight: 700;
-  height: 36px;
-  letter-spacing: 0;
-  line-height: 36px;
-  margin-top: 19.6px;
-  white-space: nowrap;
-  width: 45px;
-}
-
-.featured-courses .button-12 {
-  all: unset;
-  background: linear-gradient(
-      90deg,
-      rgba(59, 130, 246, 1) 0%,
-      rgba(168, 85, 247, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
-  border-radius: 9999px;
-  box-sizing: border-box;
-  display: flex;
-  height: 40px;
-  margin-top: 17.6px;
-  width: 127px;
-}
-
-.featured-courses .text-wrapper-85 {
-  align-items: center;
-  color: #ffffff;
-  display: flex;
-  font-family: "Fredoka", Helvetica;
-  font-size: 15.9px;
-  font-weight: 700;
-  height: 24px;
-  justify-content: center;
-  letter-spacing: 0;
-  line-height: 24px;
-  margin-left: 24px;
-  margin-top: 8.0px;
   text-align: center;
-  white-space: nowrap;
-  width: 78.59px;
+  margin-bottom: 8px;
 }
+
+.games-section .text-wrapper-25,
+.games-section .text-wrapper-26 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.games-section .play-btn {
+  background: linear-gradient(90deg, #9333ea 0%, #db2711 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-family: "Fredoka", Helvetica;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 12px 32px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.games-section .play-btn:hover {
+  opacity: 0.9;
+}
+
+
+
+
 
 /* Stats Section Styles */
 .stats-section {
   background-color: #ffffff;
   display: flex;
-  height: 180px;
-  left: 20px;
-  position: absolute;
-  top: 610px;
-  width: 1390px;
+  height: auto;
+  padding: 40px 0;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
 }
 
 .stats-section .frame-frame {
   display: flex;
   gap: 32px;
-  margin-left: 55.2px;
-  margin-top: 48px;
-  width: 1280px;
+  width: 100%;
+  max-width: 1280px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .stats-section .stat-card {
@@ -2442,14 +915,23 @@
 }
 
 /* Hero Section Styles */
+.hero-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1280px;
+  width: 100%;
+  margin: 60px auto 0;
+  padding: 0 40px;
+  gap: 40px;
+}
+
 .hero-section-frame {
   display: flex;
   flex-direction: column;
-  height: 370px;
-  left: 75px;
-  position: absolute;
-  top: 160px;
-  width: 616px;
+  position: relative;
+  width: 50%;
 }
 
 .hero-section-frame .heading {
@@ -2496,11 +978,9 @@
 
 .hero-section-frame .button-13 {
   all: unset;
-  background: linear-gradient(
-      90deg,
+  background: linear-gradient(90deg,
       rgba(59, 130, 246, 1) 0%,
-      rgba(168, 85, 247, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(168, 85, 247, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
   border-radius: 9999px;
   box-sizing: border-box;
   display: flex;
@@ -2533,10 +1013,9 @@
     0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
   display: flex;
   height: 80px;
-  left: 20px;
-  position: absolute;
-  top: 0;
-  width: 1390px;
+  position: relative;
+  width: 100%;
+  justify-content: center;
 }
 
 .main-navigation .frame-frame-2 {
@@ -2606,11 +1085,9 @@
 }
 
 .main-navigation .cta-button-button {
-  background: linear-gradient(
-      90deg,
+  background: linear-gradient(90deg,
       rgba(168, 85, 247, 1) 0%,
-      rgba(236, 72, 153, 1) 100%
-    ), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+      rgba(236, 72, 153, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
   border-radius: 9999px;
   display: flex;
   height: 52px;

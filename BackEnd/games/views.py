@@ -24,6 +24,68 @@ from games.serializers import (
 from users.permissions import IsChild, IsParentOrAdmin, IsAuthenticatedFirebase
 from utils.firestore import FirestoreService
 from utils.constants import ROLE_CHILD, ROLE_PARENT, ROLE_ADMIN, ROLE_UNASSIGNED
+import subprocess
+import sys
+import os
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticatedFirebase])
+def launch_whack_a_mole(request):
+    """
+    Launch the Whack-a-Mole Math Game as a local subprocess.
+
+    Spawns whack_a_mole_math.py with the authenticated user's UID and token
+    so progress can be tracked. The game window opens on the user's desktop.
+
+    Request:
+        { "difficulty": 1 }  // 1=Easy, 2=Medium, 3=Hard
+
+    Response:
+        { "launched": true, "message": "..." }
+    """
+    firebase_user = request.firebase_user
+    student_id = firebase_user['uid']
+
+    difficulty = request.data.get('difficulty', 1)
+    try:
+        difficulty = int(difficulty)
+        if difficulty not in [1, 2, 3]:
+            difficulty = 1
+    except (TypeError, ValueError):
+        difficulty = 1
+
+    # Resolve path to whack_a_mole_math.py (two levels up from BackEnd/)
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    script_path = os.path.join(base_dir, 'whack_a_mole_math.py')
+
+    if not os.path.exists(script_path):
+        return Response(
+            {'launched': False, 'message': f'Game script not found at {script_path}'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    try:
+        # Get a fresh ID token to pass to the game script
+        token = request.META.get('HTTP_AUTHORIZATION', '').replace('Bearer ', '')
+
+        subprocess.Popen(
+            [
+                sys.executable, script_path,
+                '--difficulty', str(difficulty),
+                '--student-id', student_id,
+                '--token', token,
+            ],
+            # Detach so the game window stays open independently
+            creationflags=subprocess.CREATE_NEW_CONSOLE if sys.platform == 'win32' else 0,
+        )
+        return Response({'launched': True, 'message': 'Game launched!'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'launched': False, 'message': f'Failed to launch game: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
 
 
 @api_view(['GET'])

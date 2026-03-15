@@ -154,14 +154,17 @@ export default function WatchPage() {
                 width: '100%',
                 videoId,
                 playerVars: {
+                    autoplay: 1,
                     controls: 1,
                     rel: 0,
                     modestbranding: 1,
                     playsinline: 1,
                 },
                 events: {
-                    onReady: () => {
+                    onReady: (event) => {
                         setPlayerReady(true);
+                        // Auto-play on ready
+                        try { event.target.playVideo(); } catch { /* ignore policy block */ }
                     },
                 },
             });
@@ -221,6 +224,36 @@ export default function WatchPage() {
             }
         }
     }, [isLooking, focusLostSeconds, goBack, playerReady]);
+
+    // ── Study Activity Tracking ───────────────────────────────────────
+    const studyTimeRef = useRef(0);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (isLooking && playerReady && playerInstanceRef.current) {
+                try {
+                    // 1 = PLAYING
+                    if (playerInstanceRef.current.getPlayerState() === 1) {
+                        studyTimeRef.current += 5;
+                        if (studyTimeRef.current >= 15) {
+                            const dur = studyTimeRef.current;
+                            studyTimeRef.current = 0;
+                            const user = auth.currentUser;
+                            if (user) {
+                                user.getIdToken().then(tok => {
+                                    fetch(`${API_BASE}/courses/activity/`, {
+                                        method: 'POST',
+                                        headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ duration_seconds: dur })
+                                    }).catch(e => console.error("Activity ping failed", e));
+                                });
+                            }
+                        }
+                    }
+                } catch (err) { /* ignore */ }
+            }
+        }, 5000); // Check every 5 seconds
+        return () => clearInterval(interval);
+    }, [isLooking, playerReady]);
 
     // ─────────────────────────────────────────────────────────────────
     // Render helpers

@@ -54,22 +54,24 @@ const Login = () => {
             try {
                 const emailToUse = await resolveEmail();
 
-                // Step 1: Verify credentials with backend
-                const response = await login(emailToUse, password);
+                // Step 1: Sign in with Firebase Auth directly
+                await signInWithEmailAndPassword(auth, emailToUse, password);
+                
+                // AuthContext will automatically detect the sign-in and sync with the Django backend
+                setWaitingForProfile(true); 
 
-                if (response.user) {
-                    // Step 2: Sign in with Firebase Auth
-                    try {
-                        await signInWithEmailAndPassword(auth, emailToUse, password);
-                    } catch (firebaseError) {
-                        console.error("Firebase auth error (backend login succeeded):", firebaseError);
-                    }
-                    // Mark that we are waiting for the profile so the
-                    // useEffect above can redirect to /admin or / accordingly.
-                    setWaitingForProfile(true)
+            } catch (error) {
+                console.error("Login attempt failed:", error);
+                
+                // Handle Firebase specific errors for invalid credentials
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    setErrorMessage("Invalid email or password");
+                } else if (error.message?.includes("Failed to fetch") || error.message?.includes("network")) {
+                    setErrorMessage("Cannot connect to the server. Please check your internet connection.");
+                } else {
+                    setErrorMessage("Invalid email or password, please try again.");
                 }
-            } catch (err) {
-                setErrorMessage(err.message);
+            } finally {
                 setIsSigningIn(false);
             }
         }

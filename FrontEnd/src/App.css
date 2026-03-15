@@ -299,49 +299,60 @@ nav ul a:hover {
   }
 }
 
-/* CSS for section section:Courses */
-.courses-section {
-  padding: 80px 0;
-  background-color: var(--color-white);
+/* CSS for section section:Courses (Refined Classic Design) */
+.hpc-section {
+  padding: 100px 0;
+  background-color: #ffffff;
 }
 
-.course-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  padding-top: 20px;
-  /* room for the popular-tag that hangs above */
+.hpc-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-/* Renamed from .course-card to avoid conflicts with CoursesListSection.css */
-.home-course-card {
-  position: relative;
-  overflow: visible;
-  border-radius: 24px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
+.hpc-header {
+  text-align: center;
+  margin-bottom: 60px;
 }
 
-.home-course-card h3 {
-  font-size: 24px;
-  margin-bottom: 8px;
-}
-
-.course-age {
-  font-weight: 700;
+.hpc-header h2 {
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f172a;
   margin-bottom: 16px;
 }
 
-/* Renamed from .course-description to avoid 2-line clamp conflict with list/detail pages */
-.home-course-desc {
-  font-size: 16px;
-  line-height: 1.5;
-  margin-bottom: 24px;
-  flex-grow: 1;
+.hpc-header p {
+  font-size: 18px;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.course-icon-wrapper {
+.hpc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin-top: 20px;
+}
+
+.hpc-card {
+  position: relative;
+  border-radius: 24px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1.6px solid transparent;
+}
+
+.hpc-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+}
+
+.hpc-icon-wrap {
   width: 80px;
   height: 80px;
   border-radius: 16px;
@@ -351,111 +362,115 @@ nav ul a:hover {
   margin-bottom: 24px;
 }
 
-.course-icon-wrapper img {
+.hpc-icon-wrap img {
   width: 48px;
   height: 48px;
+  object-fit: contain;
 }
 
-.course-features {
-  margin-bottom: 32px;
+.hpc-card h3 {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
 
-.course-features li {
+.hpc-age {
+  font-weight: 700;
   font-size: 16px;
-  margin-bottom: 12px;
-  color: var(--color-text-medium);
+  margin-bottom: 20px;
+  display: block;
 }
 
-.course-features li::before {
+.hpc-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #475569;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.hpc-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+}
+
+.hpc-features li {
+  font-size: 15px;
+  margin-bottom: 12px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.hpc-features li::before {
   content: '✓';
+  font-weight: 900;
   margin-right: 8px;
 }
 
-.course-btn {
+.hpc-btn {
   width: 100%;
-  color: var(--color-white);
-  padding: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.elementary {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-  border: 1.6px solid rgba(16, 185, 129, 0.2);
+.hpc-elementary {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+  border-color: rgba(16, 185, 129, 0.15);
 }
+.hpc-elementary .hpc-icon-wrap { background-color: var(--color-tertiary); }
+.hpc-elementary .hpc-age { color: var(--color-tertiary); }
+.hpc-elementary .hpc-features li::before { color: var(--color-tertiary); }
+.hpc-elementary .hpc-btn { background-color: var(--color-tertiary); }
 
-.elementary .course-icon-wrapper {
-  background-color: var(--color-tertiary);
+.hpc-middle {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
+  border-color: rgba(59, 130, 246, 0.15);
 }
+.hpc-middle .hpc-icon-wrap { background-color: var(--color-secondary); }
+.hpc-middle .hpc-age { color: var(--color-secondary); }
+.hpc-middle .hpc-features li::before { color: var(--color-secondary); }
+.hpc-middle .hpc-btn { background-color: var(--color-secondary); }
 
-.elementary .course-age {
-  color: var(--color-tertiary);
+.hpc-advanced {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+  border-color: rgba(139, 92, 246, 0.15);
 }
+.hpc-advanced .hpc-icon-wrap { background-color: var(--color-primary); }
+.hpc-advanced .hpc-age { color: var(--color-primary); }
+.hpc-advanced .hpc-features li::before { color: var(--color-primary); }
+.hpc-advanced .hpc-btn { background-color: var(--color-primary); }
 
-.elementary .course-features li::before {
-  color: var(--color-tertiary);
-}
-
-.elementary .course-btn {
-  background-color: var(--color-tertiary);
-}
-
-.middle {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
-  border: 1.6px solid rgba(59, 130, 246, 0.2);
-}
-
-.middle .course-icon-wrapper {
-  background-color: var(--color-secondary);
-}
-
-.middle .course-age {
-  color: var(--color-secondary);
-}
-
-.middle .course-features li::before {
-  color: var(--color-secondary);
-}
-
-.middle .course-btn {
-  background-color: var(--color-secondary);
-}
-
-.advanced {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border: 1.6px solid rgba(139, 92, 246, 0.2);
-}
-
-.advanced .course-icon-wrapper {
-  background-color: var(--color-primary);
-}
-
-.advanced .course-age {
-  color: var(--color-primary);
-}
-
-.advanced .course-features li::before {
-  color: var(--color-primary);
-}
-
-.advanced .course-btn {
-  background-color: var(--color-primary);
-}
-
-.popular-tag {
+.hpc-popular-tag {
   position: absolute;
   top: -14px;
   left: 50%;
   transform: translateX(-50%);
   background-color: var(--color-accent-yellow);
-  color: var(--color-white);
-  padding: 4px 16px;
-  border-radius: 9999px;
+  color: white;
+  padding: 6px 18px;
+  border-radius: 20px;
   font-size: 14px;
   font-weight: 700;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
 }
 
 @media (max-width: 1024px) {
-  .course-cards-grid {
+  .hpc-grid {
     grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 40px auto 0;
   }
 }
 

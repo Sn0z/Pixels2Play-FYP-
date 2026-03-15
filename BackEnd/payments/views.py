@@ -205,73 +205,49 @@ def verify_payment(request):
 def course_purchase_status(request, course_id):
     """
     Check if course is purchased (for child access).
-    
-    Supports proposal section: "Payments: Khalti Integration"
-    
-    Rules:
-    - CHILD gains access only after parent purchase
-    - Checks parent's purchased courses
-    
-    Access: All authenticated users
+    Also checks if the user (or parent) has an active subscription.
     """
     from utils.firestore import FirestoreService
     from utils.constants import ROLE_CHILD, ROLE_PARENT
     from firebase_admin import firestore
     
+    SUBSCRIPTION_PLAN_IDS = ['starter', 'pro', 'family']
+    
     decoded = verify_firebase_token(request)
-
     if not decoded:
-        return Response(
-            {"purchased": False},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({"purchased": False}, status=status.HTTP_401_UNAUTHORIZED)
 
     uid = decoded["uid"]
     user = FirestoreService.get_user(uid)
-    
     if not user:
         return Response({"purchased": False})
     
     user_role = user.get('role')
-    
-    # Proposal requirement: CHILD gains access only after parent purchase
+    db = firestore.client()
+
+    # Determine which UID's purchases to check
+    check_uids = [uid]
     if user_role == ROLE_CHILD:
-        # Find parent
         links = FirestoreService.get_family_links_by_child(uid)
         if links:
-            parent_id = links[0]['parent_id']
-            
-            # Check parent's purchased courses
-            db = firestore.client()
-            purchased_ref = db.collection('purchased_courses').document(parent_id)
-            purchased_doc = purchased_ref.get()
-            
-            if purchased_doc.exists:
-                course_ids = purchased_doc.to_dict().get('course_ids', [])
-                return Response({"purchased": course_id in course_ids})
-        
-        return Response({"purchased": False})
-    
-    # For PARENT, check their own purchases
-    elif user_role == ROLE_PARENT:
-        # Check Django model (backward compatibility)
-        purchased = Payment.objects.filter(
-            firebase_uid=uid,
-            course_id=course_id,
-            status="COMPLETED"
-        ).exists()
-        
-        # Also check Firestore
-        db = firestore.client()
-        purchased_ref = db.collection('purchased_courses').document(uid)
+            check_uids = [link['parent_id'] for link in links]
+
+    for check_uid in check_uids:
+        # Check Firestore purchased_courses collection
+        purchased_ref = db.collection('purchased_courses').document(check_uid)
         purchased_doc = purchased_ref.get()
         
         if purchased_doc.exists:
-            course_ids = purchased_doc.to_dict().get('course_ids', [])
-            purchased = purchased or (course_id in course_ids)
-        
-        return Response({"purchased": purchased})
-    
+            pids = purchased_doc.to_dict().get('course_ids', [])
+            # Access granted if specific course is purchased OR if a subscription PLAN is purchased
+            if course_id in pids or any(plan in pids for plan in SUBSCRIPTION_PLAN_IDS):
+                return Response({"purchased": True})
+
+        # Check Django model (backward compatibility forParents)
+        if user_role == ROLE_PARENT:
+            if Payment.objects.filter(firebase_uid=check_uid, course_id=course_id, status="COMPLETED").exists():
+                return Response({"purchased": True})
+
     return Response({"purchased": False})
 
 

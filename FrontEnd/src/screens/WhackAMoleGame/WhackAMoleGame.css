@@ -1,0 +1,408 @@
+/* ═══════════════════════════════════════════════════
+   WHACK-A-MOLE MATH  —  White/Light Theme
+   Menu & Game-Over: white card on pastel gradient
+   Playing: full-height vibrant game field
+═══════════════════════════════════════════════════ */
+
+/* ── Page wrappers ────────────────────────────────── */
+.wam-page {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #f0f4ff 0%, #e8f5e9 50%, #fef9e7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    padding: 2rem;
+}
+
+.wam-page.playing {
+    background: none;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    overflow: hidden;
+}
+
+.wam-page.playing.flash-correct { background: #dcfce7 !important; }
+.wam-page.playing.flash-wrong   { background: #fee2e2 !important; }
+
+/* ── White card (menu / game-over) ───────────────── */
+.wam-card {
+    background: #ffffff;
+    border-radius: 2rem;
+    max-width: 620px;
+    width: 100%;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.05),
+        0 4px 6px rgba(0,0,0,0.04),
+        0 24px 64px rgba(99,102,241,0.14);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* ── Hero mole on menu ───────────────────────────── */
+.wam-hero-wrap {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.18);
+    animation: heroFloat 2.4s ease-in-out infinite alternate;
+}
+.wam-hero-mole {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+}
+@keyframes heroFloat {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-12px); }
+}
+
+/* ── Typography ──────────────────────────────────── */
+.wam-title {
+    font-size: 2.4rem;
+    font-weight: 900;
+    margin: 0;
+    color: #1e1b4b;
+    letter-spacing: -0.02em;
+}
+.wam-desc {
+    color: #64748b;
+    font-size: 1rem;
+    line-height: 1.7;
+    margin: 0;
+    max-width: 380px;
+}
+
+/* ── Difficulty ──────────────────────────────────── */
+.wam-pick-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.wam-diff-row { display: flex; gap: 0.875rem; width: 100%; }
+
+.wam-diff-btn {
+    flex: 1;
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 1.25rem;
+    color: #334155;
+    cursor: pointer;
+    padding: 1.25rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+}
+.wam-diff-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.09);
+}
+.wam-diff-emoji { font-size: 2rem; line-height: 1; }
+.wam-diff-name  { font-size: 1rem; font-weight: 700; color: #1e1b4b; }
+.wam-diff-sub   { font-size: 0.68rem; background: #e2e8f0; color: #64748b; padding: 2px 10px; border-radius: 100px; font-weight: 600; }
+
+/* ── Buttons ─────────────────────────────────────── */
+.wam-play-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 800;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(124,58,237,0.35);
+    transition: all 0.2s;
+}
+.wam-play-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(124,58,237,0.45); }
+
+.wam-secondary-btn {
+    width: 100%;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.85rem;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.wam-secondary-btn:hover { background: #e2e8f0; }
+
+.wam-back-link {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.wam-back-link:hover { color: #475569; }
+
+.wam-go-btns { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; }
+
+/* ── Game-over stats ─────────────────────────────── */
+.wam-go-emoji {
+    font-size: 5rem;
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes popIn {
+    from { transform: scale(0) rotate(-20deg); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.wam-stats-grid { display: flex; gap: 1rem; width: 100%; }
+
+.wam-stat {
+    flex: 1;
+    border-radius: 1.25rem;
+    padding: 1.25rem 0.75rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    border: 1.5px solid transparent;
+}
+.wam-stat.purple { background: #faf5ff; border-color: #ddd6fe; }
+.wam-stat.purple span { color: #6d28d9; }
+.wam-stat.purple label { color: #8b5cf6; }
+.wam-stat.blue { background: #eff6ff; border-color: #bfdbfe; }
+.wam-stat.blue span { color: #1d4ed8; }
+.wam-stat.blue label { color: #3b82f6; }
+.wam-stat.green { background: #f0fdf4; border-color: #bbf7d0; }
+.wam-stat.green span { color: #15803d; }
+.wam-stat.green label { color: #22c55e; }
+
+.wam-stat span  { font-size: 2.25rem; font-weight: 900; line-height: 1; }
+.wam-stat label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.wam-verdict { color: #64748b; font-size: 1.05rem; margin: 0; line-height: 1.6; }
+
+/* ═══════════════════════════════════════════════════
+   PLAYING SCREEN
+═══════════════════════════════════════════════════ */
+
+/* ── HUD ─────────────────────────────────────────── */
+.wam-hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1.5rem;
+    background: #fff;
+    border-bottom: 2px solid #f1f5f9;
+    flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    gap: 0.5rem;
+}
+.wam-hud-item { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.hud-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; }
+.hud-value { font-size: 1.9rem; font-weight: 900; color: #1e1b4b; line-height: 1; transition: color 0.4s; }
+.score-val { color: #4f46e5; }
+
+.wam-hud-problem { flex: 1; text-align: center; }
+.problem-text { font-size: 1.9rem; font-weight: 900; color: #4f46e5; white-space: nowrap; }
+
+.wam-music-btn {
+    background: #f1f5f9;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.wam-music-btn:hover { background: #e2e8f0; transform: scale(1.1); }
+
+/* ── Timer bar ───────────────────────────────────── */
+.wam-timer-bar { height: 8px; background: #f1f5f9; flex-shrink: 0; }
+.wam-timer-fill { height: 100%; border-radius: 0 6px 6px 0; transition: width 1s linear, background 0.5s ease; }
+
+/* ── Grass field ─────────────────────────────────── */
+.wam-field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 0%, #16a34a 0%, #15803d 50%, #14532d 100%);
+    padding: 2.5rem 1.5rem 2rem;
+    overflow: auto;
+    position: relative;
+}
+.wam-field::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0, transparent 18px, rgba(0,0,0,0.04) 18px, rgba(0,0,0,0.04) 19px);
+    pointer-events: none;
+}
+
+.wam-grid { display: grid; gap: 2.25rem 2rem; position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════════════
+   MOLE HOLES  —  Proper clipping so mole hides underground
+═══════════════════════════════════════════════════ */
+.mole-hole {
+    position: relative;
+    width: 180px;
+    height: 210px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* The dirt hole ellipse shown on top */
+.hole-shadow {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 34px;
+    background: radial-gradient(ellipse, #1a0800 20%, #3b1a0a 90%);
+    border-radius: 50%;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 -4px 8px rgba(0,0,0,0.4);
+    z-index: 3;
+}
+
+/* Clip zone — mole only visible above hole */
+.hole-clip {
+    position: absolute;
+    bottom: 17px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 162px;
+    height: 190px;
+    overflow: hidden;
+    z-index: 4; /* above hole-shadow so mole appears in front of the hole */
+}
+
+/* Mole slide up/down INSIDE the clip */
+.mole-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 160px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.mole-wrap.up   { transform: translateX(-50%) translateY(22%); }  /* sit lower in hole */
+.mole-wrap.down { transform: translateX(-50%) translateY(100%); }
+
+.mole-wrap.whacked {
+    animation: whackBounce 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+@keyframes whackBounce {
+    0%   { transform: translateX(-50%) translateY(0%) scale(1); }
+    15%  { transform: translateX(-50%) translateY(-16px) scale(1.18) rotate(-4deg); }
+    40%  { transform: translateX(-50%) translateY(0%) scale(0.9); }
+    100% { transform: translateX(-50%) translateY(100%); }
+}
+
+/* Wrapper that lets us overlay the number on the sign */
+.mole-img-wrap {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.mole-img {
+    width: 160px;
+    height: 160px;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.35));
+    display: block;
+}
+.mole-hole:hover .mole-wrap.up .mole-img {
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.45)) brightness(1.06);
+}
+
+/* Number printed on the sign the mole holds.
+   The sign sits in the lower ~33% of the image, centred horizontally. */
+.mole-sign-number {
+    position: absolute;
+    bottom: 27%;       /* moved up a few pixels */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #1e1b4b;
+    line-height: 1;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.95);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
+
+/* Dizzy mole — brief flash when hit */
+.mole-dizzy {
+    animation: moleDizzy 0.4s ease forwards;
+    filter: drop-shadow(0 0 8px rgba(239,68,68,0.8));
+}
+@keyframes moleDizzy {
+    0%   { transform: scale(1)    rotate(0deg);  }
+    20%  { transform: scale(1.15) rotate(-6deg); }
+    40%  { transform: scale(1.1)  rotate(6deg);  }
+    60%  { transform: scale(1.05) rotate(-3deg); }
+    100% { transform: scale(1)    rotate(0deg);  }
+}
+
+/* ── Hammer ──────────────────────────────────────── */
+.hammer {
+    position: absolute;
+    top: -16px;
+    right: -4px;
+    font-size: 2.8rem;
+    z-index: 10;
+    pointer-events: none;
+    transform-origin: bottom right;
+    animation: hammerSwing 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+}
+.hammer.hit-correct { filter: drop-shadow(0 2px 6px rgba(34,197,94,0.7)); }
+.hammer.hit-wrong   { filter: drop-shadow(0 2px 6px rgba(239,68,68,0.7)); }
+
+@keyframes hammerSwing {
+    0%   { transform: rotate(-70deg) scale(0.8); opacity: 1; }
+    30%  { transform: rotate(10deg)  scale(1.1); }
+    55%  { transform: rotate(-15deg) scale(1);   }
+    100% { transform: rotate(20deg)  scale(0.8); opacity: 0; }
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 540px) {
+    .wam-card        { padding: 2rem 1.25rem; border-radius: 1.5rem; }
+    .wam-title       { font-size: 1.9rem; }
+    .wam-diff-row    { flex-direction: column; }
+    .wam-hud         { padding: 0.6rem 0.75rem; gap: 0.25rem; }
+    .problem-text,
+    .hud-value       { font-size: 1.4rem; }
+    .mole-hole       { width: 110px; height: 120px; }
+    .hole-clip       { width: 105px; height: 102px; }
+    .hole-shadow     { width: 104px; height: 30px; }
+    .mole-wrap       { width: 90px; }
+    .mole-img-wrap,
+    .mole-img        { width: 90px; height: 90px; }
+    .mole-sign-number { font-size: 1.1rem; }
+    .wam-stats-grid  { flex-direction: column; }
+}

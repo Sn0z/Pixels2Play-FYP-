@@ -44,6 +44,18 @@ GAMES = {
         'ai_concept': 'Training Data & Classification',
         'difficulty_levels': [1, 2, 3],
     },
+    'whack_a_mole_math': {
+        'name': 'Whack-a-Mole Math',
+        'description': 'Solve math equations by whacking the correct mole!',
+        'ai_concept': 'Basic Mathematics & Speed Processing',
+        'difficulty_levels': [1, 2, 3],
+    },
+    'dino_camera_game': {
+        'name': 'Dino Camera Runner',
+        'description': 'Jump and crouch using your body to control the T-Rex over obstacles!',
+        'ai_concept': 'Computer Vision (Pose Detection)',
+        'difficulty_level': 'Medium'
+    },
     'ai_story_builder': {
         'name': 'AI Story Builder',
         'description': 'Create stories while learning about creative AI and ethics',
@@ -153,7 +165,9 @@ class GamesService:
                 
                 # Adaptive difficulty: increase if score > 0.8, decrease if score < 0.5
                 current_difficulty = progress.get('difficulty_level', difficulty_level)
-                if score >= 0.8 and current_difficulty < max(GAMES.get(game_id, {}).get('difficulty_levels', [1])):
+                difficulty_levels = GAMES.get(game_id, {}).get('difficulty_levels', [1])
+                max_difficulty = max(difficulty_levels) if difficulty_levels else 1
+                if score >= 0.8 and current_difficulty < max_difficulty:
                     current_difficulty += 1
                 elif score < 0.5 and current_difficulty > 1:
                     current_difficulty -= 1
@@ -177,6 +191,15 @@ class GamesService:
             
             if game_data:
                 update_data['game_data'] = game_data
+                
+                # Log play activity if duration provided
+                duration_seconds = game_data.get('duration_seconds')
+                if duration_seconds:
+                    try:
+                        from progress.activity import ActivityService
+                        ActivityService.log_activity(student_id, 'play', int(duration_seconds))
+                    except Exception as activity_err:
+                        print(f"Error logging play activity: {activity_err}")
             
             if not progress_doc.exists:
                 update_data['created_at'] = datetime.utcnow()

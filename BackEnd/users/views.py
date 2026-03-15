@@ -436,15 +436,17 @@ def signup(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # CRITICAL: Verify and consume OTP BEFORE creating user
-        print(f"[SIGNUP] Step 1: Verifying OTP for email={email}, purpose=signup")
-        from users.otp import consume_otp_if_valid, OTP_PURPOSE_SIGNUP
+        # CRITICAL: Verify OTP BEFORE creating user, but don't consume it yet
+        print(f"[SIGNUP] Step 1: Checking OTP for email={email}, purpose=signup")
+        from users.otp import verify_otp, OTP_PURPOSE_SIGNUP
         
-        otp_valid = consume_otp_if_valid(email, otp, OTP_PURPOSE_SIGNUP)
+        # We peek (consume=False) here so that if subsequent steps (like password check or firebase create)
+        # fail, the user doesn't have to request a NEW code.
+        otp_valid, otp_msg = verify_otp(email, otp, OTP_PURPOSE_SIGNUP, consume=False)
         if not otp_valid:
-            print(f"[SIGNUP] OTP verification failed for {email}")
+            print(f"[SIGNUP] OTP verification failed for {email}: {otp_msg}")
             return Response(
-                {'error': 'Invalid or expired OTP. Please request a new code.'},
+                {'error': otp_msg or 'Invalid or expired OTP. Please request a new code.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -523,6 +525,11 @@ def signup(request):
                 {'error': 'Failed to complete signup. Please try again.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+        # Only now, after EVERYTHING succeeded, do we consume the OTP
+        from users.otp import consume_otp_if_valid
+        consume_otp_if_valid(email, otp, OTP_PURPOSE_SIGNUP)
+        print(f"[SIGNUP] OTP consumed successfully after user creation")
         
         # Return successful response
         serializer = UserSerializer(user)
@@ -865,10 +872,13 @@ def get_parent_dashboard(request):
     try:
         progress_summary = ProgressService.get_progress_summary(child_uid)
         concept_mastery = ProgressService.get_concept_mastery(child_uid)
+        from progress.activity import ActivityService
+        recent_activity = ActivityService.get_recent_activity(child_uid, days=7)
     except Exception as e:
         print(f"[DASHBOARD] Error fetching progress for child {child_uid}: {e}")
         progress_summary = {}
         concept_mastery = []
+        recent_activity = []
 
     # Build progress list from concept mastery (0-100 for frontend progress bars)
     progress_list = [
@@ -900,6 +910,7 @@ def get_parent_dashboard(request):
         'level': level,
         'progress': progress_list,
         'badges': badge_list,
+        'activity': recent_activity,
     }
 
     return Response({'parent': parent_data, 'child': child_data}, status=status.HTTP_200_OK)
