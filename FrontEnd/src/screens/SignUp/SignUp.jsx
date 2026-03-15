@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/authContext";
 import { signup, loginWithGoogle } from "../../api/auth";
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { auth } from "../../FireBase/firebase";
 import OTPModal from "../../components/OTPModal";
 import { sendOtp, verifyOtp } from "../../api/otpHelpers";
@@ -55,9 +55,13 @@ const SignUp = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   // Prevent logged-in users from accessing signup page
-  if (userLoggedIn) {
-    navigate("/");
-  }
+  // Prevent logged-in users from accessing signup page, 
+  // but ONLY if they haven't just successfully registered (let the onSubmit handle that)
+  useEffect(() => {
+    if (userLoggedIn && !isRegistering && !otpVerified) {
+      navigate("/");
+    }
+  }, [userLoggedIn, isRegistering, otpVerified, navigate]);
 
   // ----------------------------------------------------------
   // STEP 1: Send OTP to Email
@@ -173,16 +177,16 @@ const SignUp = () => {
       const response = await signup(email, password, username, verifiedOtp);
 
       if (response.user) {
-        try {
-          await signInWithEmailAndPassword(auth, email, password);
-        } catch (firebaseError) {
-          console.error("Firebase auth error:", firebaseError);
-        }
-        setIsRegistering(false);
-        navigate("/");
+        // Success! Now sign in to Firebase to sync local state
+        await signInWithEmailAndPassword(auth, email, password);
+        // Navigate after all state is updated
+        setTimeout(() => {
+          setIsRegistering(false);
+          navigate("/");
+        }, 500);
       }
     } catch (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(error.message || "Account creation failed. Please try again.");
       setIsRegistering(false);
     }
   };

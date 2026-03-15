@@ -41,44 +41,59 @@ export default function CourseDetailSection() {
   const navigate = useNavigate();
   const { moduleId: courseId } = useParams();
 
-  // ── Auth + payment state ───────────────────────────────────────────────
-  // Payment bypass: always true — re-enable payment check when ready
-  const [purchased, setPurchased] = useState(true);
+  // ── Auth + access state ───────────────────────────────────────────────
+  const [purchased, setPurchased] = useState(false);
   const [payLoading, setPayLoading] = useState(false);
 
-  // Payment verification via pidx (Khalti callback)
+  // Check enrollment status + handle pidx verification
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pidx = params.get("pidx");
-    if (!pidx) return;
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
-      setPayLoading(true);
+      if (!user) {
+        setPurchased(false);
+        return;
+      }
+
+      // 1. If pidx is present, verify payment first
+      if (pidx) {
+        setPayLoading(true);
+        try {
+          const token = await user.getIdToken();
+          const res = await fetch(`${API_BASE}/payments/verify/`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ pidx }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setPurchased(true);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            // No early return, let it refresh status if needed or just continue
+          }
+        } catch (err) {
+          console.error("Verification error:", err);
+        } finally {
+          setPayLoading(false);
+        }
+      }
+
+      // 2. Refresh purchased status from backend (handles both direct purchase and subscription)
       try {
         const token = await user.getIdToken();
-        const res = await fetch(`${API_BASE}/payments/verify/`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ pidx }),
+        const res = await fetch(`${API_BASE}/payments/course-status/${courseId}/`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        if (data.success) {
-          setPurchased(true);
-          // Clean up the pidx query param, then go straight to the course modules
-          window.history.replaceState({}, document.title, window.location.pathname);
-          navigate(`/watch/${courseId}`);
-        } else {
-          alert("Payment verification failed: " + (data.status || "Unknown error"));
-        }
-      } catch (err) {
-        console.error("Verification error:", err);
-      } finally {
-        setPayLoading(false);
+        setPurchased(data.purchased || false);
+      } catch (e) {
+        console.error("Access check error:", e);
       }
     });
+
     return () => unsubscribe();
-  }, []);
+  }, [courseId]);
 
   // ── Course data from Django Firestore proxy ────────────────────────────
   const [courseData, setCourseData] = useState(null);
@@ -181,16 +196,29 @@ export default function CourseDetailSection() {
             </div>
           ) : courseData ? (
             <>
-              <span className="course-badge">{courseData.category}</span>
+              <div className="course-detail-header-row">
+                <button className="back-catalog-btn" onClick={() => navigate("/courses")}>
+                  ← Back to Catalog
+                </button>
+                <span className="course-badge">{courseData.category}</span>
+              </div>
+
               <h1 className="course-title">{getTitle(courseData)}</h1>
               <p className="course-description">{getShortDesc(courseData)}</p>
 
               <div className="course-image-card">
-                <img
-                  className="course-main-image"
-                  alt={getTitle(courseData)}
-                  src={getImage(courseData)}
-                />
+                <div className="image-overlay-container">
+                  <img
+                    className="course-main-image"
+                    alt={getTitle(courseData)}
+                    src={getImage(courseData)}
+                  />
+                  {purchased && (
+                    <div className="purchased-ribbon">
+                       ✓ Unlocked with Subscription
+                    </div>
+                  )}
+                </div>
                 <div className="course-info-content">
                   <h2 className="course-subtitle">About this course</h2>
                   <p className="course-info-text">{getDesc(courseData)}</p>
@@ -207,7 +235,7 @@ export default function CourseDetailSection() {
           <div className="sidebar-card">
             {/* Enroll / Start Learning */}
             <button
-              className={`enroll-btn ${purchased ? "start-learning-btn" : ""}`}
+              className={`enroll-btn ${purchased ? "start-learning-btn" : "locked-btn"}`}
               disabled={payLoading}
               onClick={() => {
                 if (purchased) {
@@ -217,7 +245,7 @@ export default function CourseDetailSection() {
                 }
               }}
             >
-              {payLoading ? "Please wait…" : purchased ? "Start Learning" : "Enroll Now"}
+              {payLoading ? "Please wait…" : purchased ? "Unlocked ✓" : "Enroll Now (Locked)"}
             </button>
 
             {/* Course detail icons */}

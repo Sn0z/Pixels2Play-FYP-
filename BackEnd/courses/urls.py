@@ -17,6 +17,11 @@ from .views import (
     firestore_course_detail,
     firestore_modules_list,
     firestore_module_detail,
+    purchase_course,
+    purchased_courses,
+    child_purchased_courses,
+    child_progress,
+    course_activity,
 )
 
 urlpatterns = [
@@ -41,6 +46,13 @@ urlpatterns = [
     path("parent-link/request/", request_parent_link),
     path("parent-link/approve/", approve_link),
     path("parent-link/", parent_links),
+
+    # ── Purchase & Progress & Activity endpoints ──────────────────────────────────────
+    path("purchase/", purchase_course, name="purchase-course"),
+    path("purchased/", purchased_courses, name="purchased-courses"),
+    path("child-courses/", child_purchased_courses, name="child-courses"),
+    path("child-progress/<str:course_id>/", child_progress, name="child-progress"),
+    path("activity/", course_activity, name="course-activity"),
 
     # Nested Firestore module endpoints — MUST come before the catch-all <course_id>/ pattern
     path("<str:course_id>/modules/", firestore_modules_list, name="course-modules-list"),

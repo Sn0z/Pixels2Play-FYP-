@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useChildProfile } from "../../hooks/useChildProfile";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import "./UserProfileDashboardSection.css";
 
 /* ─── badge icon mapping ─────────────────────────────────── */
@@ -18,7 +19,8 @@ function Skeleton({ className }) {
   return <div className={`upd-skeleton ${className || ""}`} />;
 }
 
-/* ─── Main component ─────────────────────────────────────── */
+import { NavigationSection } from "./NavigationSection";
+
 export default function UserProfileDashboardSection() {
   const { parent, child, loading, error, accessDenied, refetch } =
     useChildProfile();
@@ -26,14 +28,19 @@ export default function UserProfileDashboardSection() {
   /* Access denied ------------------------------------------------ */
   if (accessDenied) {
     return (
-      <div className="upd-shell upd-center">
-        <div className="upd-denied-card">
-          <span className="upd-denied-icon">🔒</span>
-          <h2>Access Restricted</h2>
-          <p>This dashboard is only visible to linked parents.</p>
-          <Link to="/login" className="upd-btn upd-btn-primary">
-            Log in as a Parent
-          </Link>
+      <div className="flex bg-[#f8fafc] min-h-screen">
+        <div className="w-[280px] flex-shrink-0 fixed h-screen z-50">
+          <NavigationSection />
+        </div>
+        <div className="flex-1 ml-[280px] upd-shell upd-center" style={{ minHeight: '100vh', background: 'transparent' }}>
+          <div className="upd-denied-card">
+            <span className="upd-denied-icon">🔒</span>
+            <h2>Access Restricted</h2>
+            <p>This dashboard is only visible to linked parents.</p>
+            <Link to="/login" className="upd-btn upd-btn-primary">
+              Log in as a Parent
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -42,37 +49,34 @@ export default function UserProfileDashboardSection() {
   /* Error state -------------------------------------------------- */
   if (error && !loading) {
     return (
-      <div className="upd-shell upd-center">
-        <div className="upd-error-card">
-          <span className="upd-error-icon">⚠️</span>
-          <h2>Something went wrong</h2>
-          <p>{error}</p>
-          <button className="upd-btn upd-btn-primary" onClick={refetch}>
-            Try Again
-          </button>
+      <div className="flex bg-[#f8fafc] min-h-screen">
+        <div className="w-[280px] flex-shrink-0 fixed h-screen z-50">
+          <NavigationSection />
+        </div>
+        <div className="flex-1 ml-[280px] upd-shell upd-center" style={{ minHeight: '100vh', background: 'transparent' }}>
+          <div className="upd-error-card">
+            <span className="upd-error-icon">⚠️</span>
+            <h2>Something went wrong</h2>
+            <p>{error}</p>
+            <button className="upd-btn upd-btn-primary" onClick={refetch}>
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="upd-shell">
-      {/* ── Page header ─────────────────────────────────────────── */}
-      <header className="upd-header">
-        <div className="upd-header-inner">
-          <Link to="/" className="upd-logo">
-            <span className="upd-logo-icon">🎮</span>
-            <span>Pixels2Play</span>
-          </Link>
-          <nav className="upd-nav">
-            <Link to="/settings" className="upd-btn upd-btn-outline upd-btn-sm">
-              ✏️ Edit Child Profile
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="upd-dashboard-layout">
+      {/* Sidebar */}
+      <div className="upd-sidebar-container">
+        <NavigationSection />
+      </div>
 
-      <main className="upd-main">
+      {/* Main Content Area */}
+      <div className="upd-main-content">
+        <main className="upd-main">
         {/* ── Parent card ─────────────────────────────────────────── */}
         <section className="upd-parent-card">
           {loading ? (
@@ -184,6 +188,36 @@ export default function UserProfileDashboardSection() {
                 )}
               </div>
 
+              {/* Activity Chart */}
+              <div className="upd-section">
+                <h4 className="upd-section-title">Daily Activity (Minutes)</h4>
+                {loading ? (
+                  <Skeleton className="upd-skel-chart" style={{ height: 200 }} />
+                ) : child?.activity?.length > 0 ? (
+                  <div style={{ width: '100%', height: 250, marginTop: 16 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={child.activity.map(a => ({
+                        date: new Date(a.date).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'}) || a.date,
+                        Study: Math.round(a.study_seconds / 60),
+                        Play: Math.round(a.play_seconds / 60)
+                      }))} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="date" tick={{fontSize: 12, fill: '#64748b'}} axisLine={false} tickLine={false} />
+                        <YAxis tick={{fontSize: 12, fill: '#64748b'}} axisLine={false} tickLine={false} />
+                        <Tooltip cursor={{fill: 'rgba(0,0,0,0.04)'}} />
+                        <Legend iconType="circle" wrapperStyle={{fontSize: 14}} />
+                        <Bar dataKey="Study" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                        <Bar dataKey="Play" fill="#14b8a6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="upd-empty-text">
+                    No activity recorded yet for the past 7 days.
+                  </p>
+                )}
+              </div>
+
               {/* Badges */}
               <div className="upd-section">
                 <h4 className="upd-section-title">Achievements</h4>
@@ -217,6 +251,7 @@ export default function UserProfileDashboardSection() {
           )}
         </section>
       </main>
+      </div>
     </div>
   );
 }

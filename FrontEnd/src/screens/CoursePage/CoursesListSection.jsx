@@ -3,190 +3,124 @@ import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./CoursesListSection.css";
 
-const API_BASE =
-  (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
-
-const COURSES_URL = `${API_BASE}/courses/`;
-const SUB_STATUS_URL = `${API_BASE}/payments/subscription-status/`;
-
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
 const auth = getAuth();
 
 export default function CoursesListSection() {
   const navigate = useNavigate();
-  const [sortValue, setSortValue] = useState("");
+
   const [courses, setCourses] = useState([]);
+  const [purchasedIds, setPurchasedIds] = useState([]);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Subscription state
-  const [subscribed, setSubscribed] = useState(false);
-  const [subChecked, setSubChecked] = useState(false);
-
-  // ── Check subscription status when user is available ──────────────────
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setSubscribed(false);
-        setSubChecked(true);
-        return;
-      }
+    const unsub = onAuthStateChanged(auth, async (user) => {
       try {
-        const token = await user.getIdToken();
-        const res = await fetch(SUB_STATUS_URL, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setSubscribed(!!data.subscribed);
+        const coursesRes = await fetch(`${API_BASE}/courses/`);
+        const coursesData = await coursesRes.json();
+        setCourses(Array.isArray(coursesData) ? coursesData : []);
+
+        if (user) {
+          const token = await user.getIdToken();
+          const purchasedRes = await fetch(`${API_BASE}/courses/purchased/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const purchasedData = purchasedRes.ok ? await purchasedRes.json() : { purchased_course_ids: [], is_subscribed: false };
+          setPurchasedIds(purchasedData.purchased_course_ids || []);
+          setIsSubscribed(purchasedData.is_subscribed || false);
         }
-      } catch {
-        setSubscribed(false);
+      } catch (e) {
+        setError("Failed to load courses.");
+        console.error(e);
       } finally {
-        setSubChecked(true);
+        setLoading(false);
       }
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
-  // ── Fetch courses ─────────────────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchCourses() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(COURSES_URL);
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        const data = await res.json();
-        if (!cancelled) setCourses(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (!cancelled) setError("Failed to load courses. Please try again.");
-        console.error("[CoursesListSection] fetch error:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    fetchCourses();
-    return () => { cancelled = true; };
-  }, []);
+  const handleViewDetails = (courseId) => {
+    navigate(`/coursedetails/${courseId}`);
+  };
 
-  // ── Sort ───────────────────────────────────────────────────────────────
-  const sortedCourses = [...courses].sort((a, b) => {
-    if (sortValue === "popular") return (b.enrolled || 0) - (a.enrolled || 0);
-    if (sortValue === "rating") return (b.rating || 0) - (a.rating || 0);
-    return 0;
-  });
-
-  const getTitle = (c) => c.title || c.name || "Untitled Course";
-  const getImage = (c) => c.thumbnail || c.course_image || "https://c.animaapp.com/miujjzjc7Bh8SC/img/rectangle-5.png";
-  const getDesc = (c) => c.description || c.details || c.short_description || "";
-
-  const difficultyBadge = {
-    beginner: { label: "Beginner", color: "#10b981" },
-    intermediate: { label: "Intermediate", color: "#3b82f6" },
-    advanced: { label: "Advanced", color: "#8b5cf6" },
+  const truncate = (str, len) => {
+    if (!str) return "";
+    return str.length > len ? str.substring(0, len) + "..." : str;
   };
 
   return (
-    <section className="courses-list-section">
-      {/* ── Subscription Banner ── */}
-      {subChecked && !subscribed && (
-        <div className="sub-banner">
-          <span>🔒 Subscribe to unlock all courses</span>
-          <button className="sub-banner-btn" onClick={() => navigate("/pricing")}>
-            View Plans →
-          </button>
+    <div className="courses-list-container">
+      {loading ? (
+        <div className="loading-wrapper">
+          <div className="spinner" />
+          <p>Loading catalog…</p>
         </div>
-      )}
-
-      {/* ── Header ── */}
-      <header className="courses-header">
-        <div className="header-left">
-          <h2 className="courses-title">All Courses</h2>
-          <p className="courses-subtitle">
-            {loading ? "Loading…" : `Showing ${sortedCourses.length} course${sortedCourses.length !== 1 ? "s" : ""}`}
-          </p>
-        </div>
-        <div className="sort-box">
-          <span className="sort-label">Sort by:</span>
-          <select
-            className="sort-select"
-            value={sortValue}
-            onChange={(e) => setSortValue(e.target.value)}
-          >
-            <option value="">Default</option>
-            <option value="newest">Newest</option>
-            <option value="popular">Most Popular</option>
-            <option value="rating">Highest Rated</option>
-          </select>
-        </div>
-      </header>
-
-      {/* ── Grid ── */}
-      <div className="courses-grid">
-        {loading ? (
-          <p className="courses-placeholder">Loading courses…</p>
-        ) : error ? (
-          <p className="courses-placeholder" style={{ color: "#e53e3e" }}>{error}</p>
-        ) : sortedCourses.length === 0 ? (
-          <p className="courses-placeholder">No courses available.</p>
-        ) : (
-          sortedCourses.map((course, index) => {
-            const locked = !subscribed;
-            const badge = difficultyBadge[course.difficulty] || difficultyBadge.beginner;
+      ) : error ? (
+        <div style={{ textAlign: "center", color: "#ef4444", padding: "40px" }}>⚠️ {error}</div>
+      ) : (
+        <div className="course-cards-grid">
+          {courses.map((course) => {
+            const purchased = isSubscribed || purchasedIds.includes(course.id);
             return (
-              <div
-                key={course.id}
-                className={`course-card ${locked ? "course-card-locked" : ""}`}
-                style={{ animationDelay: `${index * 80}ms` }}
-              >
-                {/* Lock overlay */}
-                {locked && (
-                  <div className="lock-overlay">
-                    <div className="lock-badge">
-                      <span>🔒</span>
-                      <p>Subscribe to unlock</p>
-                      <button onClick={() => navigate("/pricing")}>View Plans</button>
-                    </div>
+              <div key={course.id} className="premium-white-card">
+                {/* Thumbnail Section */}
+                <div className="card-thumb-wrapper">
+                  <img 
+                    src={course.thumbnail || "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80"} 
+                    alt={course.title} 
+                  />
+                  <div className="badge-difficulty">
+                    {course.difficulty || "Beginner"}
                   </div>
-                )}
-
-                {/* Thumbnail */}
-                <div className="course-image">
-                  <img src={getImage(course)} alt={getTitle(course)} loading="lazy" />
-                  {/* Difficulty badge */}
-                  <span className="difficulty-tag" style={{ background: badge.color }}>
-                    {badge.label}
-                  </span>
+                  {isSubscribed && (
+                    <div className="badge-subscription-active">
+                       ✓ Subscription Active
+                    </div>
+                  )}
                 </div>
 
-                {/* Card body */}
-                <div className="course-content">
-                  {course.category && <p className="clist-category">{course.category}</p>}
-                  <h3 className="clist-title">{getTitle(course)}</h3>
-                  {getDesc(course) && <p className="clist-description">{getDesc(course)}</p>}
+                {/* Body Section */}
+                <div className="card-body">
+                  <span className="category-tag">{course.category || "AI & CODING"}</span>
+                  <h3 className="course-card-title">{course.title}</h3>
+                  
+                  <div className="course-meta-row">
+                    <div className="meta-item">
+                       <span role="img" aria-label="age">👶</span> Ages {course.ageGroup || "8-12"}
+                    </div>
+                  </div>
 
-                  {/* Module count */}
-                  {course.module_count > 0 && (
-                    <p className="course-meta">
-                      📦 {course.module_count} module{course.module_count !== 1 ? "s" : ""}
-                      {course.ageGroup && ` · 👦 Ages ${course.ageGroup}`}
-                    </p>
-                  )}
+                  <p className="course-card-description">
+                    {truncate(course.description, 100)}
+                  </p>
 
-                  <button
-                    className="details-btn"
-                    disabled={locked}
-                    onClick={() => !locked && navigate(`/coursedetails/${course.id}`)}
-                  >
-                    {locked ? "🔒 Locked" : "View Details"}
-                  </button>
+                  <div style={{ marginTop: 'auto' }}>
+                    <button 
+                      className="view-details-btn"
+                      onClick={() => handleViewDetails(course.id)}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+
+                {/* Footer Section */}
+                <div className="card-footer">
+                  <span className={`status-label ${purchased ? 'unlocked' : ''}`}>
+                    {purchased ? (
+                      <>Unlocked ✓</>
+                    ) : (
+                      course.price ? `${course.currency || "Rs"} ${course.price}` : "Premium"
+                    )}
+                  </span>
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
-    </section>
+          })}
+        </div>
+      )}
+    </div>
   );
 }

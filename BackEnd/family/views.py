@@ -132,20 +132,22 @@ def link_parent_child(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # CRITICAL: Verify and consume OTP BEFORE any linking operations
+    # CRITICAL: Verify OTP BEFORE any linking operations, but don't consume it yet
     # otp_target determines which email receives OTP (configurable for flexibility)
     otp_email = child_email if otp_target == 'child' else parent_email
     
-    print(f"[LINKING] Step 1: Verifying OTP for {otp_target} email={otp_email}, purpose=email_verify")
-    from users.otp import consume_otp_if_valid, OTP_PURPOSE_EMAIL_VERIFY
+    print(f"[LINKING] Step 1: Checking OTP for {otp_target} email={otp_email}, purpose=email_verify")
+    from users.otp import verify_otp, OTP_PURPOSE_EMAIL_VERIFY
     
-    otp_valid = consume_otp_if_valid(otp_email, otp, OTP_PURPOSE_EMAIL_VERIFY)
+    # We peek (consume=False) here so that if subsequent steps (like link existence check)
+    # fail, the user doesn't have to request a NEW code.
+    otp_valid, otp_msg = verify_otp(otp_email, otp, OTP_PURPOSE_EMAIL_VERIFY, consume=False)
     if not otp_valid:
-        print(f"[LINKING] OTP verification failed for {otp_email}")
+        print(f"[LINKING] OTP verification failed for {otp_email}: {otp_msg}")
         return Response(
             {
                 'error_code': 'INVALID_OTP',
-                'message': 'Invalid or expired OTP. Please request a new code.',
+                'message': otp_msg or 'Invalid or expired OTP. Please request a new code.',
             },
             status=status.HTTP_400_BAD_REQUEST
         )
@@ -163,6 +165,11 @@ def link_parent_child(request):
     
     # Handle result
     if result.get('status') == 'success':
+        # Only now, after EVERYTHING succeeded, do we consume the OTP
+        from users.otp import consume_otp_if_valid
+        consume_otp_if_valid(otp_email, otp, OTP_PURPOSE_EMAIL_VERIFY)
+        print(f"[LINKING] OTP consumed successfully after linking")
+
         # STEP 8: Return success response
         response_data = result.get('result', {})
         return Response(response_data, status=status.HTTP_201_CREATED)

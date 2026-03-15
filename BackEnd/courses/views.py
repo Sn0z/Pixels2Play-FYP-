@@ -18,9 +18,11 @@ from users.permissions import IsChild, IsParentOrAdmin, IsAdmin, IsAuthenticated
 from utils.firestore import FirestoreService, get_db
 from utils.constants import ROLE_CHILD, ROLE_UNASSIGNED
 from django.utils import timezone
+from firebase_admin import firestore
 
 
 FIRESTORE_COURSES_COLLECTION = 'courses'
+SUBSCRIPTION_PLAN_IDS = ['starter', 'pro', 'family']
 
 
 @api_view(['GET'])
@@ -381,6 +383,34 @@ def attention_status(request, module_id):
 
     return Response({'status': last.status, 'elapsed': elapsed, 'action': 'pause'})
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticatedFirebase])
+def course_activity(request):
+    """
+    Log study time (in seconds) for a user.
+    """
+    firebase_user = request.firebase_user
+    if not firebase_user:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+    duration_seconds = request.data.get('duration_seconds', 0)
+    try:
+        duration_seconds = int(duration_seconds)
+    except ValueError:
+        return Response({'error': 'Invalid duration format'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    if duration_seconds > 0:
+        try:
+            from progress.activity import ActivityService
+            student_id = firebase_user['uid']
+            ActivityService.log_activity(student_id, 'study', duration_seconds)
+        except Exception as e:
+            print(f"[ERROR] course_activity log: {e}")
+            return Response({'error': 'Failed to log activity'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    return Response({'ok': True})
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])  # Public module detail for preview pages.
 def module_detail(request, module_id):
@@ -680,3 +710,193 @@ def module_analytics(request, module_id):
         'avg_watch_seconds': avg_watch,
         'completions': completions,
     })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Course Purchase & Child Progress Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+@api_view(['POST'])
+def purchase_course(request):
+    """
+    Parent purchases a course or subscription.
+    Writes course_id/plan_id into purchased_courses/{uid} in Firestore.
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded['uid']
+    course_id = request.data.get('course_id') or request.data.get('plan_id')
+    if not course_id:
+        return Response({'error': 'course_id or plan_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        db = get_db()
+        # Verify the course or plan exists in Firestore (optional check)
+        # Note: 'starter' etc. are plan IDs, while UUIDs are likely courses.
+        
+        purchased_ref = db.collection('purchased_courses').document(uid)
+        purchased_doc = purchased_ref.get()
+
+        if purchased_doc.exists:
+            purchased_ref.update({
+                'course_ids': firestore.ArrayUnion([course_id]),
+                'updated_at': firestore.SERVER_TIMESTAMP
+            })
+        else:
+            purchased_ref.set({
+                'parent_id': uid,
+                'course_ids': [course_id],
+                'created_at': firestore.SERVER_TIMESTAMP
+            })
+
+        return Response({'ok': True, 'course_id': course_id, 'message': 'Successfully processed!'})
+    except Exception as e:
+        print(f"[ERROR] purchase_course: {e}")
+        return Response({'error': 'Failed to process purchase'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def purchased_courses(request):
+    """
+    Return list of course IDs purchased by the authenticated parent.
+    If subscribed, this will include the flag `is_subscribed: true`.
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded['uid']
+    try:
+        db = get_db()
+        # Correct collection as per screenshot: purchased_courses/{uid}
+        user_purchased_doc = db.collection('purchased_courses').document(uid).get()
+        
+        purchased = []
+        is_subscribed = False
+        
+        if user_purchased_doc.exists:
+            data = user_purchased_doc.to_dict() or {}
+            purchased = data.get('course_ids', [])
+            # Check for subscription plans
+            if any(plan_id in purchased for plan_id in SUBSCRIPTION_PLAN_IDS):
+                is_subscribed = True
+                # If subscribed, we grant access to all courses. 
+                # The frontend will check this flag.
+        
+        return Response({
+            'purchased_course_ids': purchased,
+            'is_subscribed': is_subscribed
+        })
+    except Exception as e:
+        print(f"[ERROR] purchased_courses: {e}")
+        return Response({'error': 'Failed to fetch purchased courses'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def child_purchased_courses(request):
+    """
+    Return courses purchased by the child's linked parent.
+    If the parent is subscribed, all courses are considered accessible.
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    child_uid = decoded['uid']
+    try:
+        db = get_db()
+        links = ParentChildLink.objects.filter(child_uid=child_uid, approved=True)
+        
+        all_purchased = set()
+        is_subscribed = False
+
+        if not links.exists():
+            # Fallback for testing: check if child UID exists in purchased_courses
+            doc = db.collection('purchased_courses').document(child_uid).get()
+            if doc.exists:
+                data = doc.to_dict() or {}
+                pids = data.get('course_ids', [])
+                all_purchased.update(pids)
+                if any(plan in pids for plan in SUBSCRIPTION_PLAN_IDS):
+                    is_subscribed = True
+        else:
+            # Check all linked parents
+            for link in links:
+                parent_doc = db.collection('purchased_courses').document(link.parent_uid).get()
+                if parent_doc.exists:
+                    pdata = parent_doc.to_dict() or {}
+                    pids = pdata.get('course_ids', [])
+                    all_purchased.update(pids)
+                    if any(plan in pids for plan in SUBSCRIPTION_PLAN_IDS):
+                        is_subscribed = True
+
+        # If subbed, return all course IDs from the courses collection
+        if is_subscribed:
+            course_docs = db.collection(FIRESTORE_COURSES_COLLECTION).stream()
+            subscription_granted_ids = [doc.id for doc in course_docs]
+            return Response({
+                'purchased_course_ids': subscription_granted_ids,
+                'is_subscribed': True
+            })
+
+        return Response({
+            'purchased_course_ids': list(all_purchased),
+            'is_subscribed': False
+        })
+    except Exception as e:
+        print(f"[ERROR] child_purchased_courses: {e}")
+        return Response({'error': 'Failed to fetch child courses'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET', 'POST'])
+def child_progress(request, course_id):
+    """
+    GET:  Return child's learning progress for a specific course.
+    POST: Update child's lesson completion or quiz score.
+
+    Firestore path: users/{uid}/progress/{course_id}
+    Progress doc shape:
+    {
+        completed_lessons: [lesson_id, ...],
+        quiz_score: float | null,
+        last_accessed: timestamp
+    }
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded['uid']
+    try:
+        db = get_db()
+        progress_ref = db.collection('users').document(uid).collection('progress').document(course_id)
+
+        if request.method == 'GET':
+            doc = progress_ref.get()
+            if not doc.exists:
+                return Response({'completed_lessons': [], 'quiz_score': None, 'last_accessed': None})
+            return Response(doc.to_dict())
+
+        # POST — update progress
+        completed_lesson = request.data.get('completed_lesson')  # lesson id string
+        quiz_score = request.data.get('quiz_score')              # float 0-1 or None
+
+        update_data = {'last_accessed': firestore.SERVER_TIMESTAMP}
+
+        if completed_lesson:
+            update_data['completed_lessons'] = firestore.ArrayUnion([completed_lesson])
+
+        if quiz_score is not None:
+            try:
+                update_data['quiz_score'] = float(quiz_score)
+            except (TypeError, ValueError):
+                return Response({'error': 'quiz_score must be a number'}, status=status.HTTP_400_BAD_REQUEST)
+
+        progress_ref.set(update_data, merge=True)
+        return Response({'ok': True})
+
+    except Exception as e:
+        print(f"[ERROR] child_progress({course_id}): {e}")
+        return Response({'error': 'Failed to update progress'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
