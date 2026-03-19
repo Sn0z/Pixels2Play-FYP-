@@ -275,7 +275,7 @@ export default function ChildLearnPage() {
   }
 
   return (
-    <div className="clp-page">
+    <div className={`clp-page ${courseId === "intro-ai-kids" ? "clp-page--white-theme" : ""}`}>
       {/* ── Top Bar ── */}
       <div className="clp-topbar">
         <button className="clp-back-btn" onClick={() => navigate("/child-courses")}>
