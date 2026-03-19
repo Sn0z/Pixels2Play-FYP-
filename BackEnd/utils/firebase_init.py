@@ -91,6 +91,68 @@ def _load_service_account_json(path_or_dict):
     return service_account
 
 
+def _load_service_account_from_env():
+    """
+    Load service account credentials from environment variables.
+    
+    Expected environment variables:
+    - FIREBASE_TYPE
+    - FIREBASE_PROJECT_ID
+    - FIREBASE_PRIVATE_KEY_ID
+    - FIREBASE_PRIVATE_KEY
+    - FIREBASE_CLIENT_EMAIL
+    - FIREBASE_CLIENT_ID
+    - FIREBASE_AUTH_URI
+    - FIREBASE_TOKEN_URI
+    - FIREBASE_AUTH_PROVIDER_X509_CERT_URL
+    - FIREBASE_CLIENT_X509_CERT_URL
+    - FIREBASE_UNIVERSE_DOMAIN
+    
+    Returns:
+        Dict with service account credentials if all required vars present, None otherwise
+    """
+    required_vars = [
+        'FIREBASE_TYPE',
+        'FIREBASE_PROJECT_ID',
+        'FIREBASE_PRIVATE_KEY_ID',
+        'FIREBASE_PRIVATE_KEY',
+        'FIREBASE_CLIENT_EMAIL',
+        'FIREBASE_CLIENT_ID',
+        'FIREBASE_AUTH_URI',
+        'FIREBASE_TOKEN_URI',
+    ]
+    
+    # Check if all required environment variables are present
+    missing_vars = [var for var in required_vars if not os.environ.get(var)]
+    
+    if missing_vars:
+        return None
+    
+    print(f"[DEBUG] Building Firebase credentials from environment variables")
+    
+    private_key = os.environ.get('FIREBASE_PRIVATE_KEY', '')
+    # Handle escaped newlines in environment variables
+    if '\\n' in private_key:
+        print(f"[DEBUG] Fixing escaped newlines in FIREBASE_PRIVATE_KEY from environment")
+        private_key = private_key.replace('\\n', '\n')
+    
+    service_account_dict = {
+        'type': os.environ.get('FIREBASE_TYPE'),
+        'project_id': os.environ.get('FIREBASE_PROJECT_ID'),
+        'private_key_id': os.environ.get('FIREBASE_PRIVATE_KEY_ID'),
+        'private_key': private_key,
+        'client_email': os.environ.get('FIREBASE_CLIENT_EMAIL'),
+        'client_id': os.environ.get('FIREBASE_CLIENT_ID'),
+        'auth_uri': os.environ.get('FIREBASE_AUTH_URI'),
+        'token_uri': os.environ.get('FIREBASE_TOKEN_URI'),
+        'auth_provider_x509_cert_url': os.environ.get('FIREBASE_AUTH_PROVIDER_X509_CERT_URL'),
+        'client_x509_cert_url': os.environ.get('FIREBASE_CLIENT_X509_CERT_URL'),
+        'universe_domain': os.environ.get('FIREBASE_UNIVERSE_DOMAIN', 'googleapis.com'),
+    }
+    
+    return service_account_dict
+
+
 def initialize_firebase():
     """
     Initialize Firebase Admin SDK if not already initialized.
@@ -117,16 +179,21 @@ def initialize_firebase():
         raise _initialization_error
     
     try:
-        # Get service account from settings or environment
-        service_account = settings.FIREBASE_SERVICE_ACCOUNT
-        env_override = os.environ.get("FIREBASE_SERVICE_ACCOUNT") or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        # Try to load from environment variables first (preferred)
+        service_account_dict = _load_service_account_from_env()
         
-        if env_override:
-            print(f"[DEBUG] Using FIREBASE_SERVICE_ACCOUNT from environment")
-            service_account = env_override
-        
-        # Load and validate service account
-        service_account_dict = _load_service_account_json(service_account)
+        # Fall back to file-based loading if env vars not available
+        if not service_account_dict:
+            print(f"[DEBUG] Environment variables not found, falling back to file-based loading")
+            service_account = settings.FIREBASE_SERVICE_ACCOUNT
+            env_override = os.environ.get("FIREBASE_SERVICE_ACCOUNT") or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+            
+            if env_override:
+                print(f"[DEBUG] Using FIREBASE_SERVICE_ACCOUNT from environment")
+                service_account = env_override
+            
+            # Load and validate service account
+            service_account_dict = _load_service_account_json(service_account)
         
         # Initialize Firebase Admin SDK
         print(f"[DEBUG] Initializing Firebase Admin SDK with project: {service_account_dict.get('project_id')}")

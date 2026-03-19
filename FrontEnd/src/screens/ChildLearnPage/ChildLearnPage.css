@@ -620,3 +620,271 @@
   .clp-topbar { flex-wrap: wrap; gap: 10px; }
   .clp-topbar-progress { display: none; }
 }
+
+/* ════════════════════════════════════════════════════════
+   WHITE THEME — For intro-ai-kids course
+   ════════════════════════════════════════════════════════ */
+
+.clp-page--white-theme {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-fullscreen-load {
+  background: #ffffff;
+  color: #4b5563;
+}
+
+.clp-page--white-theme .clp-topbar {
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.clp-page--white-theme .clp-back-btn {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #4b5563;
+}
+
+.clp-page--white-theme .clp-back-btn:hover {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.clp-page--white-theme .clp-course-label {
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-topbar-progress {
+  color: #6b7280;
+}
+
+.clp-page--white-theme .clp-mini-bar {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.clp-page--white-theme .clp-sidebar {
+  background: rgba(249, 250, 251, 0.95);
+  border-right: 1px solid rgba(99, 102, 241, 0.12);
+}
+
+.clp-page--white-theme .clp-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.clp-page--white-theme .clp-sidebar-title {
+  color: #9ca3af;
+}
+
+.clp-page--white-theme .clp-lesson-item {
+  color: #6b7280;
+}
+
+.clp-page--white-theme .clp-lesson-item:hover {
+  background: rgba(99, 102, 241, 0.06);
+  color: #6366f1;
+}
+
+.clp-page--white-theme .clp-lesson-item.lesson-active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: #6366f1;
+}
+
+.clp-page--white-theme .clp-lesson-item.lesson-done {
+  color: #059669;
+}
+
+.clp-page--white-theme .clp-lesson-item.lesson-done.lesson-active {
+  border-color: rgba(5, 150, 105, 0.25);
+  background: rgba(5, 150, 105, 0.06);
+}
+
+.clp-page--white-theme .clp-lesson-check {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.clp-page--white-theme .lesson-done .clp-lesson-check {
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+}
+
+.clp-page--white-theme .lesson-active .clp-lesson-check {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+}
+
+.clp-page--white-theme .clp-quiz-tag {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.clp-page--white-theme .clp-progress-card {
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.clp-page--white-theme .clp-pc-title {
+  color: #6366f1;
+}
+
+.clp-page--white-theme .clp-pc-bar-wrap {
+  color: #6366f1;
+}
+
+.clp-page--white-theme .clp-pc-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.clp-page--white-theme .clp-pc-stat strong {
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-pc-stat span {
+  color: #9ca3af;
+}
+
+.clp-page--white-theme .clp-content {
+  background: #ffffff;
+}
+
+.clp-page--white-theme .clp-content::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.clp-page--white-theme .clp-module-title {
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-done-badge {
+  background: rgba(5, 150, 105, 0.1);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  color: #059669;
+}
+
+.clp-page--white-theme .clp-tabs {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.clp-page--white-theme .clp-tab {
+  color: #6b7280;
+}
+
+.clp-page--white-theme .clp-tab:hover {
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-tab.tab-active {
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+}
+
+.clp-page--white-theme .clp-explanation-card {
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.clp-page--white-theme .clp-explanation-card p {
+  color: #374151;
+}
+
+.clp-page--white-theme .clp-lesson-text {
+  background: rgba(249, 250, 251, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.clp-page--white-theme .clp-content-h3 {
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-content-p {
+  color: #6b7280;
+}
+
+.clp-page--white-theme .clp-content-li {
+  color: #6b7280;
+}
+
+.clp-page--white-theme .clp-question {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.clp-page--white-theme .clp-question.q-correct {
+  border-color: rgba(5, 150, 105, 0.25);
+  background: rgba(5, 150, 105, 0.03);
+}
+
+.clp-page--white-theme .clp-question.q-wrong {
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.03);
+}
+
+.clp-page--white-theme .clp-q-text {
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-q-num {
+  color: #d97706;
+}
+
+.clp-page--white-theme .clp-choice {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #6b7280;
+}
+
+.clp-page--white-theme .clp-choice:hover:not(:disabled) {
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.clp-page--white-theme .clp-choice.choice-selected {
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.clp-page--white-theme .clp-choice.choice-correct {
+  border-color: rgba(5, 150, 105, 0.4);
+  color: #059669;
+  background: rgba(5, 150, 105, 0.06);
+}
+
+.clp-page--white-theme .clp-choice.choice-wrong {
+  border-color: rgba(220, 38, 38, 0.3);
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.04);
+}
+
+.clp-page--white-theme .clp-cross {
+  color: #dc2626;
+}
+
+.clp-page--white-theme .clp-score-result {
+  background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(5,150,105,0.06));
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  color: #d97706;
+}
+
+.clp-page--white-theme .clp-score-num {
+  color: #1f2937;
+}
+
+.clp-page--white-theme .clp-video-label {
+  color: #6b7280;
+}
+
+.clp-page--white-theme .clp-video-label strong {
+  color: #6366f1;
+}
+
+@media (max-width: 768px) {
+  .clp-page--white-theme .clp-sidebar {
+    border-right: none;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.12);
+  }
+}
