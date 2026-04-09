@@ -1,8 +1,28 @@
 import { useNavigate } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useState, useEffect } from "react";
 import "./ChildHomePage.css";
 
 const ChildHomePage = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const auth = getAuth();
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const profileName = user?.displayName || user?.email?.split("@")[0] || "Scholar";
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate("/login");
+  };
   return (
     <div className="kids-home-page" data-model-id="201:812">
       <div className="root">
@@ -29,6 +49,24 @@ const ChildHomePage = () => {
                 Contact Us
               </div>
             </div>
+            {/* User Info & Sign Out */}
+            {user && (
+              <div className="child-nav-user" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <span style={{ color: '#571c86', fontWeight: 'bold', fontSize: '18px' }}>
+                  Hi, {profileName}!
+                </span>
+                <button 
+                  onClick={handleSignOut}
+                  style={{ 
+                    backgroundColor: '#ff4b4b', color: 'white', border: 'none', 
+                    padding: '8px 16px', borderRadius: '20px', cursor: 'pointer',
+                    fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 6px rgba(255, 75, 75, 0.2)'
+                  }}
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

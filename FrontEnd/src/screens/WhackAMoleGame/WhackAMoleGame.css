@@ -1,161 +1,183 @@
 /* ═══════════════════════════════════════════════════
-   WHACK-A-MOLE MATH  —  White/Light Theme
-   Menu & Game-Over: white card on pastel gradient
+   WHACK-A-MOLE MATH  —  Vibrant & Fun Theme
+   Menu & Game-Over: colorful gradient backgrounds
    Playing: full-height vibrant game field
 ═══════════════════════════════════════════════════ */
 
 /* ── Page wrappers ────────────────────────────────── */
 .wam-page {
     min-height: 100vh;
-    background: linear-gradient(145deg, #f0f4ff 0%, #e8f5e9 50%, #fef9e7 100%);
+    background: linear-gradient(to bottom right, #2855ae, #7292cf);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: 'Fredoka', 'Segoe UI', sans-serif;
     padding: 2rem;
 }
 
 .wam-page.playing {
-    background: none;
+    background: linear-gradient(to bottom right, #2855ae, #7292cf);
     flex-direction: column;
     align-items: stretch;
     padding: 0;
     overflow: hidden;
 }
 
-.wam-page.playing.flash-correct { background: #dcfce7 !important; }
-.wam-page.playing.flash-wrong   { background: #fee2e2 !important; }
+.wam-page.playing.flash-correct { background: linear-gradient(to bottom right, #22c55e, #16a34a) !important; }
+.wam-page.playing.flash-wrong   { background: linear-gradient(to bottom right, #ef4444, #dc2626) !important; }
 
 /* ── White card (menu / game-over) ───────────────── */
 .wam-card {
-    background: #ffffff;
-    border-radius: 2rem;
-    max-width: 620px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    border-radius: 28px;
+    max-width: 560px;
     width: 100%;
-    padding: 3rem 2.5rem;
+    padding: 2.2rem 2rem;
     text-align: center;
     box-shadow:
-        0 0 0 1px rgba(0,0,0,0.05),
-        0 4px 6px rgba(0,0,0,0.04),
-        0 24px 64px rgba(99,102,241,0.14);
+        0 0 0 3px rgba(102, 126, 234, 0.2),
+        0 20px 60px rgba(102, 126, 234, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.8);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.2rem;
 }
 
 /* ── Hero mole on menu ───────────────────────────── */
 .wam-hero-wrap {
-    width: 130px;
-    height: 130px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 24px rgba(99,102,241,0.18);
-    animation: heroFloat 2.4s ease-in-out infinite alternate;
+    box-shadow: 0 12px 32px rgba(245, 158, 11, 0.4), inset 0 -6px 16px rgba(0,0,0,0.15);
+    border: 4px solid rgba(255, 255, 255, 0.6);
 }
 .wam-hero-mole {
-    width: 110px;
-    height: 110px;
+    width: 95px;
+    height: 95px;
     object-fit: contain;
     filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-}
-@keyframes heroFloat {
-    from { transform: translateY(0); }
-    to   { transform: translateY(-12px); }
 }
 
 /* ── Typography ──────────────────────────────────── */
 .wam-title {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     font-weight: 900;
     margin: 0;
-    color: #1e1b4b;
+    background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: -0.02em;
 }
 .wam-desc {
-    color: #64748b;
-    font-size: 1rem;
-    line-height: 1.7;
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.6;
     margin: 0;
-    max-width: 380px;
+    max-width: 360px;
+    font-weight: 500;
 }
 
 /* ── Difficulty ──────────────────────────────────── */
 .wam-pick-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: #94a3b8;
     margin: 0;
 }
 
-.wam-diff-row { display: flex; gap: 0.875rem; width: 100%; }
+.wam-diff-row { display: flex; gap: 0.7rem; width: 100%; }
 
 .wam-diff-btn {
     flex: 1;
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 1.25rem;
-    color: #334155;
+    background: linear-gradient(135deg, #f0f9ff, #dbeafe);
+    border: 3px solid #0284c7;
+    border-radius: 18px;
+    color: #0c4a6e;
     cursor: pointer;
-    padding: 1.25rem 0.75rem;
+    padding: 1.1rem 0.6rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4rem;
-    transition: all 0.2s ease;
+    gap: 0.35rem;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-weight: 700;
 }
 .wam-diff-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.09);
+    transform: translateY(-6px) scale(1.05);
+    box-shadow: 0 12px 28px rgba(2, 132, 199, 0.35);
+    border-color: #0ea5e9;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
 }
-.wam-diff-emoji { font-size: 2rem; line-height: 1; }
-.wam-diff-name  { font-size: 1rem; font-weight: 700; color: #1e1b4b; }
-.wam-diff-sub   { font-size: 0.68rem; background: #e2e8f0; color: #64748b; padding: 2px 10px; border-radius: 100px; font-weight: 600; }
+.wam-diff-btn:active {
+    transform: translateY(-3px) scale(1.02);
+}
+.wam-diff-emoji { font-size: 2rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+.wam-diff-name  { font-size: 0.95rem; font-weight: 800; color: #0c4a6e; }
+.wam-diff-sub   { font-size: 0.68rem; background: #7dd3fc; color: #0c4a6e; padding: 3px 9px; border-radius: 100px; font-weight: 700; }
 
 /* ── Buttons ─────────────────────────────────────── */
 .wam-play-btn {
     width: 100%;
-    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    background: linear-gradient(135deg, #ec4899, #f43f5e);
     color: white;
-    font-size: 1.2rem;
-    font-weight: 800;
-    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 900;
+    padding: 0.95rem 2rem;
     border: none;
-    border-radius: 100px;
+    border-radius: 50px;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(124,58,237,0.35);
-    transition: all 0.2s;
+    box-shadow: 0 10px 28px rgba(244, 63, 94, 0.35);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
-.wam-play-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(124,58,237,0.45); }
+.wam-play-btn:hover { 
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 16px 36px rgba(244, 63, 94, 0.45);
+}
+.wam-play-btn:active {
+    transform: translateY(-1px) scale(1);
+}
 
 .wam-secondary-btn {
     width: 100%;
-    background: #f1f5f9;
-    color: #475569;
-    border: 1.5px solid #e2e8f0;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 0.85rem;
-    border-radius: 100px;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 0.8rem;
+    border-radius: 50px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s;
+    box-shadow: 0 6px 16px rgba(6, 182, 212, 0.25);
 }
-.wam-secondary-btn:hover { background: #e2e8f0; }
+.wam-secondary-btn:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(6, 182, 212, 0.35);
+}
 
 .wam-back-link {
     background: transparent;
     border: none;
-    color: #94a3b8;
-    font-size: 0.875rem;
+    color: #0891b2;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: all 0.2s;
 }
-.wam-back-link:hover { color: #475569; }
+.wam-back-link:hover { 
+    color: #06b6d4;
+    text-decoration: underline;
+}
 
 .wam-go-btns { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; }
 
@@ -173,18 +195,19 @@
 
 .wam-stat {
     flex: 1;
-    border-radius: 1.25rem;
-    padding: 1.25rem 0.75rem;
-    display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-    border: 1.5px solid transparent;
+    border-radius: 1.5rem;
+    padding: 1.5rem 1rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+    border: 3px solid transparent;
+    font-weight: 700;
 }
-.wam-stat.purple { background: #faf5ff; border-color: #ddd6fe; }
-.wam-stat.purple span { color: #6d28d9; }
-.wam-stat.purple label { color: #8b5cf6; }
-.wam-stat.blue { background: #eff6ff; border-color: #bfdbfe; }
-.wam-stat.blue span { color: #1d4ed8; }
-.wam-stat.blue label { color: #3b82f6; }
-.wam-stat.green { background: #f0fdf4; border-color: #bbf7d0; }
+.wam-stat.purple { background: linear-gradient(135deg, #f3e8ff, #ede9fe); border-color: #a78bfa; }
+.wam-stat.purple span { color: #7c3aed; }
+.wam-stat.purple label { color: #9333ea; }
+.wam-stat.blue { background: linear-gradient(135deg, #cffafe, #a5f3fc); border-color: #22d3ee; }
+.wam-stat.blue span { color: #0369a1; }
+.wam-stat.blue label { color: #0891b2; }
+.wam-stat.green { background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-color: #4ade80; }
 .wam-stat.green span { color: #15803d; }
 .wam-stat.green label { color: #22c55e; }
 
@@ -202,37 +225,46 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.875rem 1.5rem;
-    background: #fff;
-    border-bottom: 2px solid #f1f5f9;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #ffffff, #f0f9ff);
+    border-bottom: 3px solid #0284c7;
     flex-shrink: 0;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    gap: 0.5rem;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.15);
+    gap: 1rem;
 }
-.wam-hud-item { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
-.hud-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; }
-.hud-value { font-size: 1.9rem; font-weight: 900; color: #1e1b4b; line-height: 1; transition: color 0.4s; }
-.score-val { color: #4f46e5; }
+.wam-hud-item { display: flex; flex-direction: column; align-items: center; min-width: 90px; }
+.hud-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #0891b2; }
+.hud-value { font-size: 2.2rem; font-weight: 900; color: #0c4a6e; line-height: 1; transition: color 0.4s; }
+.score-val { color: #f43f5e; }
 
 .wam-hud-problem { flex: 1; text-align: center; }
-.problem-text { font-size: 1.9rem; font-weight: 900; color: #4f46e5; white-space: nowrap; }
+.problem-text { font-size: 2.2rem; font-weight: 900; color: #0c4a6e; white-space: nowrap; background: linear-gradient(135deg, #0284c7, #0891b2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
 .wam-music-btn {
-    background: #f1f5f9;
-    border: 1.5px solid #e2e8f0;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: 3px solid #f59e0b;
     border-radius: 12px;
-    font-size: 1.3rem;
-    width: 42px; height: 42px;
+    font-size: 1.4rem;
+    width: 50px; height: 50px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
     flex-shrink: 0;
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
 }
-.wam-music-btn:hover { background: #e2e8f0; transform: scale(1.1); }
+.wam-music-btn:hover { 
+    transform: scale(1.12) rotate(5deg);
+    box-shadow: 0 10px 24px rgba(245, 158, 11, 0.4);
+}
 
 /* ── Timer bar ───────────────────────────────────── */
-.wam-timer-bar { height: 8px; background: #f1f5f9; flex-shrink: 0; }
-.wam-timer-fill { height: 100%; border-radius: 0 6px 6px 0; transition: width 1s linear, background 0.5s ease; }
+.wam-timer-bar { height: 10px; background: #0f172a; flex-shrink: 0; border-bottom: 2px solid #0284c7; }
+.wam-timer-fill { 
+    height: 100%; 
+    border-radius: 0 6px 6px 0; 
+    transition: width 1s linear, background 0.5s ease;
+    background: linear-gradient(90deg, #06b6d4, #10b981, #82ca9d);
+}
 
 /* ── Grass field ─────────────────────────────────── */
 .wam-field {
@@ -240,7 +272,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(ellipse at 50% 0%, #16a34a 0%, #15803d 50%, #14532d 100%);
+    background: radial-gradient(ellipse at 50% 0%, #22c55e 0%, #16a34a 40%, #15803d 70%, #0d4a27 100%);
     padding: 2.5rem 1.5rem 2rem;
     overflow: auto;
     position: relative;
@@ -248,7 +280,7 @@
 .wam-field::before {
     content: '';
     position: absolute; inset: 0;
-    background: repeating-linear-gradient(90deg, transparent 0, transparent 18px, rgba(0,0,0,0.04) 18px, rgba(0,0,0,0.04) 19px);
+    background: repeating-linear-gradient(90deg, transparent 0, transparent 20px, rgba(0,0,0,0.08) 20px, rgba(0,0,0,0.08) 21px);
     pointer-events: none;
 }
 
@@ -275,9 +307,9 @@
     transform: translateX(-50%);
     width: 120px;
     height: 34px;
-    background: radial-gradient(ellipse, #1a0800 20%, #3b1a0a 90%);
+    background: radial-gradient(ellipse, #4b2f1f 20%, #6b4423 50%, #8b5d3f 90%);
     border-radius: 50%;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 -4px 8px rgba(0,0,0,0.4);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.65), inset 0 -6px 12px rgba(0,0,0,0.5);
     z-index: 3;
 }
 
@@ -331,26 +363,27 @@
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
-    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.35));
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4)) brightness(1.05);
     display: block;
 }
 .mole-hole:hover .mole-wrap.up .mole-img {
-    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.45)) brightness(1.06);
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,0.5)) brightness(1.15);
 }
 
 /* Number printed on the sign the mole holds.
    The sign sits in the lower ~33% of the image, centred horizontally. */
 .mole-sign-number {
     position: absolute;
-    bottom: 27%;       /* moved up a few pixels */
+    bottom: 27%;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     font-weight: 900;
-    color: #1e1b4b;
+    color: #1a1a2e;
     line-height: 1;
     pointer-events: none;
-    text-shadow: 0 1px 2px rgba(255,255,255,0.95);
+    text-shadow: 0 2px 4px rgba(255,255,255,0.9), 
+                 0 -1px 2px rgba(0,0,0,0.2);
     letter-spacing: -0.02em;
     white-space: nowrap;
 }
@@ -371,16 +404,17 @@
 /* ── Hammer ──────────────────────────────────────── */
 .hammer {
     position: absolute;
-    top: -16px;
-    right: -4px;
-    font-size: 2.8rem;
+    top: -20px;
+    right: -8px;
+    font-size: 3.2rem;
     z-index: 10;
     pointer-events: none;
     transform-origin: bottom right;
     animation: hammerSwing 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
 }
-.hammer.hit-correct { filter: drop-shadow(0 2px 6px rgba(34,197,94,0.7)); }
-.hammer.hit-wrong   { filter: drop-shadow(0 2px 6px rgba(239,68,68,0.7)); }
+.hammer.hit-correct { filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.9)) drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+.hammer.hit-wrong   { filter: drop-shadow(0 0 12px rgba(255, 67, 67, 0.9)) drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
 
 @keyframes hammerSwing {
     0%   { transform: rotate(-70deg) scale(0.8); opacity: 1; }
@@ -391,18 +425,19 @@
 
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 540px) {
-    .wam-card        { padding: 2rem 1.25rem; border-radius: 1.5rem; }
-    .wam-title       { font-size: 1.9rem; }
+    .wam-card        { padding: 2rem 1.25rem; border-radius: 24px; }
+    .wam-title       { font-size: 2.2rem; }
     .wam-diff-row    { flex-direction: column; }
-    .wam-hud         { padding: 0.6rem 0.75rem; gap: 0.25rem; }
+    .wam-hud         { padding: 0.75rem 0.75rem; gap: 0.5rem; }
     .problem-text,
-    .hud-value       { font-size: 1.4rem; }
+    .hud-value       { font-size: 1.6rem; }
+    .wam-music-btn   { width: 44px; height: 44px; font-size: 1.2rem; }
     .mole-hole       { width: 110px; height: 120px; }
     .hole-clip       { width: 105px; height: 102px; }
     .hole-shadow     { width: 104px; height: 30px; }
     .mole-wrap       { width: 90px; }
     .mole-img-wrap,
     .mole-img        { width: 90px; height: 90px; }
-    .mole-sign-number { font-size: 1.1rem; }
+    .mole-sign-number { font-size: 1.2rem; }
     .wam-stats-grid  { flex-direction: column; }
 }

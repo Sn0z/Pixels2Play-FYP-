@@ -136,7 +136,11 @@ const Login = () => {
                         <button onClick={handlePasswordReset} className="reset-send-btn">
                             Send Reset Email
                         </button>
-                        {resetMessage && <p className="reset-message">{resetMessage}</p>}
+                        {resetMessage && (
+                            <p className={`reset-message ${resetMessage.includes('✅') ? 'reset-success' : 'reset-error'}`}>
+                                {resetMessage}
+                            </p>
+                        )}
 
                         <button onClick={() => setShowReset(false)} className="reset-close-btn">
                             Close

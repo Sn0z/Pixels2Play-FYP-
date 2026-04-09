@@ -353,7 +353,7 @@ export default function WhackAMoleGame() {
                     ))}
                 </div>
 
-                <button className="wam-play-btn" onClick={startGame}>🎮 Play Now</button>
+                <button className="wam-play-btn" onClick={startGame}>Play Now</button>
                 <button className="wam-back-link" onClick={() => navigate('/kidshome')}>← Back to Home</button>
             </div>
         </div>
