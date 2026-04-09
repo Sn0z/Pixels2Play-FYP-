@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/authContext";
 import "./RoleSwitcher.css";
+import KidsChatbot from "../chatbot/Chatbot";
 
 // Professional SVGs instead of lucide-react to avoid transformation errors
 const Icons = {
@@ -19,6 +20,7 @@ const Icons = {
 export default function RoleSwitcher() {
   const { userProfile, userLoggedIn, profileLoading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -28,12 +30,13 @@ export default function RoleSwitcher() {
   // Determine visibility
   // USER REQUIREMENT: Only visible on / and /kidshome
   const allowedPaths = ["/", "/kidshome"];
-  if (!allowedPaths.includes(currentPath)) {
-    return null;
-  }
 
-  // 1. If strictly logged in as child, hide.
-  if (userLoggedIn && userProfile?.role === "child") {
+  const showRoleSwitcher = allowedPaths.includes(currentPath) && 
+    userLoggedIn && 
+    (userProfile?.role === "PARENT" || userProfile?.role === "admin");
+  const showChatbot = currentPath === "/kidshome";
+
+  if (!showRoleSwitcher && !showChatbot) {
     return null;
   }
 
@@ -46,7 +49,7 @@ export default function RoleSwitcher() {
 
   return (
     <div className="role-switcher-container">
-      {isOpen && (
+      {showRoleSwitcher && isOpen && (
         <div className="role-switcher-menu">
           <div 
             className={`role-option ${!isKidMode ? "active" : ""}`}
@@ -65,10 +68,32 @@ export default function RoleSwitcher() {
         </div>
       )}
       
-      <div className={`role-switcher-bubble ${isOpen ? "open" : ""}`} onClick={toggleMenu}>
-        <span className="role-switcher-label">Switch Mode</span>
-        <Icons.SwapIcon />
-      </div>
+      {showRoleSwitcher && (
+        <div className={`role-switcher-bubble ${isOpen ? "open" : ""}`} onClick={toggleMenu}>
+          <span className="role-switcher-label">Switch Mode</span>
+          <Icons.SwapIcon />
+        </div>
+      )}
+
+      {showChatbot && (
+        <>
+          <button
+            className="chatbot-float-btn"
+            onClick={() => setChatOpen((o) => !o)}
+            title="Ask Pixel - AI Study Buddy"
+            style={{ position: 'static' }}
+          >
+            {chatOpen ? "✕" : "🤖"}
+            <span className="float-tooltip">Ask Pixel!</span>
+          </button>
+          
+          {chatOpen && (
+            <div className="chatbot-float-panel" style={{ bottom: '110px' }}>
+              <KidsChatbot floating={true} onClose={() => setChatOpen(false)} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -8,8 +8,8 @@
 
 .clp-page {
   min-height: 100vh;
-  background: #0a0e1a;
-  color: #e2e8f0;
+  background: #ffffff;
+  color: #1f2937;
   font-family: 'Nunito', 'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
@@ -23,8 +23,8 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background: #0a0e1a;
-  color: #94a3b8;
+  background: #ffffff;
+  color: #6b7280;
   font-family: 'Nunito', sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
@@ -45,17 +45,17 @@
   align-items: center;
   gap: 20px;
   padding: 14px 24px;
-  background: rgba(15, 23, 42, 0.95);
-  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
 .clp-back-btn {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #94a3b8;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
   font-family: inherit;
   font-size: 0.85rem;
   font-weight: 700;
@@ -66,16 +66,16 @@
   white-space: nowrap;
 }
 .clp-back-btn:hover {
-  background: rgba(139, 92, 246, 0.12);
-  color: #c4b5fd;
-  border-color: rgba(139, 92, 246, 0.3);
+  background: #e5e7eb;
+  color: #1f2937;
+  border-color: #d1d5db;
 }
 
 .clp-course-label {
   flex: 1;
   font-size: 0.95rem;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #1f2937;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -87,13 +87,13 @@
   gap: 10px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #6b7280;
   white-space: nowrap;
 }
 .clp-mini-bar {
   width: 80px;
   height: 6px;
-  background: rgba(255,255,255,0.1);
+  background: #e5e7eb;
   border-radius: 100px;
   overflow: hidden;
 }
@@ -116,7 +116,7 @@
 .clp-sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: rgba(15, 23, 42, 0.8);
+  background: #f9fafb;
   border-right: 1px solid rgba(139, 92, 246, 0.15);
   overflow-y: auto;
   padding: 20px 14px;
@@ -126,7 +126,7 @@
 }
 .clp-sidebar::-webkit-scrollbar { width: 4px; }
 .clp-sidebar::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.25);
   border-radius: 4px;
 }
 
@@ -135,7 +135,7 @@
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #9ca3af;
   padding: 0 6px;
   margin-bottom: 4px;
 }
@@ -154,29 +154,29 @@
   font-family: inherit;
   font-size: 0.83rem;
   font-weight: 700;
-  color: #64748b;
+  color: #6b7280;
   transition: all 0.2s;
 }
 .clp-lesson-item:hover {
-  background: rgba(139, 92, 246, 0.08);
-  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.06);
+  color: #7c3aed;
 }
 .clp-lesson-item.lesson-active {
-  background: rgba(139, 92, 246, 0.14);
-  border-color: rgba(139, 92, 246, 0.3);
-  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: #6d28d9;
 }
-.clp-lesson-item.lesson-done { color: #34d399; }
+.clp-lesson-item.lesson-done { color: #059669; }
 .clp-lesson-item.lesson-done.lesson-active {
-  border-color: rgba(52, 211, 153, 0.3);
-  background: rgba(52, 211, 153, 0.08);
+  border-color: rgba(5, 150, 105, 0.25);
+  background: rgba(5, 150, 105, 0.06);
 }
 
 .clp-lesson-check {
   min-width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.06);
+  background: #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -184,12 +184,12 @@
   font-weight: 900;
 }
 .lesson-done .clp-lesson-check {
-  background: rgba(52, 211, 153, 0.18);
-  color: #34d399;
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
 }
 .lesson-active .clp-lesson-check {
-  background: rgba(139, 92, 246, 0.2);
-  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.15);
+  color: #7c3aed;
 }
 
 .clp-lesson-name { flex: 1; line-height: 1.3; }
@@ -197,25 +197,25 @@
 .clp-quiz-tag {
   font-size: 0.62rem;
   font-weight: 900;
-  background: rgba(245, 158, 11, 0.18);
-  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
   padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 /* ── Progress Card (in sidebar) ──────────────────────────── */
 .clp-progress-card {
   margin-top: auto;
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.15);
   border-radius: 14px;
   padding: 16px;
 }
 .clp-pc-title {
   font-size: 0.78rem;
   font-weight: 800;
-  color: #a5b4fc;
+  color: #7c3aed;
   margin-bottom: 10px;
 }
 .clp-pc-bar-wrap {
@@ -225,18 +225,18 @@
   margin-bottom: 12px;
   font-size: 0.75rem;
   font-weight: 800;
-  color: #a5b4fc;
+  color: #7c3aed;
 }
 .clp-pc-bar {
   flex: 1;
   height: 6px;
-  background: rgba(255,255,255,0.08);
+  background: #e5e7eb;
   border-radius: 100px;
   overflow: hidden;
 }
 .clp-pc-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
   border-radius: 100px;
   transition: width 0.5s;
 }
@@ -253,11 +253,11 @@
 .clp-pc-stat strong {
   font-size: 1rem;
   font-weight: 900;
-  color: #e2e8f0;
+  color: #1f2937;
 }
 .clp-pc-stat span {
   font-size: 0.65rem;
-  color: #64748b;
+  color: #9ca3af;
   font-weight: 700;
 }
 
@@ -272,7 +272,7 @@
 }
 .clp-content::-webkit-scrollbar { width: 5px; }
 .clp-content::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.2);
   border-radius: 4px;
 }
 
@@ -285,14 +285,14 @@
 .clp-module-title {
   font-size: clamp(1.2rem, 2.5vw, 1.6rem);
   font-weight: 900;
-  color: #f1f5f9;
+  color: #1f2937;
   line-height: 1.3;
   flex: 1;
 }
 .clp-done-badge {
-  background: rgba(52, 211, 153, 0.15);
-  border: 1px solid rgba(52, 211, 153, 0.3);
-  color: #6ee7b7;
+  background: rgba(5, 150, 105, 0.1);
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  color: #059669;
   font-size: 0.78rem;
   font-weight: 800;
   padding: 4px 12px;
@@ -303,7 +303,7 @@
 .clp-tabs {
   display: flex;
   gap: 4px;
-  background: rgba(255,255,255,0.04);
+  background: #f3f4f6;
   border-radius: 12px;
   padding: 4px;
   width: fit-content;
@@ -314,16 +314,17 @@
   font-family: inherit;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #64748b;
+  color: #6b7280;
   padding: 9px 18px;
   border-radius: 9px;
   cursor: pointer;
   transition: all 0.2s;
 }
-.clp-tab:hover { color: #e2e8f0; }
+.clp-tab:hover { color: #1f2937; }
 .clp-tab.tab-active {
-  background: rgba(139, 92, 246, 0.18);
-  color: #c4b5fd;
+  background: #ffffff;
+  color: #7c3aed;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 /* ── Tab Content ──────────────────────────────────────────── */
@@ -339,8 +340,8 @@
 .clp-explanation-card {
   display: flex;
   gap: 14px;
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(139, 92, 246, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.15);
   border-radius: 14px;
   padding: 18px 20px;
 }
@@ -348,12 +349,12 @@
 .clp-explanation-card p {
   font-size: 0.92rem;
   line-height: 1.7;
-  color: #c7d2fe;
+  color: #374151;
 }
 
 .clp-lesson-text {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 24px 28px;
   line-height: 1.8;
@@ -361,17 +362,17 @@
 .clp-content-h3 {
   font-size: 1rem;
   font-weight: 800;
-  color: #f1f5f9;
+  color: #1f2937;
   margin: 18px 0 8px;
 }
 .clp-content-p {
   font-size: 0.93rem;
-  color: #94a3b8;
+  color: #4b5563;
   margin: 6px 0;
 }
 .clp-content-li {
   font-size: 0.93rem;
-  color: #94a3b8;
+  color: #4b5563;
   margin: 4px 0 4px 18px;
   list-style: disc;
 }
@@ -398,11 +399,11 @@
 .clp-mark-done-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .clp-done-msg {
-  color: #6ee7b7;
+  color: #059669;
   font-size: 0.92rem;
   font-weight: 700;
-  background: rgba(52, 211, 153, 0.08);
-  border: 1px solid rgba(52, 211, 153, 0.2);
+  background: rgba(5, 150, 105, 0.06);
+  border: 1px solid rgba(5, 150, 105, 0.15);
   border-radius: 10px;
   padding: 12px 16px;
 }
@@ -421,7 +422,7 @@
   border-radius: 16px;
   overflow: hidden;
   background: #000;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
 }
 .clp-video-frame {
   width: 100%;
@@ -430,11 +431,11 @@
 }
 .clp-video-label {
   font-size: 0.88rem;
-  color: #64748b;
+  color: #6b7280;
   font-weight: 700;
   padding: 4px 0;
 }
-.clp-video-label strong { color: #c4b5fd; }
+.clp-video-label strong { color: #7c3aed; }
 
 /* ── Quiz Panel ──────────────────────────────────────────── */
 .clp-quiz {
@@ -444,8 +445,8 @@
   max-width: 720px;
 }
 .clp-quiz-header {
-  background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,88,12,0.1));
-  border: 1px solid rgba(245,158,11,0.25);
+  background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(234,88,12,0.06));
+  border: 1px solid rgba(245,158,11,0.2);
   border-radius: 16px;
   padding: 20px 24px;
   text-align: center;
@@ -454,14 +455,14 @@
 .clp-quiz-title {
   font-size: 1.3rem;
   font-weight: 900;
-  color: #fde68a;
+  color: #92400e;
   margin: 0 0 6px;
 }
-.clp-quiz-subtitle { font-size: 0.88rem; color: #94a3b8; }
+.clp-quiz-subtitle { font-size: 0.88rem; color: #6b7280; }
 
 .clp-question {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 18px 20px;
   display: flex;
@@ -470,8 +471,8 @@
   transition: border-color 0.3s;
 }
 .clp-question.q-correct {
-  border-color: rgba(52, 211, 153, 0.3);
-  background: rgba(52, 211, 153, 0.04);
+  border-color: rgba(5, 150, 105, 0.3);
+  background: rgba(5, 150, 105, 0.04);
 }
 .clp-question.q-wrong {
   border-color: rgba(239, 68, 68, 0.3);
@@ -481,10 +482,10 @@
 .clp-q-text {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #f1f5f9;
+  color: #1f2937;
   line-height: 1.5;
 }
-.clp-q-num { color: #fbbf24; margin-right: 6px; }
+.clp-q-num { color: #d97706; margin-right: 6px; }
 
 .clp-choices {
   display: flex;
@@ -495,38 +496,38 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 11px 14px;
   cursor: pointer;
   font-family: inherit;
   font-size: 0.88rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #4b5563;
   text-align: left;
   transition: all 0.18s;
   width: 100%;
 }
 .clp-choice:hover:not(:disabled) {
   border-color: rgba(139, 92, 246, 0.35);
-  color: #c4b5fd;
-  background: rgba(139, 92, 246, 0.08);
+  color: #6d28d9;
+  background: rgba(139, 92, 246, 0.05);
 }
 .clp-choice.choice-selected {
   border-color: rgba(139, 92, 246, 0.5);
-  color: #c4b5fd;
-  background: rgba(139, 92, 246, 0.12);
+  color: #6d28d9;
+  background: rgba(139, 92, 246, 0.08);
 }
 .clp-choice.choice-correct {
-  border-color: rgba(52, 211, 153, 0.5);
-  color: #6ee7b7;
-  background: rgba(52, 211, 153, 0.1);
+  border-color: rgba(5, 150, 105, 0.5);
+  color: #059669;
+  background: rgba(5, 150, 105, 0.06);
 }
 .clp-choice.choice-wrong {
   border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  background: rgba(239, 68, 68, 0.04);
 }
 .clp-choice-dot {
   width: 8px; height: 8px;
@@ -564,19 +565,19 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(16,185,129,0.12));
-  border: 1px solid rgba(245,158,11,0.3);
+  background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(16,185,129,0.06));
+  border: 1px solid rgba(245,158,11,0.2);
   border-radius: 14px;
   padding: 18px 22px;
   font-size: 1rem;
   font-weight: 800;
-  color: #fde68a;
+  color: #92400e;
 }
 .clp-score-num {
   margin-left: auto;
   font-size: 1.8rem;
   font-weight: 900;
-  color: #fff;
+  color: #1f2937;
 }
 
 /* ── Next Lesson Button ──────────────────────────────────── */
@@ -592,12 +593,12 @@
   padding: 13px 28px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
   margin-top: 8px;
 }
 .clp-next-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45);
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
@@ -887,4 +888,102 @@
     border-right: none;
     border-bottom: 1px solid rgba(99, 102, 241, 0.12);
   }
+}
+
+/* ── Pixel Help Panel (inside Quiz) ──────────────────────────────────────── */
+@keyframes clp-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes clp-slideInUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes clp-floatBot {
+  0%, 100% { transform: translateY(0);   }
+  50%       { transform: translateY(-8px); }
+}
+
+.clp-pixel-help-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 18px;
+  padding: 22px 24px;
+  animation: clp-slideInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+  margin-top: 4px;
+}
+
+.clp-pixel-icon {
+  font-size: 44px;
+  flex-shrink: 0;
+  animation: clp-floatBot 2.5s ease-in-out infinite;
+}
+
+.clp-pixel-content {
+  flex: 1;
+}
+
+.clp-pixel-title {
+  margin: 0 0 7px;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #fff;
+  font-family: inherit;
+}
+
+.clp-pixel-desc {
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.87);
+  line-height: 1.55;
+  font-family: inherit;
+}
+
+.clp-pixel-desc strong {
+  color: #fde68a;
+}
+
+.clp-pixel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #5b21b6;
+  border: none;
+  border-radius: 50px;
+  padding: 11px 22px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.clp-pixel-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.24);
+}
+.clp-pixel-btn:active {
+  transform: translateY(0);
+}
+
+/* White-theme overrides for Pixel panel */
+.clp-page--white-theme .clp-pixel-help-panel {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Chatbot container inside the overlay for ChildLearnPage */
+.clp-pixel-help-panel ~ div > .chatbot-container.floating,
+.chatbot-container.floating {
+  width: 100%;
+  max-width: 600px;
+  max-height: 88vh;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.25);
+  animation: clp-slideInUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }

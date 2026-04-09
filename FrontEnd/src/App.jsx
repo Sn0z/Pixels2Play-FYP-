@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./screens/Home";
 import Login from "./screens/Login/Login";
 import SignUp from "./screens/SignUp/SignUp";
+import ForgotPassword from "./screens/ForgotPassword/ForgotPassword";
 import Setup1 from "./screens/ChildAccountSetup/ChildAccountSetup1";
 import Setup2 from "./screens/ChildAccountSetup/ChildAccountSetup2";
 import Setup3 from "./screens/ChildAccountSetup/ChildAccountSetup3";
@@ -9,7 +10,7 @@ import CoursesPage from "./screens/CoursePage/CoursePage";
 import AdminPanel from "./screens/AdminPannel/AdminDasboard";
 import CourseDetailSection from "./screens/CoursePage/CourseDetailSection";
 import Contact from "./screens/ContactPage/ContactPage";
-import ChatBot from "./chatbot/Chatbot";
+import KidsChatbot from "./chatbot/Chatbot";
 import CheckOut from "./screens/CheckOut/CheckOut";
 import WatchDemo from "./screens/WatchDemo";
 import AdminModules from "./screens/Admin/AdminModules";
@@ -37,6 +38,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/setup1" element={<Setup1 />} />
             <Route path="/setup2" element={<Setup2 />} />
             <Route path="/setup3" element={<Setup3 />} />
@@ -47,7 +49,8 @@ function App() {
             <Route path="/watch/:moduleId" element={<WatchDemo />} />
             <Route path="/admin/modules" element={<AdminModules />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/chatbot" element={<ChatBot />} />
+            <Route path="/chatbot" element={<KidsChatbot />} />
+            <Route path="/kidschat" element={<KidsChatbot />} />
             <Route path="/checkout" element={<CheckOut />} />
             <Route path="/kidshome" element={<KidsHome />} />
             <Route path="/dashboard" element={<Dashboard />} />

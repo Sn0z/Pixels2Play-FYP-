@@ -332,6 +332,134 @@
   background: #2563eb;
 }
 
+/* ─── OTP Section (Step 2 linking) ──────────────────────── */
+.setup2-otp-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.setup2-otp-input-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.setup2-otp-input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  background: #f9fafb;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  color: #1f2937;
+}
+
+.setup2-otp-input::placeholder {
+  color: #d1d5db;
+  font-size: 1.6rem;
+}
+
+.setup2-otp-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  transform: scale(1.05);
+}
+
+.setup2-otp-input-filled {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.setup2-otp-success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.setup2-otp-success-message span {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.setup2-otp-resend {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.setup2-otp-resend p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.setup2-otp-resend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.setup2-otp-resend-btn:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.setup2-otp-resend-btn:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.setup2-otp-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.setup2-otp-back-btn {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.setup2-otp-back-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.setup2-otp-back-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Wrapper background */
 .cas-wrapper {
   background: #f6f7f8;

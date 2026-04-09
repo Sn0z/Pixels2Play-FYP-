@@ -48,6 +48,12 @@
     background-color: transparent;
 }
 
+.upd-center-content {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
 /* ── Header ─────────────────────────────────────────────────── */
 .upd-header {
     position: sticky;

@@ -25,6 +25,7 @@
   display: flex;
   gap: 12px;
   color: #555;
+  font-size: 13px;
 }
 
 .notice {
@@ -38,41 +39,71 @@
 
 .primary {
   margin-top: 12px;
-  padding: 10px 14px;
+  padding: 10px 24px;
   background: #4f46e4;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+}
+.primary:hover:not(:disabled) {
+  background: #4338ca;
+  transform: translateY(-1px);
+}
+.primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .quiz-area {
   background: #fff;
   border: 1px solid #e6e9ef;
-  padding: 16px;
-  border-radius: 8px;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.quiz-area h3 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e1b4b;
 }
 
 .question {
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
 .q-text {
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: #1e1b4b;
 }
 
 .choices {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .choice {
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #e6e9ef;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid #e6e9ef;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.choice:hover {
+  border-color: #c4b5fd;
+  background: #f5f3ff;
 }
 
 .choice.selected {
@@ -82,25 +113,56 @@
 
 .choice.correct {
   background: #e6ffef;
-  border-color: #b7f0d5;
+  border-color: #6ee7b7;
 }
 
 .choice.incorrect {
   background: #fff1f0;
-  border-color: #f5c2c2;
+  border-color: #f87171;
+}
+
+.choice.show-correct {
+  background: #e6ffef;
+  border-color: #6ee7b7;
+}
+
+.correct-answer-hint {
+  font-size: 12px;
+  color: #059669;
+  font-weight: 600;
+  margin-left: auto;
 }
 
 .quiz-actions {
-  margin-top: 8px;
+  margin-top: 16px;
 }
 
 .result {
-  margin-top: 12px;
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
   font-weight: 700;
+  font-size: 16px;
+}
+
+.result-passed {
+  background: #ecfdf5;
+  border: 2px solid #6ee7b7;
+  color: #065f46;
+}
+
+.result-failed {
+  background: #fff7ed;
+  border: 2px solid #fcd34d;
+  color: #92400e;
 }
 
 .error {
   color: #b91c1c;
+  padding: 10px;
+  background: #fff1f0;
+  border-radius: 8px;
+  border: 1px solid #f5c2c2;
 }
 
 .attention-notice {
@@ -120,4 +182,114 @@
   border-radius: 6px;
   color: #b91c1c;
   font-weight: 700;
+}
+
+/* ── Pixel Help Panel ────────────────────────────────────────────────── */
+.pixel-help-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 24px;
+  animation: slideInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.35);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pixel-help-icon {
+  font-size: 48px;
+  flex-shrink: 0;
+  animation: float 2.5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+.pixel-help-content {
+  flex: 1;
+}
+
+.pixel-help-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.pixel-help-desc {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+}
+
+.pixel-help-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #4f46e4;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.pixel-help-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+.pixel-help-btn:active {
+  transform: translateY(0);
+}
+
+.pixel-help-btn-icon {
+  font-size: 18px;
+}
+
+/* ── Chatbot Overlay ─────────────────────────────────────────────────── */
+.chatbot-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.chatbot-overlay > .chatbot-container.floating {
+  width: 100%;
+  max-width: 600px;
+  max-height: 88vh;
+  animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }

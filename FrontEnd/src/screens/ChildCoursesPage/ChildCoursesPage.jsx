@@ -69,7 +69,7 @@ export default function ChildCoursesPage() {
   }, [navigate]);
 
   // Filter to only purchased courses
-  const purchasedCourses = courses.filter((c) => purchasedIds.includes(c.id));
+  const purchasedCourses = isSubscribed ? courses : courses.filter((c) => purchasedIds.includes(c.id));
 
   const getProgress = (courseId, totalLessons) => {
     const p = progressMap[courseId];
@@ -91,11 +91,18 @@ export default function ChildCoursesPage() {
     c.thumbnail ||
     "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80";
 
+  const profileName = user?.displayName || user?.email?.split("@")[0] || "Scholar";
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate("/login");
+  };
+
   return (
     <div className="ccp-page">
       {/* Navigation matching ChildHomePage */}
       <div className="main-navigation">
-        <div className="frame-frame-2">
+        <div className="frame-frame-2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 20px', boxSizing: 'border-box' }}>
           <div className="nav-links">
             <div 
               className="text-wrapper-96" 
@@ -115,6 +122,22 @@ export default function ChildCoursesPage() {
             <div className="text-wrapper-99" style={{cursor:"pointer"}} onClick={() => navigate("/child-contact")}>
               Contact Us
             </div>
+          </div>
+          {/* User Info & Sign Out */}
+          <div className="child-nav-user" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <span style={{ color: '#571c86', fontWeight: 'bold', fontSize: '18px' }}>
+              Hi, {profileName}!
+            </span>
+            <button 
+              onClick={handleSignOut}
+              style={{ 
+                backgroundColor: '#ff4b4b', color: 'white', border: 'none', 
+                padding: '8px 16px', borderRadius: '20px', cursor: 'pointer',
+                fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 6px rgba(255, 75, 75, 0.2)'
+              }}
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </div>

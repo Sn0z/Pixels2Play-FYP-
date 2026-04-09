@@ -458,7 +458,8 @@ def update_watch(request, module_id):
         return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # parental approval check: if this firebase user is a child with a pending/unapproved link, block actions
-    if ParentChildLink.objects.filter(child_uid=firebase_uid, approved=False).exists():
+    links = FirestoreService.get_family_links_by_child(firebase_uid)
+    if links and any(not link.get('approved', True) for link in links):
         return Response({'error': 'Parent approval required'}, status=status.HTTP_403_FORBIDDEN)
 
     current_time = request.data.get('current_time')
@@ -545,7 +546,8 @@ def submit_quiz(request, module_id):
         return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # parental approval check: block if child account has an unapproved parent link
-    if ParentChildLink.objects.filter(child_uid=firebase_uid, approved=False).exists():
+    links = FirestoreService.get_family_links_by_child(firebase_uid)
+    if links and any(not link.get('approved', True) for link in links):
         return Response({'error': 'Parent approval required'}, status=status.HTTP_403_FORBIDDEN)
 
     answers = request.data.get('answers')
@@ -807,12 +809,12 @@ def child_purchased_courses(request):
     child_uid = decoded['uid']
     try:
         db = get_db()
-        links = ParentChildLink.objects.filter(child_uid=child_uid, approved=True)
+        links = FirestoreService.get_family_links_by_child(child_uid)
         
         all_purchased = set()
         is_subscribed = False
 
-        if not links.exists():
+        if not links:
             # Fallback for testing: check if child UID exists in purchased_courses
             doc = db.collection('purchased_courses').document(child_uid).get()
             if doc.exists:
@@ -824,7 +826,9 @@ def child_purchased_courses(request):
         else:
             # Check all linked parents
             for link in links:
-                parent_doc = db.collection('purchased_courses').document(link.parent_uid).get()
+                if not link.get('approved', True):
+                    continue
+                parent_doc = db.collection('purchased_courses').document(link['parent_id']).get()
                 if parent_doc.exists:
                     pdata = parent_doc.to_dict() or {}
                     pids = pdata.get('course_ids', [])

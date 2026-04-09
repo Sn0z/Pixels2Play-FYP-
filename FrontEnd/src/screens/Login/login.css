@@ -114,13 +114,18 @@
   text-align: right;
 }
 
-.login-forgot button {
+.login-forgot a {
   color: #3b82f6;
   font-size: 14px;
   font-weight: 500;
-  background: none;
-  border: none;
+  text-decoration: none;
   cursor: pointer;
+  transition: color 0.2s;
+}
+
+.login-forgot a:hover {
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 .login-submit {
