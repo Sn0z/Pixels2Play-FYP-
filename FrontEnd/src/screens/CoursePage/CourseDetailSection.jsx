@@ -24,7 +24,7 @@ const auth = getAuth();
 function getTitle(c) { return c?.name || c?.title || "Untitled"; }
 function getDesc(c) { return c?.details || c?.long_description || c?.description || ""; }
 function getShortDesc(c) { return c?.short_description || c?.details || ""; }
-function getImage(c) { return c?.thumbnail || c?.course_image || "https://c.animaapp.com/miv5b7ziJolmTE/img/rectangle.png"; }
+function getImage(c) { return c?.thumbnail || c?.course_image || c?.image || "https://c.animaapp.com/miv5b7ziJolmTE/img/rectangle.png"; }
 function getAgeRange(c) {
   if (c?.ageRange) return c.ageRange;
   if (c?.age_min && c?.age_max) return `${c.age_min}–${c.age_max}`;

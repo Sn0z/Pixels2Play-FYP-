@@ -36,6 +36,7 @@
 .main-navigation .nav-links {
   display: flex;
   gap: 32px;
+  justify-content: center;
 }
 
 .main-navigation .nav-links > div {

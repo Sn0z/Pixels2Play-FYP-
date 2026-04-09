@@ -88,7 +88,9 @@ export default function ChildCoursesPage() {
 
   const getTitle = (c) => c.title || c.name || "Untitled Course";
   const getThumb = (c) =>
+    c.course_image ||
     c.thumbnail ||
+    c.image ||
     "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80";
 
   const profileName = user?.displayName || user?.email?.split("@")[0] || "Scholar";
@@ -102,8 +104,8 @@ export default function ChildCoursesPage() {
     <div className="ccp-page">
       {/* Navigation matching ChildHomePage */}
       <div className="main-navigation">
-        <div className="frame-frame-2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0 20px', boxSizing: 'border-box' }}>
-          <div className="nav-links">
+        <div className="frame-frame-2" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', padding: '0 40px', boxSizing: 'border-box' }}>
+          <div className="nav-links" style={{ display: "flex", gap: "32px", color: "#9233ea", fontFamily: "'Fredoka', Helvetica", fontSize: "17.8px", fontWeight: "700", flex: "1", justifyContent: "center" }}>
             <div 
               className="text-wrapper-96" 
               style={{cursor:"pointer"}} 
@@ -124,7 +126,7 @@ export default function ChildCoursesPage() {
             </div>
           </div>
           {/* User Info & Sign Out */}
-          <div className="child-nav-user" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="child-nav-user" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
             <span style={{ color: '#571c86', fontWeight: 'bold', fontSize: '18px' }}>
               Hi, {profileName}!
             </span>
@@ -188,7 +190,13 @@ export default function ChildCoursesPage() {
                   >
                     {/* Thumbnail */}
                     <div className="ccp-thumb">
-                      <img src={getThumb(course)} alt={getTitle(course)} />
+                      <img 
+                        src={getThumb(course)} 
+                        alt={getTitle(course)} 
+                        onError={(e) => {
+                          e.target.src = "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80";
+                        }}
+                      />
                       <div className="ccp-thumb-overlay">
                         <span className="ccp-play-icon">▶</span>
                       </div>

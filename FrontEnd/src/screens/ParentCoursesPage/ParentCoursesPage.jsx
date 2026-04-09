@@ -111,9 +111,12 @@ export default function ParentCoursesPage() {
                     {/* Thumbnail */}
                     <div className="pcp-card-thumb">
                       <img
-                        src={course.thumbnail || "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80"}
+                        src={course.thumbnail || course.course_image || course.image || "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80"}
                         alt={getTitle(course)}
                         loading="lazy"
+                        onError={(e) => {
+                          e.target.src = "https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80";
+                        }}
                       />
                       <span className="pcp-difficulty-tag">
                         {course.difficulty || "Beginner"}

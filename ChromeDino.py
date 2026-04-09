@@ -1,7 +1,8 @@
 import pygame
 import sys
 import random
-import math  
+import math
+import time
 import cv2
 import mediapipe as mp
 
@@ -15,16 +16,32 @@ game_font = pygame.font.Font("assets/PressStart2P-Regular.ttf", 24)
 
 # === MediaPipe Pose Setup ===
 mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+pose = mp_pose.Pose(
+    min_detection_confidence=0.7,  # Increased for faster detection
+    min_tracking_confidence=0.7,   # Increased for faster tracking
+    model_complexity=0              # Use lite model for speed
+)
 mp_draw = mp.solutions.drawing_utils
 
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)    # Lower resolution for speed
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_FPS, 30)             # Cap at 30 FPS
+
+# Check if camera is available
+if not cap.isOpened():
+    print("ERROR: Could not open camera. Please check your camera connection.")
+    sys.exit(1)
 
 # Calibration variables
 calibrated = False
 neutral_shoulder_y = None
 jump_threshold = None
 crouch_threshold = None
+frame_skip_counter = 0  # Frame skipping for performance
+FRAME_SKIP = 2          # Process every 3rd frame (30fps -> 10fps processing)
+calibration_start_time = None  # For timeout
+CALIBRATION_TIMEOUT = 10  # seconds before auto-calibration skips
 
 # === Constants ===
 GROUND_Y = 350
@@ -218,49 +235,97 @@ def reset_game():
 
 # === Body Detection ===
 def get_action():
-    global calibrated, neutral_shoulder_y, jump_threshold, crouch_threshold
+    global calibrated, neutral_shoulder_y, jump_threshold, crouch_threshold, frame_skip_counter
+    global calibration_start_time, last_action  # Remember last action for frame skips
+    
     ret, frame = cap.read()
     if not ret:
         return "none", None
-
+    
+    frame_skip_counter += 1
+    action = "none"
+    
+    # Only process pose every N frames to improve performance
+    if frame_skip_counter % (FRAME_SKIP + 1) != 0:
+        return last_action if 'last_action' in globals() else "none", frame
+    
+    # Resize frame for faster processing
+    frame = cv2.resize(frame, (640, 480))
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = pose.process(rgb_frame)
+    
+    try:
+        results = pose.process(rgb_frame)
+    except Exception as e:
+        # Handle potential MediaPipe errors gracefully
+        print(f"Pose detection error: {e}")
+        return "none", frame
+    
     h, w, c = frame.shape
 
-    action = "none"
     if results.pose_landmarks:
         landmarks = results.pose_landmarks.landmark
+        
+        # Check confidence thresholds
         left_shoulder = landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
         right_shoulder = landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
         left_hip = landmarks[mp_pose.PoseLandmark.LEFT_HIP]
+        
+        # Skip if confidence is too low
+        if left_shoulder.visibility < 0.5 or right_shoulder.visibility < 0.5:
+            return last_action if 'last_action' in globals() else "none", frame
 
         avg_shoulder_y = int(((left_shoulder.y + right_shoulder.y) / 2) * h)
 
-        # === Calibration ===
+        # === Calibration (run once) ===
         if not calibrated:
+            if calibration_start_time is None:
+                calibration_start_time = time.time()
+            
             neutral_shoulder_y = avg_shoulder_y
             torso_length = abs(int(left_hip.y * h) - neutral_shoulder_y)
             jump_threshold = neutral_shoulder_y - int(0.5 * torso_length)
             crouch_threshold = neutral_shoulder_y + int(0.5 * torso_length)
             calibrated = True
+            calibration_start_time = None
+            return "none", frame
 
         # === Action detection ===
         if avg_shoulder_y < jump_threshold:
             action = "jump"
         elif avg_shoulder_y > crouch_threshold:
             action = "crouch"
+        else:
+            action = "none"
 
-        # === Draw landmarks ===
-        mp_draw.draw_landmarks(
-            frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-            mp_draw.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
-            mp_draw.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2)
-        )
+        # === Draw landmarks (optional, can disable for speed) ===
+        try:
+            mp_draw.draw_landmarks(
+                frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                mp_draw.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
+                mp_draw.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2)
+            )
 
-        # Debug thresholds
-        cv2.line(frame, (0, jump_threshold), (w, jump_threshold), (0, 255, 0), 2)
-        cv2.line(frame, (0, crouch_threshold), (w, crouch_threshold), (0, 0, 255), 2)
+            # Debug thresholds
+            cv2.line(frame, (0, jump_threshold), (w, jump_threshold), (0, 255, 0), 2)
+            cv2.line(frame, (0, crouch_threshold), (w, crouch_threshold), (0, 0, 255), 2)
+        except:
+            pass  # Silently skip drawing if there's an error
+    else:
+        # No pose detected
+        action = "none"
+        
+        # === Auto-calibrate if timeout is reached ===
+        if not calibrated and calibration_start_time is not None:
+            elapsed = time.time() - calibration_start_time
+            if elapsed > CALIBRATION_TIMEOUT:
+                print(f"Calibration timeout after {elapsed:.1f}s. Using default thresholds.")
+                neutral_shoulder_y = h // 2
+                jump_threshold = int(h * 0.35)
+                crouch_threshold = int(h * 0.65)
+                calibrated = True
+                calibration_start_time = None
 
+    last_action = action
     return action, frame
 
 # === Game Loop ===
@@ -311,6 +376,17 @@ while True:
             cloud_group.add(cloud_sprite)
 
     screen.fill("white")
+
+    # === Show calibration status ===
+    if not calibrated:
+        if calibration_start_time is not None:
+            elapsed = time.time() - calibration_start_time
+            remaining = max(0, CALIBRATION_TIMEOUT - elapsed)
+            calibration_text = game_font.render(f"CALIBRATING... ({remaining:.1f}s)", True, "blue")
+        else:
+            calibration_text = game_font.render("CALIBRATING... STAND IN FRAME", True, "blue")
+        calibration_rect = calibration_text.get_rect(center=(640, 100))
+        screen.blit(calibration_text, calibration_rect)
 
     # === Collisions with tightened hitboxes ===
     if not game_over:

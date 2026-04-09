@@ -1010,27 +1010,33 @@
 .main-navigation {
   background-color: #ffffff;
   box-shadow:
-    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
+    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a;
   display: flex;
   height: 80px;
-  position: relative;
+  position: sticky;
+  top: 0;
   width: 100%;
   justify-content: center;
+  z-index: 100;
 }
 
 .main-navigation .frame-frame-2 {
   display: flex;
-  gap: 274.3px;
-  height: 80px;
-  margin-left: 87.2px;
-  width: 1216px;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1390px;
+  padding: 0 40px;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .main-navigation .nav-links {
   display: flex;
-  margin-left: 451.4px;
-  margin-top: 26px;
-  width: 323px;
+  gap: 32px;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
 }
 
 .main-navigation .text-wrapper-96 {
@@ -1038,11 +1044,12 @@
   font-family: "Fredoka", Helvetica;
   font-size: 18px;
   font-weight: 700;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
   white-space: nowrap;
-  width: 46px;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-96:hover {
+  color: #ec4899;
 }
 
 .main-navigation .text-wrapper-97 {
@@ -1050,12 +1057,12 @@
   font-family: "Fredoka", Helvetica;
   font-size: 17.8px;
   font-weight: 700;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 32.1px;
   white-space: nowrap;
-  width: 65px;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-97:hover {
+  color: #ec4899;
 }
 
 .main-navigation .text-wrapper-98 {
@@ -1063,12 +1070,12 @@
   font-family: "Fredoka", Helvetica;
   font-size: 16px;
   font-weight: 700;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 32.1px;
   white-space: nowrap;
-  width: 50px;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-98:hover {
+  color: #ec4899;
 }
 
 .main-navigation .text-wrapper-99 {
@@ -1076,12 +1083,20 @@
   font-family: "Fredoka", Helvetica;
   font-size: 16.1px;
   font-weight: 700;
-  height: 28px;
-  letter-spacing: 0;
-  line-height: 28px;
-  margin-left: 32.4px;
   white-space: nowrap;
-  width: 65px;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-99:hover {
+  color: #ec4899;
+}
+
+/* User Profile & Sign Out Button */
+.child-nav-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 0;
 }
 
 .main-navigation .cta-button-button {

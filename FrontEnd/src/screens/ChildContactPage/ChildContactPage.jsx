@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../ContactPage/ContactPage.css"; // Reuse the same CSS for the form body
 
 const contactOptions = [
@@ -19,9 +19,20 @@ const contactOptions = [
 
 export default function ChildContactPage() {
   const [result, setResult] = useState("");
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const auth = getAuth();
-  const user = auth.currentUser;
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+      } else {
+        navigate("/login");
+      }
+    });
+    return () => unsub();
+  }, [auth, navigate]);
 
   const profileName = user?.displayName || user?.email?.split("@")[0] || "Scholar";
 
@@ -60,16 +71,16 @@ export default function ChildContactPage() {
     <div className="ccp-page" style={{ background: "#ffffff", minHeight: "100vh" }}>
       {/* ── Child Navigation Header ── */}
       <div className="main-navigation" style={{ backgroundColor: "#ffffff", boxShadow: "0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a", display: "flex", height: "80px", width: "100%", position: "sticky", top: "0", zIndex: "100" }}>
-        <div className="frame-frame-2" style={{ display: "flex", flex: "1", alignItems: "center", justifyContent: "space-between", padding: "0 40px", maxWidth: "1390px", margin: "0 auto" }}>
+        <div className="frame-frame-2" style={{ display: "flex", flex: "1", alignItems: "center", justifyContent: "center", padding: "0 40px", maxWidth: "1390px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
           
-          <div className="nav-links" style={{ display: "flex", gap: "32px", color: "#9233ea", fontFamily: "'Fredoka', Helvetica", fontSize: "17.8px", fontWeight: "700" }}>
+          <div className="nav-links" style={{ display: "flex", gap: "32px", color: "#9233ea", fontFamily: "'Fredoka', Helvetica", fontSize: "17.8px", fontWeight: "700", flex: "1", justifyContent: "center" }}>
             <div style={{cursor:"pointer"}} onClick={() => navigate("/kidshome")}>Home</div>
             <div style={{cursor:"pointer"}} onClick={() => navigate("/child-courses")}>Courses</div>
             <div style={{cursor:"pointer"}} onClick={() => navigate("/kidshome#games-section")}>Games</div>
             <div style={{ color: "#ec4899" }}>Contact Us</div>
           </div>
           {/* User Info & Sign Out */}
-          <div className="child-nav-user" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="child-nav-user" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginLeft: 'auto' }}>
             <span style={{ color: '#571c86', fontWeight: 'bold', fontSize: '18px' }}>
               Hi, {profileName}!
             </span>
