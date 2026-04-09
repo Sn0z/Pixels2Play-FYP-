@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./ChildLearnPage.css";
+import KidsChatbot from "../../chatbot/Chatbot";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
 const auth = getAuth();
@@ -43,34 +44,177 @@ const AI_QUIZ = {
   ],
 };
 
+// ── Pixel AI chatbot overlay (used in quiz help) ─────────────────────────────
+const API_BASE_COURSES = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+
+function PixelHelpOverlay({ autoPrompt, recommendedCourses, onClose }) {
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(4px)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        padding: '16px',
+        animation: 'clp-fadeIn 0.25s ease',
+      }}
+    >
+      <KidsChatbot
+        floating={true}
+        onClose={onClose}
+        autoPrompt={autoPrompt}
+        recommendedCourses={recommendedCourses}
+        quizHelpMode={true}
+      />
+    </div>
+  );
+}
+
 // ── Quiz Component ───────────────────────────────────────────────────────────
-function QuizComponent({ quiz, onComplete, initialScore }) {
-  const [answers, setAnswers] = useState({});
+function QuizComponent({ quiz, onComplete, initialScore, courseTitle, userId }) {
+  const localStorageKey = `quiz_learn_${courseTitle}_${userId}`;
+  
+  const [answers, setAnswers] = useState(() => {
+    if (initialScore !== null) {
+      try {
+        const stored = localStorage.getItem(localStorageKey + '_answers');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+    }
+    return {};
+  });
+  
   const [submitted, setSubmitted] = useState(initialScore !== null);
-  const [results, setResults] = useState(null);
+  
+  const [results, setResults] = useState(() => {
+    if (initialScore !== null) {
+      try {
+        const stored = localStorage.getItem(localStorageKey + '_results');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+    }
+    return null;
+  });
+  
   const [score, setScore] = useState(initialScore);
+
+  // Pixel chatbot state
+  const [showPixel, setShowPixel] = useState(false);
+  const [pixelPrompt, setPixelPrompt] = useState(null);
+  const [recommendedCourses, setRecommendedCourses] = useState([]);
+  const hasFetchedCourses = useRef(false);
 
   const handleSelect = (qId, choiceId) => {
     if (submitted) return;
     setAnswers((prev) => ({ ...prev, [qId]: choiceId }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let correct = 0;
     const res = {};
+    const wrongItems = [];
+
     quiz.questions.forEach((q) => {
       const selected = answers[q.id];
       const correctChoice = q.choices.find((c) => c.is_correct);
+      const selectedChoice = q.choices.find((c) => c.id === selected);
       const isCorrect = selected === correctChoice?.id;
       if (isCorrect) correct++;
+      else {
+        wrongItems.push({
+          questionText: q.text,
+          theirAnswer: selectedChoice?.text || 'their answer',
+          correctAnswer: correctChoice?.text || 'the correct answer',
+        });
+      }
       res[q.id] = { selected, correctId: correctChoice?.id, isCorrect };
     });
+
     const sc = correct / quiz.questions.length;
     setScore(sc);
     setResults(res);
     setSubmitted(true);
     if (onComplete) onComplete(sc);
+
+    // Save to localStorage so they can review later
+    if (userId && courseTitle) {
+      localStorage.setItem(localStorageKey + '_answers', JSON.stringify(answers));
+      localStorage.setItem(localStorageKey + '_results', JSON.stringify(res));
+    }
+
+    // Build the Pixel auto-prompt
+    if (wrongItems.length > 0) {
+      const topic = courseTitle || quiz.title || 'this topic';
+        
+      const quizText = quiz.questions.map((q, i) => {
+        const correctChoice = q.choices.find(c => c.is_correct);
+        const myChoiceId = answers[q.id];
+        const myChoice = q.choices.find(c => c.id === myChoiceId);
+        
+        const optionsText = q.choices.map(c => `- ${c.text} ${c.is_correct ? '(Correct)' : ''}`).join('\n');
+        const answerStatus = myChoiceId === correctChoice?.id ? '✅' : '❌';
+        
+        return `Question ${i + 1}: ${q.text}\nOptions:\n${optionsText}\nMy Answer: ${myChoice?.text || 'None'} ${answerStatus}`;
+      }).join('\n\n');
+
+      const prompt = `Hi Pixel! I just took a quiz about "${topic}". Here is the quiz and my answers:\n\n${quizText}\n\nI got ${wrongItems.length} question${wrongItems.length > 1 ? 's' : ''} wrong. Can you explain where I made mistakes and why they are wrong in a simple, kid-friendly way?`;
+      
+      setPixelPrompt(prompt);
+
+      // Fetch recommended courses only once
+      if (!hasFetchedCourses.current) {
+        hasFetchedCourses.current = true;
+        try {
+          const res2 = await fetch(`${API_BASE_COURSES}/courses/`);
+          const data = res2.ok ? await res2.json() : [];
+          const allCourses = Array.isArray(data) ? data : [];
+          const topicWords = topic.toLowerCase().split(/\s+/);
+          const matched = allCourses
+            .filter((c) =>
+              topicWords.some(
+                (w) =>
+                  w.length > 3 &&
+                  (
+                    c.title?.toLowerCase().includes(w) ||
+                    c.category?.toLowerCase().includes(w) ||
+                    c.description?.toLowerCase().includes(w)
+                  )
+              )
+            )
+            .slice(0, 3);
+          setRecommendedCourses(matched.length > 0 ? matched : allCourses.slice(0, 2));
+        } catch {
+          setRecommendedCourses([]);
+        }
+      }
+    }
   };
+
+  // Regenerate prompt if loaded from storage
+  useEffect(() => {
+    if (submitted && initialScore !== null && results && !pixelPrompt) {
+      const wrongItems = quiz.questions.filter(q => !results[q.id]?.isCorrect);
+      if (wrongItems.length > 0) {
+        const topic = courseTitle || quiz.title || 'this topic';
+        const quizText = quiz.questions.map((q, i) => {
+          const correctChoice = q.choices.find(c => c.is_correct);
+          const myChoiceId = answers[q.id];
+          const myChoice = q.choices.find(c => c.id === myChoiceId);
+          const optionsText = q.choices.map(c => `- ${c.text} ${c.is_correct ? '(Correct)' : ''}`).join('\n');
+          const answerStatus = myChoiceId === correctChoice?.id ? '✅' : '❌';
+          return `Question ${i + 1}: ${q.text}\nOptions:\n${optionsText}\nMy Answer: ${myChoice?.text || 'None'} ${answerStatus}`;
+        }).join('\n\n');
+        
+        const prompt = `Hi Pixel! I just took a quiz about "${topic}". Here is the quiz and my answers:\n\n${quizText}\n\nI got ${wrongItems.length} question${wrongItems.length > 1 ? 's' : ''} wrong. Can you explain where I made mistakes and why they are wrong in a simple, kid-friendly way?`;
+        setPixelPrompt(prompt);
+      }
+    }
+  }, [submitted, initialScore, results, answers, quiz, courseTitle, pixelPrompt]);
+
+  const wrongCount = results ? quiz.questions.filter((q) => !results[q.id]?.isCorrect).length : 0;
 
   return (
     <div className="clp-quiz">
@@ -124,17 +268,48 @@ function QuizComponent({ quiz, onComplete, initialScore }) {
           Submit Answers 🚀
         </button>
       ) : (
-        <div className="clp-score-result">
-          {score >= 0.7 ? "🏆" : "💪"}{" "}
-          {score >= 0.9
-            ? "Amazing! You're an AI genius!"
-            : score >= 0.7
-            ? "Great job! Keep it up!"
-            : "Good try! Review and try again!"}
-          <span className="clp-score-num">
-            {Math.round(score * 100)}%
-          </span>
-        </div>
+        <>
+          <div className="clp-score-result">
+            {score >= 0.7 ? "🏆" : "💪"}{" "}
+            {score >= 0.9
+              ? "Amazing! You're an AI genius!"
+              : score >= 0.7
+              ? "Great job! Keep it up!"
+              : "Good try! Review and try again!"}
+            <span className="clp-score-num">
+              {Math.round(score * 100)}%
+            </span>
+          </div>
+
+          {/* ── Pixel Help Panel — shown when kid has wrong answers ── */}
+          {wrongCount > 0 && (
+            <div className="clp-pixel-help-panel">
+              <div className="clp-pixel-icon">🤖</div>
+              <div className="clp-pixel-content">
+                <h4 className="clp-pixel-title">Don't worry! Pixel can help! 🌟</h4>
+                <p className="clp-pixel-desc">
+                  You got <strong>{wrongCount} question{wrongCount > 1 ? 's' : ''}</strong> wrong.
+                  Let me explain what happened and suggest what to study next!
+                </p>
+                <button
+                  className="clp-pixel-btn"
+                  onClick={() => setShowPixel(true)}
+                >
+                  <span>💬</span> Ask Pixel to Explain My Mistakes
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Floating Pixel Chatbot Overlay ── */}
+      {showPixel && (
+        <PixelHelpOverlay
+          autoPrompt={pixelPrompt}
+          recommendedCourses={recommendedCourses}
+          onClose={() => setShowPixel(false)}
+        />
       )}
     </div>
   );
@@ -153,6 +328,7 @@ export default function ChildLearnPage() {
   const [activeTab, setActiveTab] = useState("lesson"); // lesson | video | quiz
   const [completingLesson, setCompletingLesson] = useState(false);
   const [videoWatchedMap, setVideoWatchedMap] = useState({}); // Track video completion per module
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Fetch course + progress
   useEffect(() => {
@@ -476,6 +652,8 @@ export default function ChildLearnPage() {
                 quiz={AI_QUIZ}
                 onComplete={handleQuizComplete}
                 initialScore={progress.quiz_score}
+                courseTitle={course?.title || course?.name || 'AI Basics'}
+                userId={authUser?.uid}
               />
             )}
           </div>
@@ -491,6 +669,25 @@ export default function ChildLearnPage() {
           )}
         </main>
       </div>
+
+      {/* ── Floating Chatbot Button (hidden entirely on quiz tab) ── */}
+      {activeTab !== "quiz" && (
+        <>
+          <button
+            className="chatbot-float-btn"
+            onClick={() => setChatOpen((o) => !o)}
+            title="Ask Pixel - AI Study Buddy"
+          >
+            {chatOpen ? "✕" : "🤖"}
+            <span className="float-tooltip">Ask Pixel!</span>
+          </button>
+          {chatOpen && (
+            <div className="chatbot-float-panel">
+              <KidsChatbot floating={true} onClose={() => setChatOpen(false)} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

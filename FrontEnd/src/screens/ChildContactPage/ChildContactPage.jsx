@@ -23,6 +23,13 @@ export default function ChildContactPage() {
   const auth = getAuth();
   const user = auth.currentUser;
 
+  const profileName = user?.displayName || user?.email?.split("@")[0] || "Scholar";
+
+  const handleSignOut = async () => {
+    await auth.signOut();
+    navigate("/login");
+  };
+
   const onSubmit = async (event) => {
     event.preventDefault();
     setResult("Sending...");
@@ -60,6 +67,22 @@ export default function ChildContactPage() {
             <div style={{cursor:"pointer"}} onClick={() => navigate("/child-courses")}>Courses</div>
             <div style={{cursor:"pointer"}} onClick={() => navigate("/kidshome#games-section")}>Games</div>
             <div style={{ color: "#ec4899" }}>Contact Us</div>
+          </div>
+          {/* User Info & Sign Out */}
+          <div className="child-nav-user" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <span style={{ color: '#571c86', fontWeight: 'bold', fontSize: '18px' }}>
+              Hi, {profileName}!
+            </span>
+            <button 
+              onClick={handleSignOut}
+              style={{ 
+                backgroundColor: '#ff4b4b', color: 'white', border: 'none', 
+                padding: '8px 16px', borderRadius: '20px', cursor: 'pointer',
+                fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 6px rgba(255, 75, 75, 0.2)'
+              }}
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </div>

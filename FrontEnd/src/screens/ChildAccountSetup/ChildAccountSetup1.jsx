@@ -65,6 +65,10 @@ async function findChildAccountAPI(childEmail) {
 
   const child = await searchRes.json();
 
+  if (child.role && child.role !== "UNASSIGNED") {
+    throw new Error("This child account is already linked to a parent.");
+  }
+
   return {
     childExists: true,
     childUid: child.id,
