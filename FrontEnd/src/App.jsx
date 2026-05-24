@@ -24,6 +24,7 @@ import ChildLearnPage from "./screens/ChildLearnPage/ChildLearnPage";
 import ChildContactPage from "./screens/ChildContactPage/ChildContactPage";
 import WhackAMoleGame from "./screens/WhackAMoleGame/WhackAMoleGame";
 import DinoGame from "./screens/DinoGame/DinoGame";
+import RockPaperScissorsGame from "./screens/RockPaperScissorsGame/RockPaperScissorsGame";
 import RoleSwitcher from "./components/RoleSwitcher";
 import { AuthProvider } from "./contexts/authContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -62,6 +63,7 @@ function App() {
             <Route path="/child-learn/:courseId" element={<ChildLearnPage />} />
             <Route path="/games/whack-a-mole" element={<WhackAMoleGame />} />
             <Route path="/games/dino" element={<DinoGame />} />
+            <Route path="/games/rock-paper-scissors" element={<RockPaperScissorsGame />} />
           </Routes>
           <RoleSwitcher />
         </Router>

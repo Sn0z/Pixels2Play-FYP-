@@ -138,7 +138,9 @@ const ChildHomePage = () => {
 
             <div className="features-grid">
               <div className="game-card">
-                <div className="game-icon">🔨</div>
+                <div className="game-icon">
+                  <img src="https://cdn-icons-png.flaticon.com/512/7496/7496049.png" alt="Whack-a-Mole" style={{width:'48px',height:'48px',objectFit:'contain'}} />
+                </div>
                 <div className="text-wrapper-24">Whack-a-Mole Math</div>
                 <p className="text-wrapper-25">
                   Solve math equations and whack the right mole!
@@ -147,16 +149,20 @@ const ChildHomePage = () => {
               </div>
 
               <div className="game-card game-card-2">
-                <div className="game-icon">✂️</div>
+                <div className="game-icon">
+                  <img src="https://cdn-icons-png.flaticon.com/512/5133/5133100.png" alt="Rock Paper Scissors" style={{width:'48px',height:'48px',objectFit:'contain'}} />
+                </div>
                 <div className="text-wrapper-24">Rock, Paper, Scissors</div>
                 <p className="text-wrapper-26">
                   Can you beat the computer?
                 </p>
-                <button className="play-btn">Play Now</button>
+                <button className="play-btn" onClick={() => navigate("/games/rock-paper-scissors")}>Play Now</button>
               </div>
 
               <div className="game-card game-card-3">
-                <div className="game-icon">🦖</div>
+                <div className="game-icon">
+                  <img src="https://cdn-icons-png.flaticon.com/512/3077/3077952.png" alt="Jumping Dino" style={{width:'48px',height:'48px',objectFit:'contain'}} />
+                </div>
                 <div className="text-wrapper-24">Jumping Dino</div>
                 <p className="text-wrapper-25">
                   Jump over obstacles and get the high score!
