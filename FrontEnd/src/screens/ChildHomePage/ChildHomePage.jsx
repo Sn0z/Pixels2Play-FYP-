@@ -139,7 +139,7 @@ const ChildHomePage = () => {
             <div className="features-grid">
               <div className="game-card">
                 <div className="game-icon">
-                  <img src="https://cdn-icons-png.flaticon.com/512/7496/7496049.png" alt="Whack-a-Mole" style={{width:'48px',height:'48px',objectFit:'contain'}} />
+                  <img src="/mole.png" alt="Whack-a-Mole" style={{width:'64px',height:'64px',objectFit:'contain'}} />
                 </div>
                 <div className="text-wrapper-24">Whack-a-Mole Math</div>
                 <p className="text-wrapper-25">
@@ -150,7 +150,7 @@ const ChildHomePage = () => {
 
               <div className="game-card game-card-2">
                 <div className="game-icon">
-                  <img src="https://cdn-icons-png.flaticon.com/512/5133/5133100.png" alt="Rock Paper Scissors" style={{width:'48px',height:'48px',objectFit:'contain'}} />
+                  <img src="https://cdn-icons-png.flaticon.com/512/4212/4212448.png" alt="Rock Paper Scissors" style={{width:'64px',height:'64px',objectFit:'contain'}} />
                 </div>
                 <div className="text-wrapper-24">Rock, Paper, Scissors</div>
                 <p className="text-wrapper-26">
@@ -161,7 +161,7 @@ const ChildHomePage = () => {
 
               <div className="game-card game-card-3">
                 <div className="game-icon">
-                  <img src="https://cdn-icons-png.flaticon.com/512/3077/3077952.png" alt="Jumping Dino" style={{width:'48px',height:'48px',objectFit:'contain'}} />
+                  <img src="https://cdn-icons-png.flaticon.com/512/8915/8915483.png" alt="Jumping Dino" style={{width:'64px',height:'64px',objectFit:'contain'}} />
                 </div>
                 <div className="text-wrapper-24">Jumping Dino</div>
                 <p className="text-wrapper-25">

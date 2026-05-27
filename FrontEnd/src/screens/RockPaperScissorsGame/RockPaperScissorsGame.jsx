@@ -1,349 +1,255 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { useEffect } from 'react';
 import './RockPaperScissorsGame.css';
 
-// ── Icon URLs from CDN ─────────────────────────────────────────────────────────
+// ── CDN icons (flaticon) ────────────────────────────────────────────────────
 const ICONS = {
-  Rock:     'https://cdn-icons-png.flaticon.com/512/5132/5132948.png',
-  Paper:    'https://cdn-icons-png.flaticon.com/512/5133/5133043.png',
-  Scissors: 'https://cdn-icons-png.flaticon.com/512/5133/5133100.png',
+  R: '/Rock.png',
+  P: '/Paper.png',
+  S: '/Scissors.png',
 };
-
-const MOVE_KEYS  = ['R', 'P', 'S'];
 const MOVE_NAMES = { R: 'Rock', P: 'Paper', S: 'Scissors' };
+const MOVES = ['R', 'P', 'S'];
 
-// ── AI Logic (ported from rps_game.py) ────────────────────────────────────────
-function createAI() {
-  let counts    = { R: 0, P: 0, S: 0 };
-  let afterMove = {
-    R: { R: 0, P: 0, S: 0 },
-    P: { R: 0, P: 0, S: 0 },
-    S: { R: 0, P: 0, S: 0 },
-  };
-  const beats    = { R: 'S', P: 'R', S: 'P' };
-  const beatenBy = { R: 'P', P: 'S', S: 'R' };
-  let lastMove = null;
-
-  function getAIMove() {
-    const total = counts.R + counts.P + counts.S;
-    let predicted = null;
-
-    if (total < 3) return { aiMove: 'P', predicted: null };
-
-    if (lastMove !== null) {
-      const follow = afterMove[lastMove];
-      const followTotal = follow.R + follow.P + follow.S;
-      if (followTotal >= 2) {
-        predicted = MOVE_KEYS.reduce((a, b) => follow[a] > follow[b] ? a : b);
-      }
-    }
-
-    if (predicted === null) {
-      predicted = MOVE_KEYS.reduce((a, b) => counts[a] > counts[b] ? a : b);
-    }
-
-    const aiMove = beatenBy[predicted];
-    return { aiMove, predicted };
-  }
-
-  function updateMemory(playerMove) {
-    if (lastMove !== null) {
-      afterMove[lastMove][playerMove] += 1;
-    }
-    counts[playerMove] += 1;
-    lastMove = playerMove;
-  }
-
-  function determineOutcome(playerMove, aiMove) {
-    if (playerMove === aiMove) return 'DRAW';
-    if (beats[playerMove] === aiMove) return 'YOU WIN';
-    return 'AI WINS';
-  }
-
-  function playRound(playerMove) {
-    const { aiMove, predicted } = getAIMove();
-    updateMemory(playerMove);
-    const outcome = determineOutcome(playerMove, aiMove);
-    return { aiMove, predicted, outcome };
-  }
-
-  function reset() {
-    counts    = { R: 0, P: 0, S: 0 };
-    afterMove = {
-      R: { R: 0, P: 0, S: 0 },
-      P: { R: 0, P: 0, S: 0 },
-      S: { R: 0, P: 0, S: 0 },
-    };
-    lastMove = null;
-  }
-
-  return { playRound, reset };
-}
-
-// ── Animated countdown ────────────────────────────────────────────────────────
-function useCountdown(onDone) {
-  const [count, setCount] = useState(null);
-  const timerRef = useRef(null);
-
-  function start() {
-    setCount(3);
-  }
-
-  useEffect(() => {
-    if (count === null) return;
-    if (count === 0) {
-      setCount(null);
-      onDone();
-      return;
-    }
-    timerRef.current = setTimeout(() => setCount(c => c - 1), 700);
-    return () => clearTimeout(timerRef.current);
-  }, [count]); // eslint-disable-line
-
-  return { count, start };
-}
-
-// ── Main Component ─────────────────────────────────────────────────────────────
 export default function RockPaperScissorsGame() {
-  const navigate   = useNavigate();
-  const aiRef      = useRef(createAI());
+  const navigate = useNavigate();
 
-  // Auth
+  // ── Firebase auth guard ─────────────────────────────────────────────────────
   useEffect(() => {
     const auth = getAuth();
-    const unsub = onAuthStateChanged(auth, u => {
+    const unsub = onAuthStateChanged(auth, (u) => {
       if (!u) navigate('/login');
     });
     return () => unsub();
   }, [navigate]);
 
-  // Screen: 'menu' | 'countdown' | 'reveal' | 'result'
-  const [screen,      setScreen]      = useState('menu');
-  const [playerMove,  setPlayerMove]  = useState(null);
-  const [aiMove,      setAiMove]      = useState(null);
-  const [outcome,     setOutcome]     = useState(null);
-  const [roundLog,    setRoundLog]    = useState([]);
-
-  // Score
-  const [wins,   setWins]   = useState(0);
-  const [draws,  setDraws]  = useState(0);
-  const [losses, setLosses] = useState(0);
-
-  const pendingPlayerMove = useRef(null);
-
-  // ── Countdown → reveal ─────────────────────────────────────────────────────
-  const { count, start: startCountdown } = useCountdown(() => {
-    const pm = pendingPlayerMove.current;
-    const { aiMove: am, outcome: oc } = aiRef.current.playRound(pm);
-    setAiMove(am);
-    setOutcome(oc);
-    if (oc === 'YOU WIN') setWins(w => w + 1);
-    else if (oc === 'DRAW') setDraws(d => d + 1);
-    else setLosses(l => l + 1);
-    setRoundLog(prev => [...prev, { player: pm, ai: am, outcome: oc }]);
-    setScreen('reveal');
+  // ── AI memory (refs = mutable, no re-render needed) ─────────────────────────
+  const counts = useRef({ R: 0, P: 0, S: 0 });
+  const afterMove = useRef({
+    R: { R: 0, P: 0, S: 0 },
+    P: { R: 0, P: 0, S: 0 },
+    S: { R: 0, P: 0, S: 0 },
   });
+  const beats = { R: 'S', P: 'R', S: 'P' };
+  const beatedBy = { R: 'P', P: 'S', S: 'R' };
+  const lastMove = useRef(null);
 
-  function handleChoice(move) {
-    pendingPlayerMove.current = move;
-    setPlayerMove(move);
-    setAiMove(null);
-    setOutcome(null);
-    setScreen('countdown');
-    startCountdown();
+  // ── UI state ────────────────────────────────────────────────────────────────
+  const [wins, setWins] = useState(0);
+  const [draws, setDraws] = useState(0);
+  const [losses, setLosses] = useState(0);
+  const [result, setResult] = useState(null);   // null = idle
+  const [aiThinking, setAiThinking] = useState('');
+  const [roundLog, setRoundLog] = useState([]);     // [{ player, ai, outcome }]
+  const [animKey, setAnimKey] = useState(0);      // triggers CSS re-animation
+
+  // ── AI picks its move ───────────────────────────────────────────────────────
+  function getAIMove() {
+    const total = counts.current.R + counts.current.P + counts.current.S;
+
+    if (total < 3) {
+      return MOVES[Math.floor(Math.random() * 3)];
+    }
+
+    let predicted = null;
+    let reason = '';
+
+    if (lastMove.current !== null) {
+      const follow = afterMove.current[lastMove.current];
+      const followTotal = follow.R + follow.P + follow.S;
+      if (followTotal >= 2) {
+        predicted = MOVES.reduce((a, b) => follow[a] > follow[b] ? a : b);
+        reason = `After ${MOVE_NAMES[lastMove.current]}, you usually play ${MOVE_NAMES[predicted]}`;
+      }
+    }
+
+    if (predicted === null) {
+      predicted = MOVES.reduce((a, b) => counts.current[a] > counts.current[b] ? a : b);
+      reason = `You pick ${MOVE_NAMES[predicted]} most often`;
+    }
+
+    const aiMove = beatedBy[predicted];
+    setAiThinking(`AI thought: ${reason} — so I played ${MOVE_NAMES[aiMove]}`);
+    return aiMove;
   }
 
-  function handlePlayAgain() {
-    setScreen('menu');
-    setPlayerMove(null);
-    setAiMove(null);
-    setOutcome(null);
+  // ── Play a round ────────────────────────────────────────────────────────────
+  function play(playerMove) {
+    const aiMove = getAIMove();
+
+    if (lastMove.current !== null) {
+      afterMove.current[lastMove.current][playerMove]++;
+    }
+    counts.current[playerMove]++;
+    lastMove.current = playerMove;
+
+    let outcome;
+    if (playerMove === aiMove) outcome = 'DRAW';
+    else if (beats[playerMove] === aiMove) outcome = 'WIN';
+    else outcome = 'LOSE';
+
+    if (outcome === 'WIN') setWins(w => w + 1);
+    else if (outcome === 'DRAW') setDraws(d => d + 1);
+    else setLosses(l => l + 1);
+
+    setResult({ playerMove, aiMove, outcome });
+    setRoundLog(prev => [{ player: playerMove, ai: aiMove, outcome }, ...prev]);
+    setAnimKey(k => k + 1);
   }
 
-  function handleReset() {
-    aiRef.current.reset();
+  // ── Reset ───────────────────────────────────────────────────────────────────
+  function resetGame() {
+    counts.current = { R: 0, P: 0, S: 0 };
+    afterMove.current = {
+      R: { R: 0, P: 0, S: 0 },
+      P: { R: 0, P: 0, S: 0 },
+      S: { R: 0, P: 0, S: 0 },
+    };
+    lastMove.current = null;
     setWins(0); setDraws(0); setLosses(0);
+    setResult(null);
+    setAiThinking('');
     setRoundLog([]);
-    handlePlayAgain();
   }
 
-  const total = wins + draws + losses;
+  // ── Result copy ─────────────────────────────────────────────────────────────
+  const resultMeta = result
+    ? result.outcome === 'WIN'
+      ? { label: 'You Win!', cls: 'rps2-win' }
+      : result.outcome === 'DRAW'
+        ? { label: "It's a Draw!", cls: 'rps2-draw' }
+        : { label: 'AI Wins!', cls: 'rps2-lose' }
+    : null;
 
-  // ── MENU ───────────────────────────────────────────────────────────────────
-  if (screen === 'menu' || screen === 'countdown') {
-    return (
-      <div className="rps-page">
-        {/* Back button */}
-        <button className="rps-back-btn" onClick={() => navigate('/kidshome')}>
-          <img src="https://cdn-icons-png.flaticon.com/512/271/271220.png" alt="back" className="rps-back-icon" />
-          Back to Home
-        </button>
+  return (
+    <div className="rps2-page">
 
-        <div className="rps-card">
+
+      {/* ── Two-column body ──────────────────────────────────────────────── */}
+      <div className="rps2-body">
+
+        {/* ── Card ────────────────────────────────────────────────────────── */}
+        <div className="rps2-card">
+
           {/* Header */}
-          <div className="rps-header">
-            <h1 className="rps-title">Rock, Paper, Scissors</h1>
-            <p className="rps-subtitle">Challenge the AI — it learns your moves!</p>
+          <div className="rps2-header">
+            <button className="rps2-back-btn" onClick={() => navigate('/kidshome')}>
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/271/271220.png"
+                alt="back"
+                className="rps2-back-icon"
+              />
+              Back
+            </button>
+            <div className="rps2-header-center">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/4212/4212448.png"
+                alt="game"
+                className="rps2-header-icon"
+              />
+              <div className="rps2-header-text">
+                <h1 className="rps2-title">Rock, Paper, Scissors</h1>
+                <p className="rps2-subtitle">Challenge the AI — it learns your patterns!</p>
+              </div>
+            </div>
           </div>
 
           {/* Scoreboard */}
-          {total > 0 && (
-            <div className="rps-scoreboard">
-              <div className="rps-score-item rps-score-win">
-                <span className="rps-score-num">{wins}</span>
-                <span className="rps-score-lbl">You</span>
+          <div className="rps2-scoreboard">
+            <div className="rps2-score-item rps2-score-you">
+              <span className="rps2-score-num">{wins}</span>
+              <span className="rps2-score-lbl">You</span>
+            </div>
+            <div className="rps2-score-item rps2-score-draw">
+              <span className="rps2-score-num">{draws}</span>
+              <span className="rps2-score-lbl">Draw</span>
+            </div>
+            <div className="rps2-score-item rps2-score-ai">
+              <span className="rps2-score-num">{losses}</span>
+              <span className="rps2-score-lbl">AI</span>
+            </div>
+          </div>
+
+          {/* Result banner */}
+          {result && (
+            <div key={animKey} className={`rps2-result-banner ${resultMeta.cls}`}>
+              <div className="rps2-battle">
+                <div className="rps2-fighter">
+                  <span className="rps2-fighter-lbl">You</span>
+                  <div className="rps2-fighter-img-wrap rps2-you-wrap">
+                    <img src={ICONS[result.playerMove]} alt={MOVE_NAMES[result.playerMove]} className="rps2-fighter-img" />
+                  </div>
+                  <span className="rps2-fighter-name">{MOVE_NAMES[result.playerMove]}</span>
+                </div>
+                <div className="rps2-vs">VS</div>
+                <div className="rps2-fighter">
+                  <span className="rps2-fighter-lbl">AI</span>
+                  <div className="rps2-fighter-img-wrap rps2-ai-wrap">
+                    <img src={ICONS[result.aiMove]} alt={MOVE_NAMES[result.aiMove]} className="rps2-fighter-img" />
+                  </div>
+                  <span className="rps2-fighter-name">{MOVE_NAMES[result.aiMove]}</span>
+                </div>
               </div>
-              <div className="rps-score-item rps-score-draw">
-                <span className="rps-score-num">{draws}</span>
-                <span className="rps-score-lbl">Draw</span>
-              </div>
-              <div className="rps-score-item rps-score-lose">
-                <span className="rps-score-num">{losses}</span>
-                <span className="rps-score-lbl">AI</span>
-              </div>
+              <div className={`rps2-outcome-pill ${resultMeta.cls}`}>{resultMeta.label}</div>
             </div>
           )}
 
-          {/* Countdown overlay */}
-          {screen === 'countdown' && (
-            <div className="rps-countdown-overlay">
-              <div className="rps-countdown-ring">
-                <span className="rps-countdown-num">{count}</span>
-              </div>
-              <p className="rps-countdown-label">Get ready…</p>
-            </div>
+          {/* AI thinking */}
+          {aiThinking && (
+            <p className="rps2-thinking">{aiThinking}</p>
           )}
 
-          {/* Choice buttons */}
-          {screen === 'menu' && (
-            <>
-              <p className="rps-choose-label">Choose your move</p>
-              <div className="rps-choices">
-                {MOVE_KEYS.map(key => (
-                  <button
-                    key={key}
-                    className={`rps-choice-btn rps-${key.toLowerCase()}`}
-                    onClick={() => handleChoice(key)}
-                  >
-                    <img
-                      src={ICONS[MOVE_NAMES[key]]}
-                      alt={MOVE_NAMES[key]}
-                      className="rps-choice-icon"
-                      draggable="false"
-                    />
-                    <span className="rps-choice-name">{MOVE_NAMES[key]}</span>
-                  </button>
-                ))}
-              </div>
+          {/* Move buttons */}
+          <p className="rps2-choose-lbl">{result ? 'Play again?' : 'Choose your move'}</p>
+          <div className="rps2-choices">
+            {MOVES.map(key => (
+              <button
+                key={key}
+                className={`rps2-choice-btn rps2-btn-${key.toLowerCase()}`}
+                onClick={() => play(key)}
+              >
+                <img src={ICONS[key]} alt={MOVE_NAMES[key]} className="rps2-choice-icon" />
+                <span className="rps2-choice-name">{MOVE_NAMES[key]}</span>
+              </button>
+            ))}
+          </div>
 
-              {total > 0 && (
-                <button className="rps-reset-btn" onClick={handleReset}>
-                  <img src="https://cdn-icons-png.flaticon.com/512/10435/10435525.png" alt="reset" className="rps-reset-icon" />
-                  Reset Game
-                </button>
-              )}
-            </>
+          {/* Reset */}
+          {(wins + draws + losses) > 0 && (
+            <button className="rps2-reset-btn" onClick={resetGame}>
+              ↺ Reset Game
+            </button>
           )}
         </div>
 
-        {/* Round history */}
-        {roundLog.length > 0 && (
-          <div className="rps-history-wrap">
-            <h3 className="rps-history-title">Round History</h3>
-            <div className="rps-history-list">
-              {[...roundLog].reverse().slice(0, 5).map((r, i) => (
+        {/* ── Round history (right column, always shown) ───────────────────── */}
+        <div className="rps2-history">
+          <h3 className="rps2-history-title">Round History</h3>
+          {roundLog.length === 0 ? (
+            <p className="rps2-history-empty">No rounds played yet.<br />Make your first move!</p>
+          ) : (
+            <div className="rps2-history-list">
+              {roundLog.slice(0, 10).map((r, i) => (
                 <div
                   key={i}
-                  className={`rps-history-row ${r.outcome === 'YOU WIN' ? 'win' : r.outcome === 'DRAW' ? 'draw' : 'lose'}`}
+                  className={`rps2-history-row ${r.outcome === 'WIN' ? 'rps2-win' : r.outcome === 'DRAW' ? 'rps2-draw' : 'rps2-lose'}`}
                 >
-                  <img src={ICONS[MOVE_NAMES[r.player]]} alt={MOVE_NAMES[r.player]} className="rps-hist-icon" />
-                  <span className="rps-hist-vs">vs</span>
-                  <img src={ICONS[MOVE_NAMES[r.ai]]} alt={MOVE_NAMES[r.ai]} className="rps-hist-icon" />
-                  <span className="rps-hist-outcome">{r.outcome}</span>
+                  <span className="rps2-hist-round">#{roundLog.length - i}</span>
+                  <img src={ICONS[r.player]} alt={MOVE_NAMES[r.player]} className="rps2-hist-icon" />
+                  <span className="rps2-hist-vs">vs</span>
+                  <img src={ICONS[r.ai]} alt={MOVE_NAMES[r.ai]} className="rps2-hist-icon" />
+                  <span className="rps2-hist-outcome">
+                    {r.outcome === 'WIN' ? 'You Won' : r.outcome === 'DRAW' ? 'Draw' : 'AI Won'}
+                  </span>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ── REVEAL ─────────────────────────────────────────────────────────────────
-  const outcomeClass = outcome === 'YOU WIN' ? 'win' : outcome === 'DRAW' ? 'draw' : 'lose';
-  const outcomeLabel = outcome === 'YOU WIN' ? 'You Win!' : outcome === 'DRAW' ? "It's a Draw!" : 'AI Wins!';
-  const outcomeIcon  = outcome === 'YOU WIN'
-    ? 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'
-    : outcome === 'DRAW'
-    ? 'https://cdn-icons-png.flaticon.com/512/1828/1828843.png'
-    : 'https://cdn-icons-png.flaticon.com/512/2706/2706950.png';
-
-  return (
-    <div className="rps-page">
-      <button className="rps-back-btn" onClick={() => navigate('/kidshome')}>
-        <img src="https://cdn-icons-png.flaticon.com/512/271/271220.png" alt="back" className="rps-back-icon" />
-        Back to Home
-      </button>
-
-      <div className={`rps-card rps-reveal-card ${outcomeClass}`}>
-        {/* Result banner */}
-        <div className={`rps-result-banner ${outcomeClass}`}>
-          <img src={outcomeIcon} alt={outcomeLabel} className="rps-result-icon" />
-          <span className="rps-result-text">{outcomeLabel}</span>
+          )}
         </div>
 
-        {/* Moves display */}
-        <div className="rps-battle">
-          {/* Player */}
-          <div className="rps-battle-side rps-player-side">
-            <p className="rps-battle-label">You</p>
-            <div className="rps-battle-card player-card">
-              <img src={ICONS[MOVE_NAMES[playerMove]]} alt={MOVE_NAMES[playerMove]} className="rps-battle-icon" />
-            </div>
-            <p className="rps-battle-name">{MOVE_NAMES[playerMove]}</p>
-          </div>
+      </div> {/* end rps2-body */}
 
-          <div className="rps-battle-vs">VS</div>
-
-          {/* AI */}
-          <div className="rps-battle-side rps-ai-side">
-            <p className="rps-battle-label">AI</p>
-            <div className="rps-battle-card ai-card">
-              <img src={ICONS[MOVE_NAMES[aiMove]]} alt={MOVE_NAMES[aiMove]} className="rps-battle-icon" />
-            </div>
-            <p className="rps-battle-name">{MOVE_NAMES[aiMove]}</p>
-          </div>
-        </div>
-
-        {/* Scoreboard */}
-        <div className="rps-scoreboard">
-          <div className="rps-score-item rps-score-win">
-            <span className="rps-score-num">{wins}</span>
-            <span className="rps-score-lbl">You</span>
-          </div>
-          <div className="rps-score-item rps-score-draw">
-            <span className="rps-score-num">{draws}</span>
-            <span className="rps-score-lbl">Draw</span>
-          </div>
-          <div className="rps-score-item rps-score-lose">
-            <span className="rps-score-num">{losses}</span>
-            <span className="rps-score-lbl">AI</span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="rps-reveal-actions">
-          <button className="rps-play-again-btn" onClick={handlePlayAgain}>
-            Play Again
-          </button>
-          <button className="rps-reset-btn" onClick={handleReset}>
-            <img src="https://cdn-icons-png.flaticon.com/512/10435/10435525.png" alt="reset" className="rps-reset-icon" />
-            Reset
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

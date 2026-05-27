@@ -40,9 +40,10 @@ export default function Hero() {
 
         <div className="hero-image-wrapper">
           <img
-            src="../public/assets/3272fb483fe937fb446d281c726dbb31c8daf448.png"
+            src="/Kid_PC.webp"
             alt="A young girl using a computer"
             className="hero-main-image"
+            style={{ borderRadius: '24px', objectFit: 'cover' }}
           />
 
           <div className="hero-icon-card hero-icon-top">

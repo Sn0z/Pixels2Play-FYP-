@@ -137,9 +137,9 @@ function generateWrongAnswers(correct, count) {
 }
 
 const DIFF_CONFIG = [
-    { level: 1, label: 'Easy',   emoji: '🌱', sub: '3–4 moles', color: '#16a34a', border: '#bbf7d0' },
-    { level: 2, label: 'Medium', emoji: '⚡', sub: '5–6 moles', color: '#d97706', border: '#fde68a' },
-    { level: 3, label: 'Hard',   emoji: '🔥', sub: '8–9 moles', color: '#dc2626', border: '#fecaca' },
+    { level: 1, label: 'Easy',   icon: 'https://cdn-icons-png.flaticon.com/512/2583/2583344.png', sub: '3–4 moles', color: '#16a34a', border: '#bbf7d0' },
+    { level: 2, label: 'Medium', icon: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png', sub: '5–6 moles', color: '#d97706', border: '#fde68a' },
+    { level: 3, label: 'Hard',   icon: 'https://cdn-icons-png.flaticon.com/512/785/785116.png',  sub: '8–9 moles', color: '#dc2626', border: '#fecaca' },
 ];
 
 // ── Mole Hole component ───────────────────────────────────────────────────────
@@ -183,7 +183,9 @@ function MoleHole({ value, isUp, isCorrect, onWhack }) {
 
             {/* Hammer */}
             {hammerVisible && (
-                <div className={`hammer ${isCorrect ? 'hit-correct' : 'hit-wrong'}`}>🔨</div>
+                <div className={`hammer ${isCorrect ? 'hit-correct' : 'hit-wrong'}`}>
+                    <img src="/Hammer.png" alt="hammer" />
+                </div>
             )}
         </div>
     );
@@ -346,7 +348,7 @@ export default function WhackAMoleGame() {
                             style={difficulty === d.level ? { borderColor: d.color, background: d.border } : {}}
                             onClick={() => setDifficulty(d.level)}
                         >
-                            <span className="wam-diff-emoji">{d.emoji}</span>
+                            <img src={d.icon} alt={d.label} className="wam-diff-emoji" style={{width:'28px',height:'28px',objectFit:'contain'}} />
                             <span className="wam-diff-name" style={difficulty === d.level ? { color: d.color } : {}}>{d.label}</span>
                             <span className="wam-diff-sub">{d.sub}</span>
                         </button>
@@ -362,12 +364,18 @@ export default function WhackAMoleGame() {
     // ── GAME OVER ─────────────────────────────────────────────────────────────
     if (screen === 'gameover') {
         const acc = answered > 0 ? Math.round((score / answered) * 100) : 0;
-        const emoji = score >= 10 ? '🏆' : score >= 5 ? '⭐' : '💪';
-        const msg = score >= 10 ? "Outstanding! You're a math wizard! 🧙" : score >= 5 ? "Great job! Keep practising!" : "Nice try! You'll do better next time!";
+        const resultIcon = score >= 10
+            ? 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png'
+            : score >= 5
+            ? 'https://cdn-icons-png.flaticon.com/512/1828/1828617.png'
+            : 'https://cdn-icons-png.flaticon.com/512/2278/2278992.png';
+        const msg = score >= 10 ? "Outstanding! You're a math wizard!" : score >= 5 ? "Great job! Keep practising!" : "Nice try! You'll do better next time!";
         return (
             <div className="wam-page">
                 <div className="wam-card gameover-card">
-                    <div className="wam-go-emoji">{emoji}</div>
+                    <div className="wam-go-emoji">
+                        <img src={resultIcon} alt="result" style={{width:'64px',height:'64px',objectFit:'contain'}} />
+                    </div>
                     <h1 className="wam-title">Game Over!</h1>
                     <div className="wam-stats-grid">
                         <div className="wam-stat purple"><span>{score}</span><label>Score</label></div>
@@ -376,7 +384,7 @@ export default function WhackAMoleGame() {
                     </div>
                     <p className="wam-verdict">{msg}</p>
                     <div className="wam-go-btns">
-                        <button className="wam-play-btn" onClick={startGame}>🔄 Play Again</button>
+                        <button className="wam-play-btn" onClick={startGame}>Play Again</button>
                         <button className="wam-secondary-btn" onClick={() => setScreen('menu')}>Change Difficulty</button>
                     </div>
                     <button className="wam-back-link" onClick={() => navigate('/kidshome')}>← Back to Home</button>
@@ -402,7 +410,13 @@ export default function WhackAMoleGame() {
                     <span className="hud-value" style={{ color: timerColor }}>{timeLeft}s</span>
                 </div>
                 <button className="wam-music-btn" onClick={handleMusicToggle} title="Toggle music">
-                    {musicOn ? '🎵' : '🔇'}
+                    <img
+                        src={musicOn
+                            ? 'https://cdn-icons-png.flaticon.com/512/727/727218.png'
+                            : 'https://cdn-icons-png.flaticon.com/512/727/727269.png'}
+                        alt={musicOn ? 'music on' : 'music off'}
+                        style={{width:'20px',height:'20px',objectFit:'contain',filter:'brightness(0) invert(1)'}}
+                    />
                 </button>
             </div>
 

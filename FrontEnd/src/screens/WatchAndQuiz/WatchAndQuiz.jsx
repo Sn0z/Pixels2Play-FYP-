@@ -421,7 +421,7 @@ export default function WatchAndQuiz({ videoId, moduleId, moduleTitle = '' }) {
             onClick={() => setChatOpen((o) => !o)}
             title="Ask Pixel - AI Study Buddy"
           >
-            {chatOpen ? "✕" : "🤖"}
+            {chatOpen ? "✕" : <img src="https://cdn-icons-png.flaticon.com/512/12637/12637629.png" alt="robot" style={{width: '60%', height: '60%', objectFit: 'contain'}} />}
             <span className="float-tooltip">Ask Pixel!</span>
           </button>
           {chatOpen && (
