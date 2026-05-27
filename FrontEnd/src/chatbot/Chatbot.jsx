@@ -49,12 +49,12 @@ function isOffTopic(text) {
 
 // ─── Suggested Questions ─────────────────────────────────────────────────────
 const SUGGESTIONS = [
-  "🤖 What is AI?",
-  "🧮 Help me with fractions",
-  "💻 How does coding work?",
-  "🧬 Explain DNA simply",
-  "⭐ What is machine learning?",
-  "📚 Give me a study tip",
+  "What is AI?",
+  "Help me with fractions",
+  "How does coding work?",
+  "Explain DNA simply",
+  "What is machine learning?",
+  "Give me a study tip",
 ];
 
 // ─── Time Helper ─────────────────────────────────────────────────────────────
@@ -327,7 +327,9 @@ export default function KidsChatbot({
     <div className={containerClass}>
       {/* Header */}
       <div className={`chatbot-header${quizHelpMode ? " quiz-help-header" : ""}`}>
-        <div className="chatbot-avatar">{quizHelpMode ? "🎓" : "🤖"}</div>
+        <div className="chatbot-avatar">
+          {quizHelpMode ? "🎓" : <img src="https://cdn-icons-png.flaticon.com/512/12637/12637629.png" alt="robot" style={{width: '80%', height: '80%', objectFit: 'contain'}} />}
+        </div>
         <div className="chatbot-header-info">
           <h2>Pixel — {quizHelpMode ? "Quiz Helper" : "AI Study Buddy"}</h2>
           <p>
@@ -378,7 +380,7 @@ export default function KidsChatbot({
             className={`chat-message ${msg.role === "user" ? "user" : "bot"}${msg.blocked ? " blocked" : ""}`}
           >
             <div className={`msg-avatar${msg.role === "user" ? " user-avatar" : ""}`}>
-              {msg.role === "user" ? "👦" : "🤖"}
+              {msg.role === "user" ? "👦" : <img src="https://cdn-icons-png.flaticon.com/512/12637/12637629.png" alt="robot" style={{width: '70%', height: '70%', objectFit: 'contain'}} />}
             </div>
             <div>
               <div className="msg-bubble">{formatText(msg.text)}</div>
@@ -396,7 +398,9 @@ export default function KidsChatbot({
         {/* Typing Indicator */}
         {loading && (
           <div className="typing-indicator">
-            <div className="msg-avatar">🤖</div>
+            <div className="msg-avatar">
+              <img src="https://cdn-icons-png.flaticon.com/512/12637/12637629.png" alt="robot" style={{width: '70%', height: '70%', objectFit: 'contain'}} />
+            </div>
             <div className="typing-dots">
               <span /><span /><span />
             </div>
@@ -412,7 +416,7 @@ export default function KidsChatbot({
             <button
               key={s}
               className="suggestion-chip"
-              onClick={() => sendMessage(s.replace(/^[^\s]+\s/, ""))}
+              onClick={() => sendMessage(s)}
               disabled={loading}
             >
               {s}
@@ -455,7 +459,10 @@ export default function KidsChatbot({
   return (
     <div className="chatbot-page">
       <div className="chatbot-page-header">
-        <h1>🤖 Pixel — Your AI Study Buddy</h1>
+        <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <img src="https://cdn-icons-png.flaticon.com/512/12637/12637629.png" alt="robot" style={{width: '40px', height: '40px', objectFit: 'contain'}} />
+          Pixel — Your AI Study Buddy
+        </h1>
         <p>Ask me anything about AI, coding, math, science, and more!</p>
       </div>
       {chatContent}
