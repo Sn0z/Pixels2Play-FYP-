@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import './RockPaperScissorsGame.css';
 
-// ── CDN icons (flaticon) ────────────────────────────────────────────────────
+// Game assets
 const ICONS = {
   R: '/Rock.png',
   P: '/Paper.png',
@@ -15,7 +15,7 @@ const MOVES = ['R', 'P', 'S'];
 export default function RockPaperScissorsGame() {
   const navigate = useNavigate();
 
-  // ── Firebase auth guard ─────────────────────────────────────────────────────
+  // Route auth guard
   useEffect(() => {
     const auth = getAuth();
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -24,7 +24,7 @@ export default function RockPaperScissorsGame() {
     return () => unsub();
   }, [navigate]);
 
-  // ── AI memory (refs = mutable, no re-render needed) ─────────────────────────
+  // Track the player's move history so the game can guess the next choice.
   const counts = useRef({ R: 0, P: 0, S: 0 });
   const afterMove = useRef({
     R: { R: 0, P: 0, S: 0 },
@@ -35,16 +35,16 @@ export default function RockPaperScissorsGame() {
   const beatedBy = { R: 'P', P: 'S', S: 'R' };
   const lastMove = useRef(null);
 
-  // ── UI state ────────────────────────────────────────────────────────────────
+  // Component state
   const [wins, setWins] = useState(0);
   const [draws, setDraws] = useState(0);
   const [losses, setLosses] = useState(0);
-  const [result, setResult] = useState(null);   // null = idle
+  const [result, setResult] = useState(null);   // null when game is idle
   const [aiThinking, setAiThinking] = useState('');
-  const [roundLog, setRoundLog] = useState([]);     // [{ player, ai, outcome }]
-  const [animKey, setAnimKey] = useState(0);      // triggers CSS re-animation
+  const [roundLog, setRoundLog] = useState([]);     // list of played rounds
+  const [animKey, setAnimKey] = useState(0);      // triggers simple scale animations
 
-  // ── AI picks its move ───────────────────────────────────────────────────────
+  // Use the player's past moves to predict what they may play next.
   function getAIMove() {
     const total = counts.current.R + counts.current.P + counts.current.S;
 
@@ -74,7 +74,7 @@ export default function RockPaperScissorsGame() {
     return aiMove;
   }
 
-  // ── Play a round ────────────────────────────────────────────────────────────
+  // Handle playing one round
   function play(playerMove) {
     const aiMove = getAIMove();
 
@@ -98,7 +98,7 @@ export default function RockPaperScissorsGame() {
     setAnimKey(k => k + 1);
   }
 
-  // ── Reset ───────────────────────────────────────────────────────────────────
+  // Clear memory and reset scores
   function resetGame() {
     counts.current = { R: 0, P: 0, S: 0 };
     afterMove.current = {
@@ -113,7 +113,6 @@ export default function RockPaperScissorsGame() {
     setRoundLog([]);
   }
 
-  // ── Result copy ─────────────────────────────────────────────────────────────
   const resultMeta = result
     ? result.outcome === 'WIN'
       ? { label: 'You Win!', cls: 'rps2-win' }
@@ -124,15 +123,9 @@ export default function RockPaperScissorsGame() {
 
   return (
     <div className="rps2-page">
-
-
-      {/* ── Two-column body ──────────────────────────────────────────────── */}
       <div className="rps2-body">
-
-        {/* ── Card ────────────────────────────────────────────────────────── */}
         <div className="rps2-card">
-
-          {/* Header */}
+          {/* Top navigation header */}
           <div className="rps2-header">
             <button className="rps2-back-btn" onClick={() => navigate('/kidshome')}>
               <img
@@ -155,23 +148,25 @@ export default function RockPaperScissorsGame() {
             </div>
           </div>
 
-          {/* Scoreboard */}
+          {/* Scores */}
           <div className="rps2-scoreboard">
             <div className="rps2-score-item rps2-score-you">
               <span className="rps2-score-num">{wins}</span>
               <span className="rps2-score-lbl">You</span>
             </div>
+            <div className="rps2-scoreboard-divider" />
             <div className="rps2-score-item rps2-score-draw">
               <span className="rps2-score-num">{draws}</span>
               <span className="rps2-score-lbl">Draw</span>
             </div>
+            <div className="rps2-scoreboard-divider" />
             <div className="rps2-score-item rps2-score-ai">
               <span className="rps2-score-num">{losses}</span>
               <span className="rps2-score-lbl">AI</span>
             </div>
           </div>
 
-          {/* Result banner */}
+          {/* Battle outcomes */}
           {result && (
             <div key={animKey} className={`rps2-result-banner ${resultMeta.cls}`}>
               <div className="rps2-battle">
@@ -195,12 +190,12 @@ export default function RockPaperScissorsGame() {
             </div>
           )}
 
-          {/* AI thinking */}
+          {/* Show a simple explanation of why the opponent chose that move */}
           {aiThinking && (
             <p className="rps2-thinking">{aiThinking}</p>
           )}
 
-          {/* Move buttons */}
+          {/* Game controls */}
           <p className="rps2-choose-lbl">{result ? 'Play again?' : 'Choose your move'}</p>
           <div className="rps2-choices">
             {MOVES.map(key => (
@@ -215,7 +210,7 @@ export default function RockPaperScissorsGame() {
             ))}
           </div>
 
-          {/* Reset */}
+          {/* Reset stats */}
           {(wins + draws + losses) > 0 && (
             <button className="rps2-reset-btn" onClick={resetGame}>
               ↺ Reset Game
@@ -223,7 +218,7 @@ export default function RockPaperScissorsGame() {
           )}
         </div>
 
-        {/* ── Round history (right column, always shown) ───────────────────── */}
+        {/* History column on the right side */}
         <div className="rps2-history">
           <h3 className="rps2-history-title">Round History</h3>
           {roundLog.length === 0 ? (
@@ -247,9 +242,7 @@ export default function RockPaperScissorsGame() {
             </div>
           )}
         </div>
-
-      </div> {/* end rps2-body */}
-
+      </div>
     </div>
   );
 }

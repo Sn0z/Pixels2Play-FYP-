@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     "utils.apps.UtilsConfig",  # Custom AppConfig to initialize Firebase on startup
     "users",
     "family",
-    "games",  # AI Learning Games
+    "games",  # Learning games module
     "progress",  # Progress Tracking
     "analytics",  # Admin Analytics
     "evaluation",  # Research Evaluation

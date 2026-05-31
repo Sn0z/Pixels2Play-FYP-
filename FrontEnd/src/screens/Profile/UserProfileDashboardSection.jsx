@@ -1,8 +1,13 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useChildProfile } from "../../hooks/useChildProfile";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { auth } from "../../FireBase/firebase";
+import { signOut } from "firebase/auth";
+import ConfirmModal from "../../components/ConfirmModal";
 import "./UserProfileDashboardSection.css";
+
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
 
 /* ─── badge icon mapping ─────────────────────────────────── */
 const BADGE_ICONS = {
@@ -22,17 +27,69 @@ function Skeleton({ className }) {
 import { NavigationSection } from "./NavigationSection";
 
 export default function UserProfileDashboardSection() {
-  const { parent, child, loading, error, accessDenied, refetch } =
+  const navigate = useNavigate();
+  const { parent, children, childLimit, canAddChild, loading, error, accessDenied, refetch } =
     useChildProfile();
+
+  const [activeChildIndex, setActiveChildIndex] = useState(0);
+  const child = children[activeChildIndex] || null;
+
+  const [paymentVerified, setPaymentVerified] = useState(false);
+
+  // Check for Khalti pidx in URL
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pidx = params.get("pidx");
+
+    if (pidx) {
+      const verifyPayment = async () => {
+        try {
+          const user = auth.currentUser;
+          if (!user) return; // auth hasn't resolved yet
+          const token = await user.getIdToken();
+          
+          const res = await fetch(`${API_BASE}/payments/verify/`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ pidx }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setPaymentVerified(true);
+            window.history.replaceState({}, document.title, window.location.pathname);
+            refetch(); // Reload limits and children
+            setTimeout(() => setPaymentVerified(false), 5000); // Hide banner after 5s
+          }
+        } catch (err) {
+          console.error("Payment verification failed:", err);
+        }
+      };
+      
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        if (user) verifyPayment();
+      });
+      return unsubscribe;
+    }
+  }, [refetch]);
+
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+
+  const handleSignOutRequest = () => setShowSignOutModal(true);
+
+  const handleSignOutConfirm = async () => {
+    setShowSignOutModal(false);
+    await signOut(auth);
+    navigate("/login");
+  };
 
   /* Access denied ------------------------------------------------ */
   if (accessDenied) {
     return (
-      <div className="flex bg-[#f8fafc] min-h-screen">
-        <div className="w-[280px] flex-shrink-0 fixed h-screen z-50">
-          <NavigationSection />
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+        <div style={{ width: 280, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50 }}>
+          <NavigationSection onSignOut={handleSignOutRequest} />
         </div>
-        <div className="flex-1 ml-[280px] upd-shell upd-center" style={{ minHeight: '100vh', background: 'transparent' }}>
+        <div style={{ flex: 1, marginLeft: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
           <div className="upd-denied-card">
             <span className="upd-denied-icon">🔒</span>
             <h2>Access Restricted</h2>
@@ -42,6 +99,13 @@ export default function UserProfileDashboardSection() {
             </Link>
           </div>
         </div>
+        <ConfirmModal
+          isOpen={showSignOutModal}
+          title="Sign Out"
+          message="Are you sure you want to sign out?"
+          onConfirm={handleSignOutConfirm}
+          onCancel={() => setShowSignOutModal(false)}
+        />
       </div>
     );
   }
@@ -49,11 +113,11 @@ export default function UserProfileDashboardSection() {
   /* Error state -------------------------------------------------- */
   if (error && !loading) {
     return (
-      <div className="flex bg-[#f8fafc] min-h-screen">
-        <div className="w-[280px] flex-shrink-0 fixed h-screen z-50">
-          <NavigationSection />
+      <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
+        <div style={{ width: 280, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 50 }}>
+          <NavigationSection onSignOut={handleSignOutRequest} />
         </div>
-        <div className="flex-1 ml-[280px] upd-shell upd-center" style={{ minHeight: '100vh', background: 'transparent' }}>
+        <div style={{ flex: 1, marginLeft: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
           <div className="upd-error-card">
             <span className="upd-error-icon">⚠️</span>
             <h2>Something went wrong</h2>
@@ -63,20 +127,43 @@ export default function UserProfileDashboardSection() {
             </button>
           </div>
         </div>
+        <ConfirmModal
+          isOpen={showSignOutModal}
+          title="Sign Out"
+          message="Are you sure you want to sign out?"
+          onConfirm={handleSignOutConfirm}
+          onCancel={() => setShowSignOutModal(false)}
+        />
       </div>
     );
   }
 
   return (
     <div className="upd-dashboard-layout">
+      {/* Sign Out Confirm Modal */}
+      <ConfirmModal
+        isOpen={showSignOutModal}
+        title="Sign Out"
+        message="Are you sure you want to sign out of your account?"
+        onConfirm={handleSignOutConfirm}
+        onCancel={() => setShowSignOutModal(false)}
+      />
+
       {/* Sidebar */}
       <div className="upd-sidebar-container">
-        <NavigationSection />
+        <NavigationSection onSignOut={handleSignOutRequest} />
       </div>
 
       {/* Main Content Area */}
       <div className="upd-main-content">
         <main className="upd-main">
+          
+        {paymentVerified && (
+          <div style={{ background: '#dcfce3', color: '#166534', padding: '15px 20px', borderRadius: 8, marginBottom: 20, border: '1px solid #bbf7d0', fontWeight: 500 }}>
+            🎉 Payment Successful! Your subscription is now active.
+          </div>
+        )}
+
         {/* ── Parent card ─────────────────────────────────────────── */}
         <section className="upd-parent-card">
           {loading ? (
@@ -108,7 +195,7 @@ export default function UserProfileDashboardSection() {
         {/* ── Child section ───────────────────────────────────────── */}
         <section className="upd-child-section">
           {/* No child linked */}
-          {!loading && !child && (
+          {!loading && children.length === 0 && (
             <div className="upd-no-child">
               <span className="upd-no-child-icon">👧</span>
               <h2>No child linked yet</h2>
@@ -123,8 +210,27 @@ export default function UserProfileDashboardSection() {
           )}
 
           {/* Child card */}
-          {(loading || child) && (
+          {(loading || children.length > 0) && (
             <div className="upd-child-card">
+              {children.length > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, padding: '0 10px' }}>
+                  <button 
+                    onClick={() => setActiveChildIndex(Math.max(0, activeChildIndex - 1))}
+                    disabled={activeChildIndex === 0}
+                    style={{ padding: '8px 15px', borderRadius: 8, border: '1px solid #ccc', background: activeChildIndex === 0 ? '#f1f5f9' : '#fff', cursor: activeChildIndex === 0 ? 'not-allowed' : 'pointer' }}
+                  >
+                    ◀ Prev
+                  </button>
+                  <strong style={{ color: '#475569' }}>Child {activeChildIndex + 1} of {children.length}</strong>
+                  <button 
+                    onClick={() => setActiveChildIndex(Math.min(children.length - 1, activeChildIndex + 1))}
+                    disabled={activeChildIndex === children.length - 1}
+                    style={{ padding: '8px 15px', borderRadius: 8, border: '1px solid #ccc', background: activeChildIndex === children.length - 1 ? '#f1f5f9' : '#fff', cursor: activeChildIndex === children.length - 1 ? 'not-allowed' : 'pointer' }}
+                  >
+                    Next ▶
+                  </button>
+                </div>
+              )}
               {/* Avatar + name + level */}
               <div className="upd-child-hero">
                 {loading ? (
@@ -247,6 +353,15 @@ export default function UserProfileDashboardSection() {
                   </p>
                 )}
               </div>
+            </div>
+          )}
+          
+          {/* Add Another Child Button */}
+          {!loading && children.length > 0 && canAddChild && (
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
+              <Link to="/setup1" className="upd-btn upd-btn-outline" style={{ display: 'inline-block', padding: '10px 20px', borderRadius: 12, border: '2px dashed #cbd5e1', color: '#64748b', textDecoration: 'none', fontWeight: 600 }}>
+                + Link Another Child
+              </Link>
             </div>
           )}
         </section>

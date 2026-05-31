@@ -53,3 +53,14 @@ ERROR_TRANSACTION_FAILED = "TRANSACTION_FAILED"
 
 # Success codes
 SUCCESS_LINK_SUCCESS = "LINK_SUCCESS"
+
+# Subscription-gating error codes
+ERROR_NO_SUBSCRIPTION = "NO_SUBSCRIPTION"
+ERROR_SUBSCRIPTION_LIMIT_REACHED = "SUBSCRIPTION_LIMIT_REACHED"
+
+# Child limits per subscription plan
+SUBSCRIPTION_PLAN_LIMITS = {
+    'starter': 1,
+    'pro': 2,
+    'family': 5,
+}

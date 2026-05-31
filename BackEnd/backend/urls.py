@@ -22,7 +22,7 @@ urlpatterns = [
     # From Pixels to Play API endpoints
     path("api/", include("users.urls")),  # /api/auth/login, /api/users/me
     path("api/family/", include("family.urls")),  # /api/family/link, /api/family/links
-    path("api/games/", include("games.urls")),  # /api/games/* - AI Learning Games
+    path("api/games/", include("games.urls")),  # /api/games/* - Learning games for children
     path("api/progress/", include("progress.urls")),  # /api/progress/* - Progress Tracking
     path("api/analytics/", include("analytics.urls")),  # /api/analytics/* - Admin Analytics
     path("api/evaluation/", include("evaluation.urls")),  # /api/evaluation/* - Research Evaluation

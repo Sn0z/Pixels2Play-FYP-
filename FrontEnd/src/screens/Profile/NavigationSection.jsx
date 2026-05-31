@@ -2,6 +2,7 @@ import {
     GraduationCapIcon,
     HelpCircleIcon,
     HomeIcon,
+    LogOutIcon,
     RocketIcon,
     SettingsIcon,
     UserIcon,
@@ -47,12 +48,12 @@ const bottomNavigationItems = [
     },
 ];
 
-export const NavigationSection = () => {
+export const NavigationSection = ({ onSignOut }) => {
     return (
         <nav className="nav-sidebar">
             <div className="nav-header">
                 <Link to="/" className="nav-logo">
-                    <span className="nav-logo-icon">🎮</span>
+                    <img src="/Logo.png" alt="Pixels2Play" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
                     <span>Pixels2Play</span>
                 </Link>
             </div>
@@ -86,7 +87,8 @@ export const NavigationSection = () => {
                         </button>
                     );
                 })}
-                <button className="nav-btn nav-btn-signout">
+                <button className="nav-btn nav-btn-signout" onClick={onSignOut}>
+                    <LogOutIcon />
                     Sign Out
                 </button>
             </div>

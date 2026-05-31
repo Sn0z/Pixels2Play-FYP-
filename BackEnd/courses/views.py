@@ -904,3 +904,35 @@ def child_progress(request, course_id):
     except Exception as e:
         print(f"[ERROR] child_progress({course_id}): {e}")
         return Response({'error': 'Failed to update progress'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ── Demo Video Endpoint ────────────────────────────────────────────
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_demo_video(request):
+    """
+    Fetch the Demo.mp4 video link from Google Drive.
+    
+    Returns:
+        - file_id: Google Drive file ID
+        - embed_url: Direct embed URL for Google Drive preview
+        - webViewLink: Link to view on Google Drive
+        - error: Error message if video not found
+    
+    Access: Public (AllowAny)
+    """
+    from utils.demo_video_service import DemoVideoService
+    
+    try:
+        result = DemoVideoService.get_demo_video_link()
+        
+        if 'error' in result:
+            return Response(result, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(result, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to fetch demo video: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

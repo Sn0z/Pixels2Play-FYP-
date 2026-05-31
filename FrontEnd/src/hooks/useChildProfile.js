@@ -26,7 +26,10 @@ async function getToken() {
 
 export function useChildProfile() {
     const [parent, setParent] = useState(null);
-    const [child, setChild] = useState(null);
+    const [child, setChild] = useState(null); // Keep for backward compatibility (active/first child)
+    const [children, setChildren] = useState([]);
+    const [childLimit, setChildLimit] = useState(0);
+    const [canAddChild, setCanAddChild] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [accessDenied, setAccessDenied] = useState(false);
@@ -54,6 +57,9 @@ export function useChildProfile() {
             const data = await res.json();
             setParent(data.parent || null);
             setChild(data.child || null);
+            setChildren(data.children || []);
+            setChildLimit(data.child_limit || 0);
+            setCanAddChild(data.can_add_child || false);
         } catch (err) {
             setError(err.message || "Failed to load profile");
         } finally {
@@ -62,7 +68,6 @@ export function useChildProfile() {
     }, []);
 
     useEffect(() => {
-        // Wait for Firebase auth to resolve before fetching
         const unsubscribe = auth.onAuthStateChanged((user) => {
             if (user) {
                 fetchDashboard();
@@ -74,16 +79,19 @@ export function useChildProfile() {
         return unsubscribe;
     }, [fetchDashboard]);
 
-    /**
-     * updateChild({ name?, photo_url? })
-     * Optimistically patches local state, then syncs to server.
-     * Rolls back on error.
-     */
     const updateChild = useCallback(
-        async (patch) => {
+        async (childId, patch) => {
             // Optimistic update
-            const previous = child;
-            setChild((prev) => (prev ? { ...prev, ...patch } : prev));
+            const previousChildren = [...children];
+            
+            setChildren((prev) => 
+                prev.map(c => c.id === childId ? { ...c, ...patch } : c)
+            );
+            
+            // Also update the `child` backward compatibility object if it matches
+            if (child?.id === childId) {
+                setChild(prev => ({ ...prev, ...patch }));
+            }
 
             try {
                 const token = await getToken();
@@ -93,7 +101,7 @@ export function useChildProfile() {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(patch),
+                    body: JSON.stringify({ child_id: childId, ...patch }),
                 });
 
                 if (!res.ok) {
@@ -102,12 +110,19 @@ export function useChildProfile() {
                 }
             } catch (err) {
                 // Roll back on failure
-                setChild(previous);
-                throw err; // Let calling component handle UI error
+                setChildren(previousChildren);
+                if (child?.id === childId) {
+                    const original = previousChildren.find(c => c.id === childId);
+                    if (original) setChild(original);
+                }
+                throw err;
             }
         },
-        [child]
+        [children, child]
     );
 
-    return { parent, child, loading, error, accessDenied, refetch: fetchDashboard, updateChild };
+    return { 
+        parent, child, children, childLimit, canAddChild, 
+        loading, error, accessDenied, refetch: fetchDashboard, updateChild 
+    };
 }

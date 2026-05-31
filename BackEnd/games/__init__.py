@@ -1,2 +1,2 @@
-# Games app - AI Learning Games for Children
-# Supports: Pattern Puzzler, Decision Maze, Prediction Station, Sorting Adventure, AI Story Builder
+# Games app - Learning games for children
+# Supports: Pattern Puzzler, Decision Maze, Prediction Station, Sorting Adventure, Story Builder

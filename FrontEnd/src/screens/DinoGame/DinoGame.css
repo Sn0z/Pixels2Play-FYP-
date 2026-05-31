@@ -1,184 +1,211 @@
 /* ═══════════════════════════════════════════════════
-   DINO CAMERA GAME
-   Pure React & HTML5 Canvas Endless Runner
+   DinoGame.css  —  Chrome-style Dino Runner
 ═══════════════════════════════════════════════════ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
 .dino-page {
-    /* Full-screen wrapper */
     width: 100vw;
-    height: 100vh;
-    background: #f8fafc;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #e8f4fd 0%, #f0f9ff 50%, #fef9ec 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Courier New', Courier, monospace;
-    overflow: hidden;
-    position: relative;
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    cursor: pointer;
 }
 
-/* ── Menu & Overlay Cards ── */
-.dino-card {
-    background: white;
-    padding: 3rem 2.5rem;
-    border-radius: 1.5rem;
-    max-width: 540px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    z-index: 100;
+/* ── Canvas wrapper ─────────────────────────────── */
+.dino-wrapper {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 3px #d1d5db,
+        0 24px 60px rgba(0, 0, 0, 0.18);
+    background: #f7f7f7;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    position: relative;
-    border: 2px solid #e2e8f0;
-}
-
-.dino-hero-temp {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    margin-bottom: -1rem;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
-}
-
-.dino-title {
-    font-size: 2.5rem;
-    margin: 0;
-    font-weight: 900;
-    color: #1e293b;
-    font-family: 'Inter', sans-serif;
-}
-
-.dino-desc {
-    color: #64748b;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-}
-
-.dino-btn {
-    background: #1e293b;
-    color: white;
-    padding: 1rem 2rem;
-    font-size: 1.15rem;
-    font-weight: 700;
-    border: none;
-    border-radius: 100px;
-    cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
-    width: 100%;
-    font-family: 'Inter', sans-serif;
-}
-.dino-btn:hover {
-    background: #0f172a;
-    transform: translateY(-2px);
-}
-
-.dino-btn-link {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-}
-.dino-btn-link:hover { color: #475569; }
-
-/* ── Calibration State ── */
-.calib-card { padding: 4rem 2.5rem; }
-.calib-card h2 { font-family: 'Inter', sans-serif; margin: 0; font-size: 2rem; color: #1e293b; }
-.calib-card p { font-family: 'Inter', sans-serif; color: #64748b; margin: 0; }
-.calib-success { color: #16a34a; font-family: 'Inter', sans-serif; font-size: 1.5rem; animation: pulse 1s infinite alternate;}
-@keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
-
-/* ── Game Over Overlay ── */
-.dino-go-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-}
-.go-card h1 { font-family: 'Inter', sans-serif; font-size: 3rem; color: #dc2626; margin: 0; }
-.dino-score-big { font-size: 5rem; font-weight: 900; color: #1e293b; line-height: 1; }
-.dino-score-big span { font-size: 1.5rem; color: #94a3b8; font-family: 'Inter', sans-serif; margin-left: 5px; }
-
-
-/* ── Hidden video input for MediaPipe ── */
-.hidden-video {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* ── Game Canvas Area ── */
-.dino-game-container {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s;
-}
-.dino-game-container.active {
-    opacity: 1;
-    pointer-events: all;
 }
 
 .dino-canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* aspect ratio preserved */
-    max-width: 1280px;
-    max-height: 720px;
-    background: white;
+    display: block;
+    width: 900px;
+    height: 300px;
+    image-rendering: pixelated;
+    background: #f7f7f7;
 }
 
-/* ── Web Cam Picture in Picture ── */
-.dino-pip {
+/* ── Score bar (live, shown during play) ────────── */
+.dino-score-bar {
     position: absolute;
-    bottom: 24px;
-    right: 24px;
-    width: 240px;
-    height: 180px;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    border: 4px solid white;
-    z-index: 50;
+    top: 10px;
+    left: 16px;
+    font-size: 0.85rem;
+    color: #535353;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    pointer-events: none;
+}
+
+/* ── Generic overlay ────────────────────────────── */
+.dino-overlay {
+    position: absolute;
+    inset: 0;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(247, 247, 247, 0.92);
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.25s ease;
 }
-.pip-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1); /* mirror */
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-.pip-status {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.6);
-    color: white;
+
+/* ── Menu ────────────────────────────────────────── */
+.dino-menu-sprite {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+@keyframes hop {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-10px); }
+}
+
+.dino-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #212121;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.dino-hint {
+    font-size: 0.9rem;
+    color: #757575;
+    margin: 0;
+}
+
+.dino-hint kbd {
+    background: #e0e0e0;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+}
+
+.dino-play-instruction {
+    color: #535353;
+    font-weight: 700;
+    font-size: 1rem;
+    user-select: none;
     font-family: 'Inter', sans-serif;
-    font-weight: 800;
-    text-align: center;
-    padding: 6px 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    transition: background 0.2s;
+    letter-spacing: 0.01em;
+    margin: 8px 0;
 }
-.pip-status.jump   { background: rgba(34, 197, 94, 0.9); }
-.pip-status.crouch { background: rgba(239, 68, 68, 0.9); }
+.dino-play-instruction kbd {
+    background: #e0e0e0;
+    border: 1px solid #bdbdbd;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    color: #212121;
+}
+
+.dino-back-btn {
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 100px;
+    color: #424242;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    padding: 0.6rem 1.8rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    margin-top: 4px;
+}
+.dino-back-btn:hover {
+    border-color: #9e9e9e;
+    color: #212121;
+    background: #f5f5f5;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+.dino-back-btn:active {
+    transform: translateY(0);
+}
+
+/* ── Game Over overlay ───────────────────────────── */
+.gameover-overlay { gap: 10px; }
+
+.dino-go-label {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #212121;
+    letter-spacing: 0.18em;
+    margin: 0;
+    font-family: 'Courier New', monospace;
+}
+
+.dino-score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.dino-score-val {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #212121;
+    font-family: 'Courier New', monospace;
+    line-height: 1;
+}
+
+.dino-score-unit {
+    font-size: 1.1rem;
+    color: #9e9e9e;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+.dino-new-hi {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f59e0b;
+    margin: 0;
+    animation: pulse 0.7s ease infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 0.7; }
+    to   { opacity: 1; }
+}
+
+.dino-go-btns {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 960px) {
+    .dino-canvas { width: 100vw; height: calc(100vw * 300 / 900); }
+    .dino-wrapper { border-radius: 0; }
+    .dino-title { font-size: 1.5rem; }
+}

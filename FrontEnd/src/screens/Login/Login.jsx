@@ -23,18 +23,21 @@ const Login = () => {
     const [waitingForProfile, setWaitingForProfile] = useState(false)
 
     // Once logged in, wait for the Django profile sync to complete,
-    // then route admin users to /admin and everyone else to /.
+    // then route admin users to /admin, PARENT users to /, and CHILD users to /kidshome.
     useEffect(() => {
         if (userLoggedIn && !profileLoading) {
-            if (userProfile?.role === 'admin') {
-                navigate('/admin', { replace: true })
-            } else if (waitingForProfile) {
-                // Only auto-navigate if we were waiting (i.e. just logged in)
-                navigate('/', { replace: true })
+            const role = userProfile?.role?.toUpperCase();
+            if (role === 'ADMIN') {
+                navigate('/admin', { replace: true });
+            } else if (role === 'CHILD') {
+                navigate('/kidshome', { replace: true });
+            } else if (role === 'PARENT' || !role) {
+                // If it's a parent or empty/unassigned, go to home
+                navigate('/', { replace: true });
             }
-            setWaitingForProfile(false)
+            setWaitingForProfile(false);
         }
-    }, [userLoggedIn, profileLoading, userProfile])
+    }, [userLoggedIn, profileLoading, userProfile]);
 
     const resolveEmail = async () => {
         const isEmail = identifier.includes("@");
@@ -118,7 +121,16 @@ const Login = () => {
         <div>
             {/* Redirect already-logged-in users away from the login page */}
             {userLoggedIn && !waitingForProfile && !profileLoading && (
-                <Navigate to={userProfile?.role === 'admin' ? '/admin' : '/'} replace={true} />
+                <Navigate 
+                    to={
+                        userProfile?.role?.toUpperCase() === 'ADMIN' 
+                            ? '/admin' 
+                            : userProfile?.role?.toUpperCase() === 'CHILD' 
+                            ? '/kidshome' 
+                            : '/'
+                    } 
+                    replace={true} 
+                />
             )}
             {/* Password Reset Popup */}
             {showReset && (

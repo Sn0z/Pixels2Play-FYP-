@@ -2,10 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import "./ChildHomePage.css";
+import ConfirmModal from "../../components/ConfirmModal";
 
 const ChildHomePage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const auth = getAuth();
 
   useEffect(() => {
@@ -19,9 +21,8 @@ const ChildHomePage = () => {
 
   const profileName = user?.displayName || user?.email?.split("@")[0] || "Scholar";
 
-  const handleSignOut = async () => {
-    await auth.signOut();
-    navigate("/login");
+  const handleSignOut = () => {
+    setShowSignOutConfirm(true);
   };
   return (
     <div className="kids-home-page" data-model-id="201:812">
@@ -45,9 +46,7 @@ const ChildHomePage = () => {
               }}>
                 Games
               </div>
-              <div className="text-wrapper-99" style={{cursor:"pointer"}} onClick={() => window.location.href="/child-contact"}>
-                Contact Us
-              </div>
+
             </div>
             {/* User Info & Sign Out */}
             {user && (
@@ -161,7 +160,7 @@ const ChildHomePage = () => {
 
               <div className="game-card game-card-3">
                 <div className="game-icon">
-                  <img src="https://cdn-icons-png.flaticon.com/512/8915/8915483.png" alt="Jumping Dino" style={{width:'64px',height:'64px',objectFit:'contain'}} />
+                  <img src="/dino/Dino1.png" alt="Jumping Dino" style={{width:'64px',height:'64px',objectFit:'contain',imageRendering:'pixelated'}} />
                 </div>
                 <div className="text-wrapper-24">Jumping Dino</div>
                 <p className="text-wrapper-25">
@@ -321,11 +320,9 @@ const ChildHomePage = () => {
           <div className="frame">
             <div className="div">
               <div className="div-2">
-                <div className="frame-2">
-                  <div className="div-wrapper">
-                    <div className="text-wrapper">K</div>
-                  </div>
-                  <div className="text-wrapper-2">KidLearn</div>
+                <div className="frame-2" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <img src="/Logo.png" alt="Pixels2Play" style={{ height: '36px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+                  <div className="text-wrapper-2" style={{ fontSize: '22px', fontWeight: '800' }}>Pixels2Play</div>
                 </div>
                 <p className="p">Making learning fun for kids everywhere!</p>
               </div>
@@ -350,24 +347,29 @@ const ChildHomePage = () => {
                 </div>
               </div>
 
-              <div className="div-2">
-                <div className="text-wrapper-8">Get In Touch</div>
-                <div className="list-2">
-                  <div className="text-wrapper-6">hello@kidlearn.com</div>
-                  <div className="text-wrapper-5">1-800-KIDS-FUN</div>
-                  <div className="text-wrapper-5">Mon-Fri: 9am - 6pm</div>
-                </div>
-              </div>
+
             </div>
 
             <div className="footer-bottom">
               <p className="text-wrapper-9">
-                © 2024 KidLearn. All rights reserved. Made with love for kids!
+                © {new Date().getFullYear()} Pixels2Play. All rights reserved. Made with love for kids!
               </p>
             </div>
           </div>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={showSignOutConfirm}
+        title="Sign Out"
+        message="Are you sure you want to sign out of the Kid's Adventure?"
+        onConfirm={async () => {
+          setShowSignOutConfirm(false);
+          await auth.signOut();
+          navigate("/login");
+        }}
+        onCancel={() => setShowSignOutConfirm(false)}
+      />
     </div>
   );
 };

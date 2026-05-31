@@ -857,63 +857,74 @@ def get_parent_dashboard(request):
 
     # Look up family link to find linked child
     links = FirestoreService.get_family_links_by_parent(parent_uid)
-    if not links:
-        return Response({'parent': parent_data, 'child': None}, status=status.HTTP_200_OK)
+    
+    from family.services import FamilyService
+    active_plan, child_limit = FamilyService.get_parent_subscription_limit(parent_uid)
+    can_add_child = len(links) < child_limit
 
-    child_uid = links[0].get('child_id')
-    if not child_uid:
-        return Response({'parent': parent_data, 'child': None}, status=status.HTTP_200_OK)
+    children_data = []
+    
+    for link in links:
+        child_uid = link.get('child_id')
+        if not child_uid: continue
 
-    child_doc = FirestoreService.get_user(child_uid)
-    if not child_doc:
-        return Response({'parent': parent_data, 'child': None}, status=status.HTTP_200_OK)
+        child_doc = FirestoreService.get_user(child_uid)
+        if not child_doc: continue
 
-    # Fetch child progress summary and concept mastery
-    try:
-        progress_summary = ProgressService.get_progress_summary(child_uid)
-        concept_mastery = ProgressService.get_concept_mastery(child_uid)
-        from progress.activity import ActivityService
-        recent_activity = ActivityService.get_recent_activity(child_uid, days=7)
-    except Exception as e:
-        print(f"[DASHBOARD] Error fetching progress for child {child_uid}: {e}")
-        progress_summary = {}
-        concept_mastery = []
-        recent_activity = []
+        # Fetch child progress summary and concept mastery
+        try:
+            progress_summary = ProgressService.get_progress_summary(child_uid)
+            concept_mastery = ProgressService.get_concept_mastery(child_uid)
+            from progress.activity import ActivityService
+            recent_activity = ActivityService.get_recent_activity(child_uid, days=7)
+        except Exception as e:
+            print(f"[DASHBOARD] Error fetching progress for child {child_uid}: {e}")
+            progress_summary = {}
+            concept_mastery = []
+            recent_activity = []
 
-    # Build progress list from concept mastery (0-100 for frontend progress bars)
-    progress_list = [
-        {
-            'label': item['concept'],
-            'value': round(item['mastery_level'] * 100),
-        }
-        for item in concept_mastery
-    ]
+        # Build progress list from concept mastery (0-100 for frontend progress bars)
+        progress_list = [
+            {
+                'label': item['concept'],
+                'value': round(item['mastery_level'] * 100),
+            }
+            for item in concept_mastery
+        ]
 
-    # Derive level from overall mastery (0.2 mastery = 1 level, cap at 5)
-    mastery_level = progress_summary.get('mastery_level', 0.0)
-    level = max(1, min(5, int(mastery_level / 0.2) + 1))
+        # Derive level from overall mastery (0.2 mastery = 1 level, cap at 5)
+        mastery_level = progress_summary.get('mastery_level', 0.0)
+        level = max(1, min(5, int(mastery_level / 0.2) + 1))
 
-    # Build badge list with full metadata
-    earned_badge_ids = progress_summary.get('badges', [])
-    badge_list = []
-    for badge_id in earned_badge_ids:
-        badge_meta = BADGES.get(badge_id, {})
-        badge_list.append({
-            'id': badge_id,
-            'name': badge_meta.get('name', badge_id),
-            'description': badge_meta.get('description', ''),
+        # Build badge list with full metadata
+        earned_badge_ids = progress_summary.get('badges', [])
+        badge_list = []
+        for badge_id in earned_badge_ids:
+            badge_meta = BADGES.get(badge_id, {})
+            badge_list.append({
+                'id': badge_id,
+                'name': badge_meta.get('name', badge_id),
+                'description': badge_meta.get('description', ''),
+                'icon': badge_meta.get('icon', '🏅')
+            })
+
+        children_data.append({
+            'id': child_uid,
+            'name': child_doc.get('name', ''),
+            'photo_url': child_doc.get('photo_url', ''),
+            'level': level,
+            'progress': progress_list,
+            'activity': recent_activity,
+            'badges': badge_list
         })
 
-    child_data = {
-        'name': child_doc.get('name', ''),
-        'photo_url': child_doc.get('photo_url', ''),
-        'level': level,
-        'progress': progress_list,
-        'badges': badge_list,
-        'activity': recent_activity,
-    }
-
-    return Response({'parent': parent_data, 'child': child_data}, status=status.HTTP_200_OK)
+    return Response({
+        'parent': parent_data,
+        'child': children_data[0] if children_data else None,
+        'children': children_data,
+        'child_limit': child_limit,
+        'can_add_child': can_add_child
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['PATCH'])
@@ -950,10 +961,22 @@ def update_child_profile(request):
     if not links:
         return Response({'error': 'No linked child found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    child_uid = links[0].get('child_id')
-    child_email = links[0].get('child_email')
+    target_child_uid = request.data.get('child_id')
+    child_uid = None
+    child_email = None
+    
+    if target_child_uid:
+        for link in links:
+            if link.get('child_id') == target_child_uid:
+                child_uid = link.get('child_id')
+                child_email = link.get('child_email')
+                break
+    else:
+        child_uid = links[0].get('child_id')
+        child_email = links[0].get('child_email')
+
     if not child_uid or not child_email:
-        return Response({'error': 'Child link data is incomplete.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Child link data is incomplete or child not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     # Build update payload from allowed fields only
     updates = {}

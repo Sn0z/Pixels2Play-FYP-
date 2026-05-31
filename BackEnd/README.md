@@ -111,8 +111,6 @@ BackEnd/
 - `POST /api/family/link` - Link parent and child
 - `GET /api/family/links` - Get family links for user
 
-See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for complete documentation.
-
 ## Firestore Collections
 
 ### Users Collection

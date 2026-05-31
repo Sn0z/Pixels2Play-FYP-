@@ -24,6 +24,9 @@ from utils.constants import (
     ERROR_SELF_LINK_BLOCKED,
     ERROR_TRANSACTION_FAILED,
     SUCCESS_LINK_SUCCESS,
+    ERROR_NO_SUBSCRIPTION,
+    ERROR_SUBSCRIPTION_LIMIT_REACHED,
+    SUBSCRIPTION_PLAN_LIMITS,
 )
 
 
@@ -42,6 +45,56 @@ class FamilyService:
     8. Return proper error codes
     """
     
+    @staticmethod
+    def get_parent_subscription_limit(parent_uid):
+        """
+        Returns (active_plan, child_limit) for a parent by querying Firestore payments and Django SQL Payment models.
+        Returns the plan with the highest limit if multiple exist to support upgrades.
+        """
+        try:
+            from firebase_admin import firestore as fs
+            from payments.models import Payment
+
+            db_fs = fs.client()
+            highest_plan = None
+            highest_limit = 0
+
+            # 1. Check Firestore payments
+            payments_ref = (
+                db_fs.collection('payments')
+                .where('parent_id', '==', parent_uid)
+                .where('status', '==', 'COMPLETED')
+                .stream()
+            )
+            for doc in payments_ref:
+                data = doc.to_dict()
+                plan_id = (data.get('plan_id') or '').lower()
+                limit = SUBSCRIPTION_PLAN_LIMITS.get(plan_id, 0)
+                if limit > highest_limit:
+                    highest_limit = limit
+                    highest_plan = plan_id
+
+            # 2. Check Django SQL Payment model
+            sql_payments = Payment.objects.filter(
+                firebase_uid=parent_uid,
+                status='COMPLETED',
+                course_id__in=list(SUBSCRIPTION_PLAN_LIMITS.keys()),
+            )
+            for sql_payment in sql_payments:
+                plan_id = sql_payment.course_id.lower()
+                limit = SUBSCRIPTION_PLAN_LIMITS.get(plan_id, 0)
+                if limit > highest_limit:
+                    highest_limit = limit
+                    highest_plan = plan_id
+
+            if not highest_plan:
+                return None, 0
+
+            return highest_plan, highest_limit
+        except Exception as e:
+            print(f"[SUBSCRIPTION] Error getting limit: {e}")
+            return None, 0
+
     @staticmethod
     def link_parent_child_with_verification(
         requester_uid: str,
@@ -105,9 +158,44 @@ class FamilyService:
         requester_email_normalized = requester_email.lower().strip()
         parent_email_normalized = parent_email.lower().strip()
         child_email_normalized = child_email.lower().strip()
-        
+
         print(f"[STEP 1-2] Authenticating and verifying requester: {requester_uid} ({requester_email_normalized})")
-        
+
+        # ── Subscription gate ──────────────────────────────────────────────────
+        # Determine if parent has an active subscription and how many children
+        # they are allowed. Block the link if no sub or limit is exceeded.
+        try:
+            active_plan, child_limit = FamilyService.get_parent_subscription_limit(requester_uid)
+
+            if not active_plan:
+                print(f"[SUBSCRIPTION] No active subscription for {requester_uid}")
+                return {
+                    'status': 'error',
+                    'error_code': ERROR_NO_SUBSCRIPTION,
+                    'message': 'A subscription is required to add a child account. Please subscribe on the Pricing page.',
+                }
+
+            existing_links = FirestoreService.get_family_links_by_parent(requester_uid)
+            current_count = len(existing_links)
+
+            if current_count >= child_limit:
+                print(f"[SUBSCRIPTION] Limit reached for {requester_uid}: {current_count}/{child_limit} ({active_plan})")
+                return {
+                    'status': 'error',
+                    'error_code': ERROR_SUBSCRIPTION_LIMIT_REACHED,
+                    'message': (
+                        f'Your {active_plan.capitalize()} plan allows up to {child_limit} child account'
+                        f'{"s" if child_limit > 1 else ""}. '
+                        f'Upgrade your plan to add more children.'
+                    ),
+                }
+
+            print(f"[SUBSCRIPTION] Plan={active_plan}, limit={child_limit}, current={current_count} – OK")
+
+        except Exception as sub_err:
+            # Don't block linking if subscription check itself errors; log and continue
+            print(f"[SUBSCRIPTION] Warning: subscription check raised exception: {sub_err}")
+        # ── End subscription gate ──────────────────────────────────────────────
         # STEP 2: Verify Requester Exists and Role is Not CHILD
         requester = FirestoreService.get_user_by_email(requester_email_normalized)
         if not requester:

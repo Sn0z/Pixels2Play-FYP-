@@ -204,7 +204,7 @@ def initialize_firebase():
         print(f"[DEBUG] Verifying Firebase Admin SDK with test auth call...")
         try:
             # This will fail gracefully if there's a permission issue but shows SDK works
-            list(firebase_auth.list_users(page_token=None).download_claims(10))
+            firebase_auth.list_users(max_results=1)
         except Exception as verify_error:
             # Log but don't fail - the verify call might have permission restrictions
             print(f"[DEBUG] Verification call note (may be normal): {verify_error}")

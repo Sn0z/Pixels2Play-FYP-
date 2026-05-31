@@ -28,7 +28,7 @@ urlpatterns = [
     # Firestore courses proxy (reads from Firestore, served via Django)
     path("firestore-courses/", firestore_courses_list),
     path("firestore-courses/<str:course_id>/", firestore_course_detail),
-
+    
     path("modules/", module_list),
     path("modules/<int:module_id>/", module_detail),
     path("modules/<int:module_id>/watch/", update_watch),

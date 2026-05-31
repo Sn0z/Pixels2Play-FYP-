@@ -106,7 +106,7 @@ export default function Checkout() {
             <div>
               {/* Subscription Summary */}
               <section className="card">
-                <h2>📋 Subscription Summary</h2>
+                <h2> Subscription Summary</h2>
 
                 <div className="order">
                   <div className="plan-icon-circle">{plan.emoji}</div>
@@ -148,7 +148,7 @@ export default function Checkout() {
 
               {/* Payment Method */}
               <section className="card">
-                <h2>💳 Payment Method</h2>
+                <h2>Payment Method</h2>
 
                 <div className="payment">
                   <strong>Pay with Khalti</strong>
@@ -182,7 +182,7 @@ export default function Checkout() {
               </div>
 
               <div className="info-card subscription-perks">
-                <h3>🔄 Subscription Benefits</h3>
+                <h3>Subscription Benefits</h3>
                 <ul className="perks-list">
                   <li>✓ Cancel anytime, no lock-in</li>
                   <li>✓ Instant access after payment</li>

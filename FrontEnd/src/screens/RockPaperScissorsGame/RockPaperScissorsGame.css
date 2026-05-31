@@ -263,7 +263,7 @@
 .rps2-outcome-pill.rps2-draw { color: #ca8a04; background: rgba(253,224,71,0.3);  }
 .rps2-outcome-pill.rps2-lose { color: #dc2626; background: rgba(252,165,165,0.3); }
 
-/* ── AI thinking hint ─────────────────────────────────────── */
+/* ── Strategy hint box ─────────────────────────────────────── */
 .rps2-thinking {
   font-size: 0.85rem;
   color: #7c3aed;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "../../contexts/authContext";
 import "./ChildLearnPage.css";
 import KidsChatbot from "../../chatbot/Chatbot";
 
@@ -66,6 +67,48 @@ function QuizComponent({ quiz, onComplete, initialScore, courseTitle, userId, mo
   const [recommendedCourses, setRecommendedCourses] = useState([]);
   const hasFetchedCourses = useRef(false);
 
+  useEffect(() => {
+    if (submitted && results && Object.keys(results).length > 0) {
+      const wrongItems = quiz.questions.filter(q => !results[q.id]?.isCorrect);
+      if (wrongItems.length > 0) {
+        const topic = courseTitle || quiz.title || 'this topic';
+        const quizText = quiz.questions.map((q, i) => {
+          const correctChoice = q.choices.find(c => c.is_correct);
+          const myChoiceId = answers[q.id];
+          const myChoice = q.choices.find(c => c.id === myChoiceId);
+          const optionsText = q.choices.map(c => `- ${c.text} ${c.is_correct ? '(Correct)' : ''}`).join('\n');
+          const answerStatus = myChoiceId === correctChoice?.id ? '[Correct]' : '[Wrong]';
+          return `Question ${i + 1}: ${q.text}\nOptions:\n${optionsText}\nMy Answer: ${myChoice?.text || 'None'} ${answerStatus}`;
+        }).join('\n\n');
+
+        const prompt = `Hi Pixel! I just took a quiz about "${topic}". Here is the quiz and my answers:\n\n${quizText}\n\nI got ${wrongItems.length} question${wrongItems.length > 1 ? 's' : ''} wrong. Can you explain where I made mistakes and why they are wrong in a simple, kid-friendly way?`;
+        setPixelPrompt(prompt);
+
+        if (!hasFetchedCourses.current) {
+          hasFetchedCourses.current = true;
+          (async () => {
+            try {
+              const res2 = await fetch(`${API_BASE}/courses/`);
+              const data = res2.ok ? await res2.json() : [];
+              const allCourses = Array.isArray(data) ? data : [];
+              const topicWords = topic.toLowerCase().split(/\s+/);
+              const matched = allCourses
+                .filter((c) => topicWords.some((w) => w.length > 3 && (
+                  c.title?.toLowerCase().includes(w) ||
+                  c.category?.toLowerCase().includes(w) ||
+                  c.description?.toLowerCase().includes(w)
+                )))
+                .slice(0, 3);
+              setRecommendedCourses(matched.length > 0 ? matched : allCourses.slice(0, 2));
+            } catch {
+              setRecommendedCourses([]);
+            }
+          })();
+        }
+      }
+    }
+  }, [submitted, results, answers, quiz, courseTitle]);
+
   const handleSelect = (qId, choiceId) => {
     if (submitted) return;
     setAnswers((prev) => ({ ...prev, [qId]: choiceId }));
@@ -101,41 +144,6 @@ function QuizComponent({ quiz, onComplete, initialScore, courseTitle, userId, mo
     if (userId) {
       localStorage.setItem(localStorageKey + '_answers', JSON.stringify(answers));
       localStorage.setItem(localStorageKey + '_results', JSON.stringify(res));
-    }
-
-    if (wrongItems.length > 0) {
-      const topic = courseTitle || quiz.title || 'this topic';
-      const quizText = quiz.questions.map((q, i) => {
-        const correctChoice = q.choices.find(c => c.is_correct);
-        const myChoiceId = answers[q.id];
-        const myChoice = q.choices.find(c => c.id === myChoiceId);
-        const optionsText = q.choices.map(c => `- ${c.text} ${c.is_correct ? '(Correct)' : ''}`).join('\n');
-        const answerStatus = myChoiceId === correctChoice?.id ? '[Correct]' : '[Wrong]';
-        return `Question ${i + 1}: ${q.text}\nOptions:\n${optionsText}\nMy Answer: ${myChoice?.text || 'None'} ${answerStatus}`;
-      }).join('\n\n');
-
-      const prompt = `Hi Pixel! I just took a quiz about "${topic}". Here is the quiz and my answers:\n\n${quizText}\n\nI got ${wrongItems.length} question${wrongItems.length > 1 ? 's' : ''} wrong. Can you explain where I made mistakes and why they are wrong in a simple, kid-friendly way?`;
-      setPixelPrompt(prompt);
-
-      if (!hasFetchedCourses.current) {
-        hasFetchedCourses.current = true;
-        try {
-          const res2 = await fetch(`${API_BASE}/courses/`);
-          const data = res2.ok ? await res2.json() : [];
-          const allCourses = Array.isArray(data) ? data : [];
-          const topicWords = topic.toLowerCase().split(/\s+/);
-          const matched = allCourses
-            .filter((c) => topicWords.some((w) => w.length > 3 && (
-              c.title?.toLowerCase().includes(w) ||
-              c.category?.toLowerCase().includes(w) ||
-              c.description?.toLowerCase().includes(w)
-            )))
-            .slice(0, 3);
-          setRecommendedCourses(matched.length > 0 ? matched : allCourses.slice(0, 2));
-        } catch {
-          setRecommendedCourses([]);
-        }
-      }
     }
   };
 
@@ -348,22 +356,47 @@ export default function ChildLearnPage() {
   const [showXP, setShowXP] = useState(false);
   const [modalMessage, setModalMessage] = useState(null);
 
+  // Auth/profile from context (provides `role` to allow skipping video)
+  const { userProfile } = useAuth();
+
+  // Video watch tracking
+  const videoRef = useRef(null);
+  const highestWatchedRef = useRef(0);
+  const [highestWatched, setHighestWatched] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [videoPercent, setVideoPercent] = useState(0);
+  const [seekBlocked, setSeekBlocked] = useState(false);
+  const videoDurationRef = useRef(0);
+
+  const roleStr = (userProfile?.role || "").toLowerCase();
+  const canSkipVideo = roleStr.includes("parent") || roleStr.includes("admin");
+
+  useEffect(() => {
+    setHighestWatched(0);
+    setVideoDuration(0);
+    setVideoPercent(0);
+    videoDurationRef.current = 0;
+    highestWatchedRef.current = 0;
+  }, [activeModuleIdx]);
+
   // Per-module state maps (keyed by module index)
   const [videoWatchedMap, setVideoWatchedMap] = useState({});
   const [quizScoreMap, setQuizScoreMap] = useState({});
   const [codingDoneMap, setCodingDoneMap] = useState({});
 
-  // Load coding/quiz states from localStorage on mount
+  // Load coding/quiz states from localStorage on mount (when authUser is available)
   useEffect(() => {
+    if (!authUser) return;
+    const uid = authUser.uid;
     try {
-      const storedCoding = localStorage.getItem(`coding_done_${courseId}`);
+      const storedCoding = localStorage.getItem(`coding_done_${courseId}_${uid}`);
       if (storedCoding) setCodingDoneMap(JSON.parse(storedCoding));
-      const storedQuiz = localStorage.getItem(`quiz_scores_${courseId}`);
+      const storedQuiz = localStorage.getItem(`quiz_scores_${courseId}_${uid}`);
       if (storedQuiz) setQuizScoreMap(JSON.parse(storedQuiz));
-      const storedVideo = localStorage.getItem(`video_watched_${courseId}`);
+      const storedVideo = localStorage.getItem(`video_watched_${courseId}_${uid}`);
       if (storedVideo) setVideoWatchedMap(JSON.parse(storedVideo));
     } catch (e) { }
-  }, [courseId]);
+  }, [courseId, authUser]);
 
   // Fetch course + progress from the existing backend
   useEffect(() => {
@@ -465,7 +498,7 @@ export default function ChildLearnPage() {
   const handleQuizComplete = useCallback(async (score) => {
     const updated = { ...quizScoreMap, [activeModuleIdx]: score };
     setQuizScoreMap(updated);
-    localStorage.setItem(`quiz_scores_${courseId}`, JSON.stringify(updated));
+    if (authUser) localStorage.setItem(`quiz_scores_${courseId}_${authUser.uid}`, JSON.stringify(updated));
 
     if (!authUser) return;
     try {
@@ -484,7 +517,7 @@ export default function ChildLearnPage() {
   const handleVideoWatched = () => {
     const updated = { ...videoWatchedMap, [activeModuleIdx]: true };
     setVideoWatchedMap(updated);
-    localStorage.setItem(`video_watched_${courseId}`, JSON.stringify(updated));
+    if (authUser) localStorage.setItem(`video_watched_${courseId}_${authUser.uid}`, JSON.stringify(updated));
     // Guide the student to the next required step
     if (hasQuiz && !isQuizPassed) setActiveTab("quiz");
     else if (hasCoding && !isCodingDone) setActiveTab("coding");
@@ -494,7 +527,7 @@ export default function ChildLearnPage() {
   const handleCodingComplete = useCallback(async (submittedCode) => {
     const updated = { ...codingDoneMap, [activeModuleIdx]: true };
     setCodingDoneMap(updated);
-    localStorage.setItem(`coding_done_${courseId}`, JSON.stringify(updated));
+    if (authUser) localStorage.setItem(`coding_done_${courseId}_${authUser.uid}`, JSON.stringify(updated));
 
     // Save to backend via child-progress (coding_completed field)
     if (!authUser) return;
@@ -763,25 +796,85 @@ export default function ChildLearnPage() {
             {activeTab === "video" && (
               <div className="clp-video-panel">
                 <div className="clp-video-wrapper">
-                  <iframe
-                    src={activeModule?.video_url || "https://www.youtube.com/embed/kWmX3pd1f10"}
+                  <video
+                    ref={videoRef}
+                    src={`/MODULE ${activeModuleIdx + 1}.mp4`}
                     title={activeModule?.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
+                    controls
                     className="clp-video-frame"
+                    onLoadedMetadata={(e) => {
+                      const d = e.target.duration || 0;
+                      setVideoDuration(d);
+                      videoDurationRef.current = d;
+                    }}
+                    onTimeUpdate={(e) => {
+                      const t = e.target.currentTime || 0;
+                      const dur = videoDurationRef.current;
+                      
+                      // Block any forward seeking for child users unless the video is already marked watched.
+                      if (!canSkipVideo && !isVideoWatched && t > highestWatchedRef.current + 1.5) {
+                        e.target.currentTime = highestWatchedRef.current;
+                        setSeekBlocked(true);
+                        setTimeout(() => setSeekBlocked(false), 1400);
+                        return;
+                      }
+
+                      highestWatchedRef.current = Math.max(highestWatchedRef.current, t);
+                      setHighestWatched(highestWatchedRef.current);
+                      
+                      if (dur > 0) {
+                        setVideoPercent((prev) => Math.max(prev, highestWatchedRef.current / dur));
+                      }
+                    }}
+                    onSeeking={(e) => {
+                      if (canSkipVideo || isVideoWatched) return;
+                      const nextTime = e.target.currentTime || 0;
+                      if (nextTime > highestWatchedRef.current + 1.5) {
+                        e.target.currentTime = highestWatchedRef.current || 0;
+                        setSeekBlocked(true);
+                        setTimeout(() => setSeekBlocked(false), 1400);
+                      }
+                    }}
+                    onSeeked={(e) => {
+                      if (canSkipVideo || isVideoWatched) return;
+                      const currentTime = e.target.currentTime || 0;
+                      if (currentTime > highestWatchedRef.current + 0.1) {
+                        e.target.currentTime = highestWatchedRef.current || 0;
+                        setSeekBlocked(true);
+                        setTimeout(() => setSeekBlocked(false), 1400);
+                      }
+                    }}
                   />
                 </div>
                 <div className="clp-video-label">
                   Watch the video, then click "I have finished" to unlock the next step!
                 </div>
+                
                 {!isVideoWatched && (
-                  <button
-                    className="clp-mark-done-btn"
-                    onClick={handleVideoWatched}
-                    style={{ alignSelf: "flex-start", marginTop: "10px" }}
-                  >
-                    ✓ I have finished watching the video
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10 }}>
+                    <button
+                      className="clp-mark-done-btn"
+                      onClick={handleVideoWatched}
+                      disabled={!(videoPercent >= 0.95 || canSkipVideo)}
+                      style={{ alignSelf: "flex-start" }}
+                      title={canSkipVideo ? "Parents/admin can skip" : "Watch 95% to unlock"}
+                    >
+                      ✓ I have finished watching the video
+                    </button>
+                    {canSkipVideo && (
+                      <button
+                        className="clp-mark-done-btn"
+                        onClick={handleVideoWatched}
+                        style={{ alignSelf: "flex-start", background: '#777' }}
+                      >
+                        Skip Video (parent/admin)
+                      </button>
+                    )}
+                    <div style={{ fontSize: '0.9rem', color: '#555' }}>
+                      {seekBlocked && <span style={{ color: '#b45309', marginRight: '10px' }}>Seeking ahead is blocked</span>}
+                      <span>{Math.round((videoPercent || 0) * 100)}% watched</span>
+                    </div>
+                  </div>
                 )}
                 {isVideoWatched && (
                   <p className="clp-done-msg" style={{ marginTop: "10px" }}>

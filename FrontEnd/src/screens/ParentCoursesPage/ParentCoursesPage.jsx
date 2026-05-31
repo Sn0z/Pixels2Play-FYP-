@@ -73,11 +73,11 @@ export default function ParentCoursesPage() {
         {/* Hero Banner */}
         <div className="pcp-hero">
           <div className="pcp-hero-content">
-            <span className="pcp-hero-badge">👨‍👩‍👧 Parent Portal</span>
+            <span className="pcp-hero-badge">Parent Portal</span>
             <h1 className="pcp-hero-title">Browse Courses</h1>
             <p className="pcp-hero-sub">
               {isSubscribed 
-                ? "✨ Your subscription is active! Your child has full access to the entire catalog."
+                ? "Your subscription is active! Your child has full access to the entire catalog."
                 : "Unlock our full AI-powered learning catalog with a single subscription."}
             </p>
             {!isSubscribed && !loading && (
@@ -133,7 +133,7 @@ export default function ParentCoursesPage() {
                       )}
                       <h2 className="pcp-course-title">{getTitle(course)}</h2>
                       {course.ageGroup && (
-                        <p className="pcp-age-group">👦 Ages {course.ageGroup}</p>
+                        <p className="pcp-age-group">Ages {course.ageGroup}</p>
                       )}
                       <p className="pcp-description">{getDesc(course)}</p>
 

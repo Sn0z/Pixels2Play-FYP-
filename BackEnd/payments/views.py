@@ -61,7 +61,7 @@ def initiate_payment(request):
 
 
     payload = {
-        "return_url": f"http://localhost:5173/coursedetails/{order_id}",
+        "return_url": "http://localhost:5173/dashboard",
         "website_url": "http://localhost:5173",
         "amount": int(amount),
         "purchase_order_id": str(order_id),

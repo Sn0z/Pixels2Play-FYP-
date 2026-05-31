@@ -1,60 +1,76 @@
+import React from 'react';
+import DemoVideoModal from '../components/DemoVideoModal';
+
 export default function Hero() {
+  const [showDemoModal, setShowDemoModal] = React.useState(false);
+
   return (
-    <section className="hero-section" id="hero">
-      <div className="container hero-container">
-        <div className="hero-content">
-          <h1>
-            Learn AI Through <span className="highlight-text">Play & Discovery</span>
-          </h1>
+    <>
+      <DemoVideoModal 
+        isOpen={showDemoModal} 
+        onClose={() => setShowDemoModal(false)} 
+      />
+      <section className="hero-section" id="hero">
+        <div className="container hero-container">
+          <div className="hero-content">
+            <h1>
+              Learn AI Through <span className="highlight-text">Play & Discovery</span>
+            </h1>
 
-          <p className="hero-subtitle">
-            Interactive courses, gamified challenges, and hands-on projects that
-            make artificial intelligence exciting and accessible for young minds.
-          </p>
+            <p className="hero-subtitle">
+              Interactive courses, gamified challenges, and hands-on projects that
+              make artificial intelligence exciting and accessible for young minds.
+            </p>
 
-          <div className="hero-cta">
-            <button
-              className="btn btn-primary"
-              onClick={() => window.location.href = "http://localhost:5173/setup1"}
-            >
-              Link Your Child
-            </button>
-            <a href="#" className="btn btn-secondary">Watch Demo Video</a>
+            <div className="hero-cta">
+              <button
+                className="btn btn-primary"
+                onClick={() => window.location.href = "http://localhost:5173/setup1"}
+              >
+                Link Your Child
+              </button>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowDemoModal(true)}
+              >
+                Watch Demo Video
+              </button>
+            </div>
+
+            <div className="hero-stats">
+              <div className="stat-item">
+                <span className="stat-number stat-purple">50,000+</span>
+                <span className="stat-label">Young Learners</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number stat-blue">200+</span>
+                <span className="stat-label">Interactive Lessons</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-number stat-green">98%</span>
+                <span className="stat-label">Parent Satisfaction</span>
+              </div>
+            </div>
           </div>
 
-          <div className="hero-stats">
-            <div className="stat-item">
-              <span className="stat-number stat-purple">50,000+</span>
-              <span className="stat-label">Young Learners</span>
+          <div className="hero-image-wrapper">
+            <img
+              src="/Kid_PC.webp"
+              alt="A young girl using a computer"
+              className="hero-main-image"
+              style={{ borderRadius: '24px', objectFit: 'cover' }}
+            />
+
+            <div className="hero-icon-card hero-icon-top">
+              <img src="../public/assets/17_1547.png" alt="Trophy Icon" />
             </div>
-            <div className="stat-item">
-              <span className="stat-number stat-blue">200+</span>
-              <span className="stat-label">Interactive Lessons</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-number stat-green">98%</span>
-              <span className="stat-label">Parent Satisfaction</span>
+
+            <div className="hero-icon-card hero-icon-bottom">
+              <img src="../public/assets/17_1551.png" alt="Robot Icon" />
             </div>
           </div>
         </div>
-
-        <div className="hero-image-wrapper">
-          <img
-            src="/Kid_PC.webp"
-            alt="A young girl using a computer"
-            className="hero-main-image"
-            style={{ borderRadius: '24px', objectFit: 'cover' }}
-          />
-
-          <div className="hero-icon-card hero-icon-top">
-            <img src="../public/assets/17_1547.png" alt="Trophy Icon" />
-          </div>
-
-          <div className="hero-icon-card hero-icon-bottom">
-            <img src="../public/assets/17_1551.png" alt="Robot Icon" />
-          </div>
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

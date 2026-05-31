@@ -4,10 +4,13 @@ import { useChildProfile } from "../../hooks/useChildProfile";
 import "./ChildSettings.css";
 
 export default function ChildSettings() {
-    const { parent, child, loading, error, accessDenied, updateChild } =
+    const { parent, children, loading, error, accessDenied, updateChild } =
         useChildProfile();
 
     const navigate = useNavigate();
+
+    const [activeChildIndex, setActiveChildIndex] = useState(0);
+    const child = children[activeChildIndex] || null;
 
     const [name, setName] = useState("");
     const [photoUrl, setPhotoUrl] = useState("");
@@ -15,11 +18,13 @@ export default function ChildSettings() {
     const [saveError, setSaveError] = useState(null);
     const [saved, setSaved] = useState(false);
 
-    // Initialise fields once the child data arrives
+    // Initialise fields once the active child changes
     React.useEffect(() => {
-        if (child && !name) {
+        if (child) {
             setName(child.name || "");
             setPhotoUrl(child.photo_url || "");
+            setSaveError(null);
+            setSaved(false);
         }
     }, [child]);
 
@@ -80,9 +85,9 @@ export default function ChildSettings() {
         }
 
         try {
-            await updateChild(patch);
+            await updateChild(child.id, patch);
             setSaved(true);
-            setTimeout(() => navigate("/dashboard"), 1200);
+            setTimeout(() => setSaved(false), 2000); // clear success msg after 2s
         } catch (err) {
             setSaveError(err.message || "Failed to save changes");
         } finally {
@@ -109,6 +114,27 @@ export default function ChildSettings() {
                         Update your child's display name and profile photo. Changes will
                         appear on the dashboard immediately.
                     </p>
+                    
+                    {/* Shuffle Controls */}
+                    {!loading && children.length > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25, padding: '15px', background: '#f8fafc', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+                            <button 
+                                onClick={() => setActiveChildIndex(Math.max(0, activeChildIndex - 1))}
+                                disabled={activeChildIndex === 0}
+                                style={{ padding: '8px 15px', borderRadius: 8, border: '1px solid #cbd5e1', background: activeChildIndex === 0 ? '#f1f5f9' : '#fff', cursor: activeChildIndex === 0 ? 'not-allowed' : 'pointer' }}
+                            >
+                                ◀ Prev
+                            </button>
+                            <strong style={{ color: '#475569' }}>Editing: Child {activeChildIndex + 1} of {children.length}</strong>
+                            <button 
+                                onClick={() => setActiveChildIndex(Math.min(children.length - 1, activeChildIndex + 1))}
+                                disabled={activeChildIndex === children.length - 1}
+                                style={{ padding: '8px 15px', borderRadius: 8, border: '1px solid #cbd5e1', background: activeChildIndex === children.length - 1 ? '#f1f5f9' : '#fff', cursor: activeChildIndex === children.length - 1 ? 'not-allowed' : 'pointer' }}
+                            >
+                                Next ▶
+                            </button>
+                        </div>
+                    )}
 
                     {/* Avatar preview */}
                     <div className="chs-avatar-section">
@@ -157,7 +183,7 @@ export default function ChildSettings() {
                     {saveError && <p className="chs-msg chs-msg-error">{saveError}</p>}
                     {saved && (
                         <p className="chs-msg chs-msg-success">
-                            ✅ Saved! Redirecting to dashboard…
+                            ✅ Changes saved successfully!
                         </p>
                     )}
 

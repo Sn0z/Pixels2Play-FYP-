@@ -1,522 +1,511 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { Pose } from '@mediapipe/pose';
-import { Camera } from '@mediapipe/camera_utils';
 import './DinoGame.css';
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
-const auth = getAuth();
+// Physics constants
+const W = 900, H = 300;
+const GROUND_Y   = 240;
+const GRAVITY    = 0.65;
+const JUMP_V     = -12.5;
+const BASE_SPD   = 6;
+const MAX_SPD    = 14;
+const SPD_INC    = 0.0015;   // speed added per frame
+const DINO_X     = 100;
 
-// --- Game Constants ---
-const CANVAS_WIDTH = 1280;
-const CANVAS_HEIGHT = 720;
-const GROUND_Y = 550;
-const GRAVITY = 1.1;
-const JUMP_STRENGTH = 22;
-const BASE_SPEED = 300.0;
-const ACCEL = 22.0;
+// Dimensions & offsets to align sprites on the ground
+const DINO_RUN_W = 43, DINO_RUN_H = 51, DINO_RUN_BLANK_Y = 3;
+const DINO_DUC_W = 55, DINO_DUC_H = 30; 
+const DINO_JMP_W = 43, DINO_JMP_H = 51, DINO_JMP_BLANK_Y = 5;
 
-// Hitboxes (slightly forgiving)
-const DINO_RUN_W = 80, DINO_RUN_H = 100;
-const DINO_DUCK_W = 110, DINO_DUCK_H = 60;
+const CACTUS_W = 50, CACTUS_H = 50;
+const CACTI_BLANK_Y = [0, 1, 2, 8, 8, 8];
+
+const DRAW_OFFSET_Y = 8; // pushes sprites down to sit perfectly on the line
+
+// Hitboxes relative to top-left of the drawn boundaries
+const DINO_RUN_HB = { x: 4, y: 4, w: 35, h: 44 };
+const DINO_DUC_HB = { x: 4, y: 2, w: 48, h: 26 };
+const DINO_JMP_HB = { x: 4, y: 4, w: 34, h: 42 };
+
+const CACTI_HITBOXES = [
+    { x: 4,  y: 2,  w: 42, h: 48 }, // cactus1
+    { x: 13, y: 2,  w: 24, h: 47 }, // cactus2
+    { x: 4,  y: 3,  w: 42, h: 45 }, // cactus3
+    { x: 4,  y: 8,  w: 42, h: 34 }, // cactus4
+    { x: 8,  y: 8,  w: 34, h: 34 }, // cactus5
+    { x: 16, y: 8,  w: 17, h: 34 }, // cactus6
+];
+
+// Load image promise helper
+function loadImg(src) {
+    return new Promise(res => {
+        const img = new Image();
+        img.onload  = () => res(img);
+        img.onerror = () => { console.warn('missing:', src); res(null); };
+        img.src = src;
+    });
+}
+
+// Quietly load audio without crashing if unsupported
+function tryAudio(src) {
+    try { return new Audio(src); } catch { return null; }
+}
+
+// Standard AABB bounding box collision helper
+function overlap(ax, ay, aw, ah, bx, by, bw, bh) {
+    return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+}
+
+// Reset state
+function freshState() {
+    return {
+        active:         true,
+        frame:          0,
+        speed:          BASE_SPD,
+        score:          0,
+        lastMilestone:  0,
+        groundX:        0,
+        nextSpawnIn:    60,
+        obstacles:      [],
+        clouds:         [{ x: 300, y: 50 }, { x: 650, y: 35 }],
+        dino: {
+            y:          GROUND_Y,
+            vy:         0,
+            onGround:   true,
+            ducking:    false,
+            animTick:   0,
+            animFrame:  0,
+        },
+    };
+}
 
 export default function DinoGame() {
-    const navigate = useNavigate();
-    const [authUser, setAuthUser] = useState(null);
-    const [screen, setScreen] = useState('menu'); // 'menu', 'calibrating', 'playing', 'gameover'
-    const [score, setScore] = useState(0);
-
-    // Canvas references
+    const navigate  = useNavigate();
     const canvasRef = useRef(null);
-    const videoRef = useRef(null);
 
-    // MediaPipe & Camera refs
-    const poseRef = useRef(null);
-    const cameraRef = useRef(null);
+    const [screen, setScreen] = useState('menu');
+    const [score,  setScore]  = useState(0);
+    const [hi,     setHi]     = useState(() => parseInt(localStorage.getItem('dinoHi') || '0'));
 
-    // Game State refs (to avoid stale closures in requestAnimationFrame)
-    const gameState = useRef({
-        active: false,
-        speed: BASE_SPEED,
-        score: 0,
-        elapsedTime: 0,
-        lastTime: 0,
-        dino: {
-            x: 100,
-            y: GROUND_Y,
-            velY: 0,
-            onGround: true,
-            ducking: false,
-            frame: 0
-        },
-        obstacles: [],
-        clouds: [],
-        groundX: 0,
-        obstacleTimer: 0,
-        obstacleCooldown: 1000
-    });
+    const gs   = useRef(null);          // core state ref
+    const ast  = useRef({ loaded: false });
+    const sfx  = useRef({});
+    const keys = useRef({ up: false, down: false });
+    const rafRef = useRef(null);
 
-    // Body Tracking Calibration
-    const trackingState = useRef({
-        action: 'none',
-        calibrated: false,
-        neutralShoulderY: null,
-        jumpThreshold: null,
-        crouchThreshold: null,
-        landmarks: null
-    });
-
-    // Assets
-    const assets = useRef({
-        dinoRun: [],
-        dinoDuck: [],
-        cacti: [],
-        cloud: null,
-        ground: null,
-        loaded: false
-    });
-
-    // ── Pre-load Assets ────────────────────────────────────────────────────────
+    // Initial asset loader
     useEffect(() => {
-        const loadImg = (src) => {
-            return new Promise(resolve => {
-                const img = new Image();
-                img.src = src;
-                img.onload = () => resolve(img);
-            });
-        };
+        (async () => {
+            const [d1, d2, dd1, dd2, dj,
+                   c1, c2, c3, c4, c5, c6,
+                   cloud, ground] = await Promise.all([
+                loadImg('/dino/Dino1.png'),
+                loadImg('/dino/Dino2.png'),
+                loadImg('/dino/DinoDucking1.png'),
+                loadImg('/dino/DinoDucking2.png'),
+                loadImg('/dino/DinoJumping.png'),
+                loadImg('/dino/cacti/cactus1.png'),
+                loadImg('/dino/cacti/cactus2.png'),
+                loadImg('/dino/cacti/cactus3.png'),
+                loadImg('/dino/cacti/cactus4.png'),
+                loadImg('/dino/cacti/cactus5.png'),
+                loadImg('/dino/cacti/cactus6.png'),
+                loadImg('/dino/cloud.png'),
+                loadImg('/dino/ground.png'),
+            ]);
+            ast.current = {
+                run:  [d1, d2], duck: [dd1, dd2], jump: dj,
+                cacti: [c1, c2, c3, c4, c5, c6],
+                cloud, ground, loaded: true,
+            };
+            sfx.current = {
+                jump:    tryAudio('/dino/sfx/jump.mp3'),
+                lose:    tryAudio('/dino/sfx/lose.mp3'),
+                hundred: tryAudio('/dino/sfx/100points.mp3'),
+            };
+        })();
+    }, []);
 
-        const loadAll = async () => {
-            try {
-                // Ensure the 'assets' folder from Pygame is copied to 'public/assets' in Vite
-                const [d1, d2, dd1, dd2, c1, c2, c3, c4, c5, c6, cl, gr] = await Promise.all([
-                    loadImg('/assets/Dino1.png'), loadImg('/assets/Dino2.png'),
-                    loadImg('/assets/DinoDucking1.png'), loadImg('/assets/DinoDucking2.png'),
-                    loadImg('/assets/cacti/cactus1.png'), loadImg('/assets/cacti/cactus2.png'),
-                    loadImg('/assets/cacti/cactus3.png'), loadImg('/assets/cacti/cactus4.png'),
-                    loadImg('/assets/cacti/cactus5.png'), loadImg('/assets/cacti/cactus6.png'),
-                    loadImg('/assets/cloud.png'), loadImg('/assets/ground.png')
-                ]);
+    // Play sounds
+    const playSfx = useCallback((name) => {
+        try {
+            const s = sfx.current[name];
+            if (!s) return;
+            const c = s.cloneNode();
+            c.volume = 0.4;
+            c.play().catch(() => {});
+        } catch {}
+    }, []);
 
-                assets.current = {
-                    dinoRun: [d1, d2],
-                    dinoDuck: [dd1, dd2],
-                    cacti: [c1, c2, c3, c4, c5, c6],
-                    cloud: cl,
-                    ground: gr,
-                    loaded: true
-                };
-            } catch (err) {
-                console.error("Failed to load some game assets. Check public/assets directory.", err);
+    // Main render function
+    function drawFrame(ctx) {
+        const g = gs.current;
+        const a = ast.current;
+        if (!g || !a.loaded) return;
+
+        const d = g.dino;
+
+        // Apply high-DPI scaling dynamically
+        const dpr = window.devicePixelRatio || 1;
+        if (ctx.canvas.width !== Math.floor(W * dpr) || ctx.canvas.height !== Math.floor(H * dpr)) {
+            ctx.canvas.width = Math.floor(W * dpr);
+            ctx.canvas.height = Math.floor(H * dpr);
+            ctx.canvas.style.width = `${W}px`;
+            ctx.canvas.style.height = `${H}px`;
+        }
+        ctx.resetTransform();
+        ctx.scale(dpr, dpr);
+        ctx.imageSmoothingEnabled = false;
+
+        // Background sky
+        ctx.fillStyle = '#f7f7f7';
+        ctx.fillRect(0, 0, W, H);
+
+        // Render clouds
+        if (a.cloud) {
+            ctx.globalAlpha = 0.65;
+            for (const c of g.clouds) {
+                ctx.drawImage(a.cloud, c.x, c.y, 50, 20);
             }
-        };
-        loadAll();
-    }, []);
-
-    // ── Auth ───────────────────────────────────────────────────────────────────
-    useEffect(() => {
-        const unsub = onAuthStateChanged(auth, u => {
-            if (u) setAuthUser(u);
-            else navigate('/login');
-        });
-        return () => unsub();
-    }, [navigate]);
-
-    // ── MediaPipe Setup ────────────────────────────────────────────────────────
-    const initTracker = useCallback(() => {
-        if (!videoRef.current) return;
-
-        poseRef.current = new Pose({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
-        });
-
-        poseRef.current.setOptions({
-            modelComplexity: 1,
-            smoothLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-
-        poseRef.current.onResults(onPoseResults);
-
-        cameraRef.current = new Camera(videoRef.current, {
-            onFrame: async () => {
-                if (poseRef.current && videoRef.current) {
-                    await poseRef.current.send({ image: videoRef.current });
-                }
-            },
-            width: 640,
-            height: 480
-        });
-
-        cameraRef.current.start();
-    }, []);
-
-    const stopTracker = useCallback(() => {
-        if (cameraRef.current) {
-            cameraRef.current.stop();
-            cameraRef.current = null;
-        }
-        if (poseRef.current) {
-            poseRef.current.close();
-            poseRef.current = null;
-        }
-    }, []);
-
-    useEffect(() => {
-        return stopTracker; // Cleanup on unmount
-    }, [stopTracker]);
-
-    // ── Pose Processing ────────────────────────────────────────────────────────
-    const onPoseResults = (results) => {
-        const trk = trackingState.current;
-        trk.landmarks = results.poseLandmarks;
-
-        if (!results.poseLandmarks) {
-            trk.action = 'none';
-            return;
+            ctx.globalAlpha = 1;
         }
 
-        const lms = results.poseLandmarks;
-        const leftShoulder = lms[11];
-        const rightShoulder = lms[12];
-        const leftHip = lms[23];
-
-        // y is normalized [0, 1]
-        const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
-
-        if (!trk.calibrated && screen === 'calibrating') {
-            trk.neutralShoulderY = avgShoulderY;
-            const torsoLength = Math.abs(leftHip.y - avgShoulderY);
-            // Thumb-rules for thresholds
-            trk.jumpThreshold = avgShoulderY - (torsoLength * 0.4);
-            trk.crouchThreshold = avgShoulderY + (torsoLength * 0.35);
-            trk.calibrated = true;
-            
-            setTimeout(() => {
-                setScreen('playing');
-                startGame();
-            }, 1000); // 1 sec delay showing calibration success
+        // Tiled scrolling road
+        if (a.ground) {
+            ctx.drawImage(a.ground, g.groundX, GROUND_Y, 642, 12);
+            ctx.drawImage(a.ground, g.groundX + 642, GROUND_Y, 642, 12);
+            if (g.groundX + 642 < W) {
+                ctx.drawImage(a.ground, g.groundX + 1284, GROUND_Y, 642, 12);
+            }
         }
 
-        if (trk.calibrated) {
-            if (avgShoulderY < trk.jumpThreshold) trk.action = 'jump';
-            else if (avgShoulderY > trk.crouchThreshold) trk.action = 'crouch';
-            else trk.action = 'none';
-        }
-    };
+        // Render obstacles
+        for (const obs of g.obstacles) {
+            const img = a.cacti[obs.si % 6];
+            if (!img) continue;
 
-    // ── Game Engine Logic ──────────────────────────────────────────────────────
-    const resetGameState = () => {
-        gameState.current = {
-            active: true,
-            speed: BASE_SPEED,
-            score: 0,
-            elapsedTime: 0,
-            lastTime: performance.now(),
-            startTime: Date.now(),
-            dino: { x: 100, y: GROUND_Y, velY: 0, onGround: true, ducking: false, frame: 0 },
-            obstacles: [],
-            clouds: [],
-            groundX: 0,
-            obstacleTimer: performance.now(),
-            obstacleCooldown: 1000
-        };
-        setScore(0);
-    };
+            const blankY = CACTI_BLANK_Y[obs.si % 6];
+            const drawY = GROUND_Y - CACTUS_H + blankY + DRAW_OFFSET_Y;
 
-    const startGame = () => {
-        resetGameState();
-        requestAnimationFrame(gameLoop);
-    };
-
-    const submitScore = () => {
-        if (!authUser) return;
-        const finalScore = Math.floor(gameState.current.score);
-        const durationSeconds = Math.floor((Date.now() - gameState.current.startTime) / 1000);
-        
-        authUser.getIdToken().then(tok => {
-            fetch(`${API_BASE}/games/attempt/`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    game_id: 'dino_camera_game', 
-                    score: 1.0, // using raw score in game_data
-                    difficulty_level: 1, 
-                    completed: true,
-                    game_data: { raw_score: finalScore, duration_seconds: durationSeconds },
-                }),
-            }).catch(() => {});
-        });
-    };
-
-    const gameOver = () => {
-        gameState.current.active = false;
-        setScreen('gameover');
-        submitScore();
-    };
-
-    // ── Physics & Rendering Loop ───────────────────────────────────────────────
-    const gameLoop = (timeNow) => {
-        const state = gameState.current;
-        if (!state.active) return;
-
-        const dtObj = (timeNow - state.lastTime) / 1000.0;
-        const dt = Math.min(dtObj, 0.1); // cap dt to prevent death-lags
-        state.lastTime = timeNow;
-
-        // 1. Update Game Speed & Score
-        state.elapsedTime += dt;
-        state.speed = BASE_SPEED + (ACCEL * state.elapsedTime);
-        state.score += 12.0 * dt;
-        if (Math.floor(state.score) % 10 === 0) setScore(Math.floor(state.score));
-
-        // 2. Handle Inputs
-        const action = trackingState.current.action;
-        const d = state.dino;
-
-        if (action === 'jump') {
-            if (d.onGround) { d.velY = -JUMP_STRENGTH; d.onGround = false; }
-            d.ducking = false;
-        } else if (action === 'crouch') {
-            if (d.onGround) d.ducking = true;
-            else d.velY += GRAVITY * 1.5; // fast fall
-        } else {
-            d.ducking = false;
+            if (obs.double) {
+                ctx.drawImage(img, obs.x - CACTUS_W + 5, drawY, CACTUS_W, CACTUS_H);
+                ctx.drawImage(img, obs.x + 5, drawY, CACTUS_W, CACTUS_H);
+            } else {
+                ctx.drawImage(img, obs.x - CACTUS_W / 2, drawY, CACTUS_W, CACTUS_H);
+            }
         }
 
-        // 3. Dino Physics & Animation
+        // Render dino depending on action state
+        let img;
+        let dw = DINO_RUN_W, dh = DINO_RUN_H;
+        let blankY = DINO_RUN_BLANK_Y;
+
         if (!d.onGround) {
-            d.velY += GRAVITY;
-            d.y += d.velY;
-            if (d.y >= GROUND_Y) {
-                d.y = GROUND_Y;
-                d.velY = 0;
-                d.onGround = true;
-            }
-        }
-        d.frame += dt * 10; // animation speed
-
-        // 4. Spawning Obstacles
-        if (timeNow - state.obstacleTimer > state.obstacleCooldown) {
-            state.obstacles.push({
-                x: CANVAS_WIDTH,
-                y: GROUND_Y,
-                spriteIdx: Math.floor(Math.random() * 6),
-                width: 70, height: 80 // hitboxes
-            });
-            state.obstacleTimer = timeNow;
-            const minCd = Math.max(500, 1800 - 0.9 * state.speed);
-            const maxCd = Math.max(900, 2600 - 0.9 * state.speed);
-            state.obstacleCooldown = minCd + Math.random() * (maxCd - minCd);
-        }
-
-        // Spawning Clouds
-        if (Math.random() < 0.01) {
-            state.clouds.push({ x: CANVAS_WIDTH, y: 50 + Math.random() * 200 });
-        }
-
-        // 5. Update Positions & Collision
-        state.groundX -= state.speed * dt;
-        if (state.groundX <= -CANVAS_WIDTH) state.groundX += CANVAS_WIDTH;
-
-        // Clouds updates (slower)
-        for (let i = state.clouds.length - 1; i >= 0; i--) {
-            state.clouds[i].x -= Math.max(60, 0.25 * state.speed) * dt;
-            if (state.clouds[i].x < -200) state.clouds.splice(i, 1);
-        }
-
-        // Dino Hitbox
-        // Rect format: {l: left, r: right, t: top, b: bottom}
-        const dw = d.ducking ? DINO_DUCK_W : DINO_RUN_W;
-        const dh = d.ducking ? DINO_DUCK_H : DINO_RUN_H;
-        // Shrink hitbox to be forgiving
-        const dxOff = 15, dyOff = 10;
-        const dBox = {
-            l: d.x - (dw/2) + dxOff,
-            r: d.x + (dw/2) - dxOff,
-            t: d.y - dh + dyOff,
-            b: d.y - dyOff
-        };
-
-        // Obstacles updates
-        for (let i = state.obstacles.length - 1; i >= 0; i--) {
-            const obs = state.obstacles[i];
-            obs.x -= state.speed * dt;
-            if (obs.x < -100) {
-                state.obstacles.splice(i, 1);
-                continue;
-            }
-
-            // AABB Collision
-            // Cactus is anchored bottom-center. Usually ~100x100 texture, shrink box slightly
-            const ow = obs.width, oh = obs.height;
-            const oBox = { l: obs.x - ow/2, r: obs.x + ow/2, t: obs.y - oh, b: obs.y };
-            
-            if (dBox.l < oBox.r && dBox.r > oBox.l && dBox.t < oBox.b && dBox.b > oBox.t) {
-                gameOver();
-                return; // Stop loop
-            }
-        }
-
-        // 6. Draw to Canvas
-        renderGame();
-
-        // 7. Loop
-        requestAnimationFrame(gameLoop);
-    };
-
-    const renderGame = () => {
-        const ctx = canvasRef.current?.getContext('2d');
-        if (!ctx || !assets.current.loaded) return;
-
-        const ast = assets.current;
-        const st = gameState.current;
-        const d = st.dino;
-
-        // Clear
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-        // Draw Ground
-        if (ast.ground) {
-            ctx.drawImage(ast.ground, st.groundX, GROUND_Y - 18, CANVAS_WIDTH, 20);
-            ctx.drawImage(ast.ground, st.groundX + CANVAS_WIDTH, GROUND_Y - 18, CANVAS_WIDTH, 20);
-        }
-
-        // Draw Clouds
-        if (ast.cloud) {
-            for (const c of st.clouds) {
-                ctx.drawImage(ast.cloud, c.x, c.y, 160, 60);
-            }
-        }
-
-        // Draw Obstacles
-        for (const obs of st.obstacles) {
-            const cImg = ast.cacti[obs.spriteIdx];
-            if (cImg) {
-                // draw bottom-centered
-                ctx.drawImage(cImg, obs.x - 40, obs.y - 80, 80, 80);
-            }
-        }
-
-        // Draw Dino
-        const frameIdx = Math.floor(d.frame) % 2;
-        let img = null;
-        let w = DINO_RUN_W, h = DINO_RUN_H;
-
-        if (d.ducking && d.onGround) {
-            img = ast.dinoDuck[frameIdx];
-            w = DINO_DUCK_W; h = DINO_DUCK_H;
+            img = a.jump || a.run[0];
+            dw = DINO_JMP_W; dh = DINO_JMP_H;
+            blankY = DINO_JMP_BLANK_Y;
+        } else if (d.ducking) {
+            img = a.duck[d.animFrame];
+            dw = DINO_DUC_W; dh = DINO_DUC_H;
+            blankY = d.animFrame === 0 ? 1 : 2;
         } else {
-            // Jumping or running
-            img = !d.onGround ? ast.dinoRun[0] : ast.dinoRun[frameIdx];
+            img = a.run[d.animFrame];
+            dw = DINO_RUN_W; dh = DINO_RUN_H;
+            blankY = DINO_RUN_BLANK_Y;
         }
 
         if (img) {
-            // Drawn anchored at midbottom (x, y)
-            ctx.drawImage(img, d.x - w/2, d.y - h, w, h);
+            const drawY = d.y - dh + blankY + DRAW_OFFSET_Y;
+            ctx.drawImage(img, DINO_X - dw / 2, drawY, dw, dh);
         }
 
-        // Draw Score Overlay
-        ctx.fillStyle = '#1e1b4b';
-        ctx.font = 'bold 32px "Courier New", Courier, monospace';
+        // Live stats panel
+        ctx.fillStyle = '#535353';
+        ctx.font = 'bold 16px "Courier New", monospace';
         ctx.textAlign = 'right';
-        ctx.fillText(Math.floor(st.score).toString().padStart(5, '0'), CANVAS_WIDTH - 40, 50);
-        ctx.fillText(`HI: ${Math.floor(st.speed)} px/s`, CANVAS_WIDTH - 40, 90);
+        const scoreStr = String(g.score).padStart(5, '0');
+        const hiStr    = String(hi).padStart(5, '0');
+        ctx.fillText(`HI ${hiStr}  ${scoreStr}`, W - 16, 24);
+    }
+
+    // Game loop simulation frame
+    const tickRef = useRef(null);
+    tickRef.current = (ctx) => {
+        const g = gs.current;
+        if (!g?.active) return;
+
+        const d = g.dino;
+
+        // Physics speed progression and score calculation
+        g.frame++;
+        g.speed  = Math.min(MAX_SPD, BASE_SPD + SPD_INC * g.frame);
+        g.score  = Math.floor(g.frame * g.speed * 0.045);
+        setScore(g.score);
+
+        // Play alert sound every 100 points
+        const m = Math.floor(g.score / 100);
+        if (m > g.lastMilestone) { g.lastMilestone = m; playSfx('hundred'); }
+
+        // Core physics controls input handlers
+        if (keys.current.up && d.onGround) {
+            d.vy = JUMP_V;
+            d.onGround = false;
+            d.ducking  = false;
+            playSfx('jump');
+        }
+        if (keys.current.down && d.onGround) {
+            d.ducking = true;
+        } else if (!keys.current.down) {
+            d.ducking = false;
+        }
+
+        // Apply velocities and gravity
+        if (!d.onGround) {
+            if (keys.current.down) {
+                d.vy += GRAVITY * 2; // Fast fall
+            } else {
+                d.vy += GRAVITY;
+            }
+            d.y += d.vy;
+            if (d.y >= GROUND_Y) {
+                d.y = GROUND_Y;
+                d.vy = 0;
+                d.onGround = true;
+            }
+        }
+
+        // Toggle legs animations
+        d.animTick++;
+        if (d.animTick >= 6) { d.animTick = 0; d.animFrame ^= 1; }
+
+        // Move background objects
+        g.groundX -= g.speed;
+        if (g.groundX <= -642) g.groundX += 642;
+
+        for (let i = g.clouds.length - 1; i >= 0; i--) {
+            g.clouds[i].x -= g.speed * 0.2;
+            if (g.clouds[i].x < -60) g.clouds.splice(i, 1);
+        }
+        if (Math.random() < 0.005) g.clouds.push({ x: W + 60, y: 20 + Math.random() * 60 });
+
+        // Spawn obstacles randomly
+        g.nextSpawnIn--;
+        if (g.nextSpawnIn <= 0) {
+            const isDouble = Math.random() < 0.25;
+            g.obstacles.push({
+                x:      W + 50,
+                si:     Math.floor(Math.random() * 6),
+                double: isDouble,
+            });
+            const min = Math.max(65,  180 - g.frame * 0.035);
+            const max = Math.max(110, 280 - g.frame * 0.035);
+            g.nextSpawnIn = Math.floor(min + Math.random() * (max - min));
+        }
+
+        // Collision loop
+        let dw = DINO_RUN_W, dh = DINO_RUN_H;
+        let blankY = DINO_RUN_BLANK_Y;
+        let hb = DINO_RUN_HB;
+
+        if (!d.onGround) {
+            dw = DINO_JMP_W; dh = DINO_JMP_H;
+            blankY = DINO_JMP_BLANK_Y;
+            hb = DINO_JMP_HB;
+        } else if (d.ducking) {
+            dw = DINO_DUC_W; dh = DINO_DUC_H;
+            blankY = d.animFrame === 0 ? 1 : 2;
+            hb = DINO_DUC_HB;
+        }
+
+        const dinoDrawY = d.y - dh + blankY + DRAW_OFFSET_Y;
+        const dhx = DINO_X - dw / 2 + hb.x;
+        const dhy = dinoDrawY + hb.y;
+        const dhw = hb.w;
+        const dhh = hb.h;
+
+        for (let i = g.obstacles.length - 1; i >= 0; i--) {
+            const obs = g.obstacles[i];
+            obs.x -= g.speed;
+            if (obs.x < -100) { g.obstacles.splice(i, 1); continue; }
+
+            const idx = obs.si % 6;
+            const obsBlankY = CACTI_BLANK_Y[idx];
+            const obsDrawY = GROUND_Y - CACTUS_H + obsBlankY + DRAW_OFFSET_Y;
+            const ohb = CACTI_HITBOXES[idx];
+
+            if (obs.double) {
+                const cx1 = obs.x - CACTUS_W + 5 + ohb.x;
+                const cy1 = obsDrawY + ohb.y;
+                const cw1 = ohb.w;
+                const ch1 = ohb.h;
+
+                const cx2 = obs.x + 5 + ohb.x;
+                const cy2 = obsDrawY + ohb.y;
+                const cw2 = ohb.w;
+                const ch2 = ohb.h;
+
+                if (overlap(dhx, dhy, dhw, dhh, cx1, cy1, cw1, ch1) ||
+                    overlap(dhx, dhy, dhw, dhh, cx2, cy2, cw2, ch2)) {
+                    triggerGameOver();
+                    return;
+                }
+            } else {
+                const cx = obs.x - CACTUS_W / 2 + ohb.x;
+                const cy = obsDrawY + ohb.y;
+                const cw = ohb.w;
+                const ch = ohb.h;
+
+                if (overlap(dhx, dhy, dhw, dhh, cx, cy, cw, ch)) {
+                    triggerGameOver();
+                    return;
+                }
+            }
+        }
+
+        function triggerGameOver() {
+            g.active = false;
+            playSfx('lose');
+            setScreen('gameover');
+            const final = g.score;
+            setHi(prev => {
+                const next = Math.max(prev, final);
+                localStorage.setItem('dinoHi', String(next));
+                return next;
+            });
+            drawFrame(ctx);
+        }
+
+        drawFrame(ctx);
     };
 
-    // ── UI Actions ─────────────────────────────────────────────────────────────
-    const handleStartCalibration = () => {
-        setScreen('calibrating');
-        initTracker();
-    };
+    // React game loop hook
+    useEffect(() => {
+        if (screen !== 'playing') return;
 
-    const handleReplay = () => {
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx) return;
+
+        function loop() {
+            tickRef.current(ctx);
+            if (gs.current?.active) rafRef.current = requestAnimationFrame(loop);
+        }
+        rafRef.current = requestAnimationFrame(loop);
+        return () => cancelAnimationFrame(rafRef.current);
+    }, [screen]);
+
+    // Global keyboard listener
+    useEffect(() => {
+        const dn = (e) => {
+            if (['Space','ArrowUp'].includes(e.code))  { e.preventDefault(); keys.current.up   = true; }
+            if (e.code === 'ArrowDown')                { e.preventDefault(); keys.current.down = true; }
+            if (['Space','ArrowUp'].includes(e.code)) {
+                if (screen === 'menu')     startGame();
+                if (screen === 'gameover') startGame();
+            }
+        };
+        const up = (e) => {
+            if (['Space','ArrowUp'].includes(e.code))  keys.current.up   = false;
+            if (e.code === 'ArrowDown')                keys.current.down = false;
+        };
+        window.addEventListener('keydown', dn);
+        window.addEventListener('keyup',   up);
+        return () => { window.removeEventListener('keydown', dn); window.removeEventListener('keyup', up); };
+    }, [screen]); // eslint-disable-line
+
+    const startGame = useCallback(() => {
+        keys.current = { up: false, down: false };
+        gs.current   = freshState();
+        setScore(0);
         setScreen('playing');
-        startGame();
+    }, []);
+
+    // Draw frame for menu / game over states
+    useEffect(() => {
+        if (screen === 'playing') return;
+        const ctx = canvasRef.current?.getContext('2d');
+        if (!ctx) return;
+
+        const draw = () => {
+            if (!ast.current.loaded) { setTimeout(draw, 200); return; }
+            const a = ast.current;
+
+            const dpr = window.devicePixelRatio || 1;
+            if (ctx.canvas.width !== Math.floor(W * dpr) || ctx.canvas.height !== Math.floor(H * dpr)) {
+                ctx.canvas.width = Math.floor(W * dpr);
+                ctx.canvas.height = Math.floor(H * dpr);
+                ctx.canvas.style.width = `${W}px`;
+                ctx.canvas.style.height = `${H}px`;
+            }
+            ctx.resetTransform();
+            ctx.scale(dpr, dpr);
+            ctx.imageSmoothingEnabled = false;
+
+            ctx.fillStyle = '#f7f7f7';
+            ctx.fillRect(0, 0, W, H);
+            if (a.ground) ctx.drawImage(a.ground, 0, GROUND_Y, 642, 12);
+            const img = a.run[0];
+            if (img) {
+                const drawY = GROUND_Y - DINO_RUN_H + DINO_RUN_BLANK_Y + DRAW_OFFSET_Y;
+                ctx.drawImage(img, DINO_X - DINO_RUN_W / 2, drawY, DINO_RUN_W, DINO_RUN_H);
+            }
+            ctx.fillStyle = '#535353';
+            ctx.font = 'bold 16px "Courier New", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(`HI ${String(hi).padStart(5,'0')}  00000`, W - 16, 24);
+        };
+        draw();
+    }, [screen, hi]);
+
+    // Touch click handler for mobile
+    const handleTap = () => {
+        if (screen === 'menu' || screen === 'gameover') { startGame(); return; }
+        keys.current.up = true;
+        setTimeout(() => { keys.current.up = false; }, 120);
     };
 
-    // ── Render ─────────────────────────────────────────────────────────────────
     return (
-        <div className="dino-page">
-            
-            {/* The Main Menu Card */}
-            {screen === 'menu' && (
-                <div className="dino-card">
-                    <img src="/mole.png" className="dino-hero-temp" alt="Dino Placeholder" />
-                    <h1 className="dino-title">Dino Camera Runner</h1>
-                    <p className="dino-desc">Control the T-Rex using your webcam! Stand up straight. <strong>Jump</strong> up to jump, and <strong>crouch</strong> down to duck under birds.</p>
-                    <button className="dino-btn" onClick={handleStartCalibration}>📹 Give Camera Access & Start</button>
-                    <button className="dino-btn-link" onClick={() => navigate('/kidshome')}>Back Home</button>
-                </div>
-            )}
+        <div className="dino-page" onPointerDown={handleTap}>
+            <div className="dino-wrapper">
+                <canvas ref={canvasRef} width={W} height={H} className="dino-canvas" />
 
-            {/* Calibration Overlay */}
-            {screen === 'calibrating' && (
-                <div className="dino-card calib-card">
-                    <h2>Stand up straight!</h2>
-                    <p>We are measuring your height to understand when you jump and crouch.</p>
-                    <p>Make sure your upper body is entirely visible in the camera frame.</p>
-                    <div className="calib-cam-wrap">
-                        {/* the hidden video element provides frames to mediapipe */}
-                        <div className="pulse-ring"></div>
+                {/* Menu */}
+                {screen === 'menu' && (
+                    <div className="dino-overlay">
+                        <img src="/dino/DinoJumping.png" alt="dino" className="dino-menu-sprite" />
+                        <h1 className="dino-title">Dino Runner</h1>
+                        <p className="dino-hint">
+                            Press <kbd>SPACE</kbd> / <kbd>↑</kbd> to jump &nbsp;·&nbsp; <kbd>↓</kbd> to duck
+                        </p>
+                        <div className="dino-play-instruction">
+                            Press <kbd>SPACE</kbd> / <kbd>↑</kbd> to Play
+                        </div>
+                        <button className="dino-back-btn" onPointerDown={e => { e.stopPropagation(); navigate('/kidshome'); }}>
+                            ← Back Home
+                        </button>
                     </div>
-                    {trackingState.current.calibrated ? (
-                        <h3 className="calib-success">Calibrated! Get ready...</h3>
-                    ) : (
-                        <h3>Detecting...</h3>
-                    )}
-                </div>
-            )}
+                )}
 
-            {/* Game Over Screen Overlay */}
-            {screen === 'gameover' && (
-                <div className="dino-go-overlay">
-                    <div className="dino-card go-card">
-                        <h1>Game Over!</h1>
-                        <div className="dino-score-big">{score}<span>PTS</span></div>
-                        <button className="dino-btn" onClick={handleReplay}>🔄 Play Again</button>
-                        <button className="dino-btn-link" onClick={() => { stopTracker(); setScreen('menu'); }}>Main Menu</button>
-                    </div>
-                </div>
-            )}
-
-            {/* Hidden video element for MediaPipe input (must exist when tracking is active) */}
-            <video 
-                ref={videoRef} 
-                className="hidden-video"
-                playsInline 
-                autoPlay 
-                muted
-                style={screen === 'menu' ? {display: 'none'} : {}}
-            />
-
-            {/* The actual Game Canvas (hidden in menu) */}
-            <div className={`dino-game-container ${screen === 'playing' || screen === 'gameover' ? 'active' : ''}`}>
-                <canvas 
-                    ref={canvasRef} 
-                    width={CANVAS_WIDTH} 
-                    height={CANVAS_HEIGHT} 
-                    className="dino-canvas"
-                />
-
-                {/* Picture-in-Picture webcam view */}
-                {(screen === 'playing' || screen === 'gameover') && (
-                    <div className="dino-pip">
-                        <video 
-                            ref={(el) => { if(el && videoRef.current) el.srcObject = videoRef.current.srcObject; }}
-                            autoPlay muted playsInline 
-                            className="pip-video"
-                        />
-                        <div className={`pip-status ${trackingState.current.action}`}>
-                            {trackingState.current.action.toUpperCase()}
+                {/* Game Over */}
+                {screen === 'gameover' && (
+                    <div className="dino-overlay gameover-overlay">
+                        <p className="dino-go-label">GAME OVER</p>
+                        <div className="dino-score-row">
+                            <span className="dino-score-val">{String(score).padStart(5, '0')}</span>
+                            <span className="dino-score-unit">PTS</span>
+                        </div>
+                        {score > 0 && score >= hi && <p className="dino-new-hi">★ New High Score!</p>}
+                        <div className="dino-go-btns">
+                            <div className="dino-play-instruction">
+                                Press <kbd>SPACE</kbd> / <kbd>↑</kbd> to Play Again
+                            </div>
+                            <button className="dino-back-btn" onPointerDown={e => { e.stopPropagation(); navigate('/kidshome'); }}>
+                                ← Home
+                            </button>
                         </div>
                     </div>
                 )}
             </div>
-            
         </div>
     );
 }
+

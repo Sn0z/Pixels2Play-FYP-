@@ -149,12 +149,12 @@ export default function ChildCoursesPage() {
         <div className="ccp-banner">
           <div className="ccp-banner-stars">✨ ⭐ 🌟 ✨</div>
           <h1 className="ccp-banner-title">
-            {isSubscribed ? "✨ Full Learning Unlock! ✨" : "My Learning Adventure! 🚀"}
+            {isSubscribed ? "✨ Full Learning Unlock! ✨" : "My Learning Adventure!"}
           </h1>
           <p className="ccp-banner-sub">
             {isSubscribed 
-              ? "You have access to ALL courses! Which one will you master today? 🌈"
-              : "Pick a course below and keep learning. You're doing great! 🎉"}
+              ? "You have access to ALL courses! Which one will you master today?"
+              : "Pick a course below and keep learning. You're doing great!"}
           </p>
         </div>
 
@@ -172,7 +172,7 @@ export default function ChildCoursesPage() {
             <div className="ccp-empty-state">
               <div className="ccp-empty-icon">📦</div>
               <h2 style={{ color: "#571c86" }}>No Courses Yet!</h2>
-              <p style={{ color: "#4a5462" }}>Ask your parent to buy a course so you can start learning! 😊</p>
+              <p style={{ color: "#4a5462" }}>Ask your parent to buy a course so you can start learning!</p>
             </div>
           ) : (
             <div className="ccp-grid">
@@ -202,7 +202,7 @@ export default function ChildCoursesPage() {
                       </div>
                       {pct === 100 && (
                         <div className="ccp-completed-seal">
-                          <span>🏆</span> Complete!
+                          <span></span> Complete!
                         </div>
                       )}
                     </div>
@@ -231,17 +231,17 @@ export default function ChildCoursesPage() {
                         )}
                         {progressMap[course.id]?.quiz_score != null && (
                           <span>
-                            🏅 Quiz: {Math.round(progressMap[course.id].quiz_score * 100)}%
+                            Quiz: {Math.round(progressMap[course.id].quiz_score * 100)}%
                           </span>
                         )}
                       </div>
 
                       <button className={`ccp-start-btn ${hasStarted ? "ccp-continue-btn" : ""}`}>
                         {pct === 100
-                          ? "🏆 Review Course"
+                          ? "Review Course"
                           : hasStarted
                           ? "▶ Continue Learning"
-                          : "🚀 Start Course"}
+                          : "Start Course"}
                       </button>
                     </div>
                   </div>

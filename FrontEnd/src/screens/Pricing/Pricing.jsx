@@ -80,7 +80,7 @@ export default function Pricing() {
         <div className="container">
           {/* Hero */}
           <div className="pricing-hero section-header">
-            <div className="pricing-tag">💳 Subscription Plans</div>
+            <div className="pricing-tag">Subscription Plans</div>
             <h1>
               Simple,{" "}
               <span className="highlight-text">Transparent</span> Pricing
@@ -116,7 +116,7 @@ export default function Pricing() {
                 className={`plan-card ${plan.colorClass} ${plan.popular ? "popular" : ""}`}
               >
                 {plan.popular && (
-                  <div className="popular-tag">⭐ Most Popular</div>
+                  <div className="popular-tag">Most Popular</div>
                 )}
 
                 <div className="plan-header">

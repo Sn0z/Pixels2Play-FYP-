@@ -1,9 +1,11 @@
 # ============================================================
-#  ROCK PAPER SCISSORS AI
-#  Plays the game AND saves data so we can analyse it later
+#  ROCK PAPER SCISSORS GAME
+#  Plays rounds and records each result for later analysis
 # ============================================================
 
-# --- AI Memory ---
+# --- Player move memory ---
+# counts tracks how often each move is played overall.
+# after_move records what the player tends to play after each previous move.
 counts    = {"R": 0, "P": 0, "S": 0}
 after_move = {
     "R": {"R": 0, "P": 0, "S": 0},
@@ -20,8 +22,9 @@ draws = 0
 losses = 0
 last_move = None
 
-# --- This list records every round for the analyser ---
-round_log = []   # Each entry: (player_move, ai_move, ai_predicted, outcome)
+# --- This list records every round for the analyzer ---
+# Each entry stores: (player_move, opponent_move, predicted_player_move, outcome)
+round_log = []
 
 
 def get_ai_move():
@@ -29,18 +32,22 @@ def get_ai_move():
     predicted = None
 
     if total < 3:
-        # Not enough data yet — always start with Paper, since it's the most common first move
+        # Not enough data yet — choose a simple default move.
+        # Paper is used here because it is a safe, balanced opening choice.
         return "P", None
 
     if last_move is not None:
         follow = after_move[last_move]
         follow_total = follow["R"] + follow["P"] + follow["S"]
         if follow_total >= 2:
+            # Use the player's most common follow-up move after their last action.
             predicted = max(follow, key=follow.get)
 
     if predicted is None:
+        # Otherwise, guess the move the player uses most often overall.
         predicted = max(counts, key=counts.get)
 
+    # Choose the move that beats the predicted player choice.
     ai_move = beaten_by[predicted]
     return ai_move, predicted
 
@@ -48,7 +55,9 @@ def get_ai_move():
 def update_memory(player_move):
     global last_move
     if last_move is not None:
+        # Record what the player did after their previous move.
         after_move[last_move][player_move] += 1
+    # Count the player's move frequencies overall.
     counts[player_move] += 1
     last_move = player_move
 
@@ -64,6 +73,7 @@ def get_player_move():
 def play_round():
     global wins, draws, losses
 
+    # Decide the computer's move using the player's past choices.
     ai_move, predicted = get_ai_move()
     player_move = get_player_move()
     if player_move == "Q":
@@ -71,6 +81,7 @@ def play_round():
 
     update_memory(player_move)
 
+    # Determine the round result and update score totals.
     if player_move == ai_move:
         outcome = "DRAW"
         draws += 1
