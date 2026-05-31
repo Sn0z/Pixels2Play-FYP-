@@ -1,0 +1,302 @@
+/* ChildSettings.css — Light Theme */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Shell ─────────────────────────────────────────────────── */
+.chs-shell {
+    min-height: 100vh;
+    background: #f8fafc;
+    font-family: "Inter", sans-serif;
+    color: #0f162a;
+}
+
+.chs-shell.chs-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.chs-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-bottom: 1px solid #e1e8ef;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.chs-header-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.chs-back {
+    color: #4f46e4;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.chs-back:hover {
+    color: #4338ca;
+}
+
+.chs-header-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f162a;
+}
+
+/* ── Main ─────────────────────────────────────────────────── */
+.chs-main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+}
+
+/* ── Form card ────────────────────────────────────────────── */
+.chs-form-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.chs-form-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f162a;
+}
+
+.chs-form-sub {
+    font-size: 0.9rem;
+    color: #63748a;
+    line-height: 1.6;
+}
+
+/* ── Avatar ────────────────────────────────────────────────── */
+.chs-avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.chs-avatar-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+    border: 3px solid #e1e8ef;
+    flex-shrink: 0;
+}
+
+.chs-avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chs-avatar-skel {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 600px 100%;
+    animation: chs-shimmer 1.4s infinite linear;
+}
+
+/* ── Field ─────────────────────────────────────────────────── */
+.chs-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chs-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #63748a;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+}
+
+.chs-input {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #0f162a;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.chs-input:focus {
+    border-color: #4f46e4;
+    box-shadow: 0 0 0 3px rgba(79, 70, 228, 0.12);
+}
+
+.chs-input-skel {
+    height: 48px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 600px 100%;
+    animation: chs-shimmer 1.4s infinite linear;
+}
+
+/* ── Messages ──────────────────────────────────────────────── */
+.chs-msg {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+}
+
+.chs-msg-error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #dc2626;
+}
+
+.chs-msg-success {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #059669;
+}
+
+/* ── Actions ───────────────────────────────────────────────── */
+.chs-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.chs-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.4rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    font-family: inherit;
+}
+
+.chs-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 228, 0.18);
+}
+
+.chs-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.chs-btn-primary {
+    background: #4f46e4;
+    color: #fff;
+}
+
+.chs-btn-primary:hover:not(:disabled) {
+    background: #4338ca;
+}
+
+.chs-btn-outline {
+    background: transparent;
+    border: 1px solid #4f46e4;
+    color: #4f46e4;
+}
+
+.chs-btn-outline:hover:not(:disabled) {
+    background: #f5f3ff;
+}
+
+/* ── Standalone card (access-denied / no-child) ────────────── */
+.chs-card {
+    background: #ffffff;
+    border: 1px solid #e1e8ef;
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.chs-card h2 {
+    font-size: 1.3rem;
+    color: #0f162a;
+}
+
+.chs-card p {
+    color: #63748a;
+    font-size: 0.9rem;
+}
+
+/* ── Shimmer ───────────────────────────────────────────────── */
+@keyframes chs-shimmer {
+    0% {
+        background-position: -600px 0;
+    }
+
+    100% {
+        background-position: 600px 0;
+    }
+}
+
+@media (max-width: 500px) {
+    .chs-form-card {
+        padding: 1.5rem;
+    }
+
+    .chs-avatar-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .chs-actions {
+        flex-direction: column;
+    }
+
+    .chs-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

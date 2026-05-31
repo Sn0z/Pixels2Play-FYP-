@@ -21,7 +21,18 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        fields = ['id', 'title', 'description', 'video_url', 'video_duration', 'required_percent', 'questions']
+        fields = [
+            'id', 'title', 'description', 'order', 'published',
+            'video_url', 'video_host', 'video_duration',
+            'required_percent', 'quiz_passing_score',
+            # Course metadata
+            'category', 'price', 'currency',
+            'age_min', 'age_max', 'duration_weeks', 'format_type',
+            'course_image', 'short_description', 'long_description',
+            'icon_age', 'icon_duration', 'icon_format', 'icon_certificate',
+            # Quiz questions
+            'questions'
+        ]
 
 
 class UserModuleProgressSerializer(serializers.ModelSerializer):

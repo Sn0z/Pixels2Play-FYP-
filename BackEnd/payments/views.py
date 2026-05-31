@@ -45,20 +45,27 @@ def initiate_payment(request):
         )
 
     course_id = request.data.get("course_id")
+    plan_id = request.data.get("plan_id")
+    billing_cycle = request.data.get("billing_cycle", "monthly")
     amount = request.data.get("amount")  # paisa
 
-    if not course_id or not amount:
+    # Accept either plan_id (subscription) or course_id (one-time purchase)
+    order_id = plan_id or course_id
+    if not order_id or not amount:
         return Response(
-            {"error": "course_id and amount are required"},
+            {"error": "plan_id (or course_id) and amount are required"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    order_name = f"Subscription – {plan_id} ({billing_cycle})" if plan_id else "Course Purchase"
+
+
     payload = {
-        "return_url": "http://localhost:5173/coursedetails",
+        "return_url": "http://localhost:5173/dashboard",
         "website_url": "http://localhost:5173",
         "amount": int(amount),
-        "purchase_order_id": str(course_id),
-        "purchase_order_name": "Course Purchase",
+        "purchase_order_id": str(order_id),
+        "purchase_order_name": order_name,
     }
 
     headers = {
@@ -80,7 +87,7 @@ def initiate_payment(request):
     # Store payment in Django model (for backward compatibility)
     payment = Payment.objects.create(
         firebase_uid=uid,
-        course_id=course_id,
+        course_id=str(order_id),
         amount=amount,
         khalti_pidx=data["pidx"],
         status="PENDING"
@@ -94,7 +101,9 @@ def initiate_payment(request):
     payment_data = {
         'payment_id': data["pidx"],
         'parent_id': uid,
-        'course_id': course_id,
+        'course_id': str(order_id),
+        'plan_id': plan_id,
+        'billing_cycle': billing_cycle,
         'amount': int(amount),
         'status': 'PENDING',
         'provider': 'KHALTI',
@@ -108,6 +117,7 @@ def initiate_payment(request):
         "payment_url": data["payment_url"],
         "pidx": data["pidx"]
     })
+
 
 
 @api_view(['POST'])
@@ -195,73 +205,99 @@ def verify_payment(request):
 def course_purchase_status(request, course_id):
     """
     Check if course is purchased (for child access).
-    
-    Supports proposal section: "Payments: Khalti Integration"
-    
-    Rules:
-    - CHILD gains access only after parent purchase
-    - Checks parent's purchased courses
-    
-    Access: All authenticated users
+    Also checks if the user (or parent) has an active subscription.
     """
     from utils.firestore import FirestoreService
     from utils.constants import ROLE_CHILD, ROLE_PARENT
     from firebase_admin import firestore
     
+    SUBSCRIPTION_PLAN_IDS = ['starter', 'pro', 'family']
+    
     decoded = verify_firebase_token(request)
-
     if not decoded:
-        return Response(
-            {"purchased": False},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({"purchased": False}, status=status.HTTP_401_UNAUTHORIZED)
 
     uid = decoded["uid"]
     user = FirestoreService.get_user(uid)
-    
     if not user:
         return Response({"purchased": False})
     
     user_role = user.get('role')
-    
-    # Proposal requirement: CHILD gains access only after parent purchase
+    db = firestore.client()
+
+    # Determine which UID's purchases to check
+    check_uids = [uid]
     if user_role == ROLE_CHILD:
-        # Find parent
         links = FirestoreService.get_family_links_by_child(uid)
         if links:
-            parent_id = links[0]['parent_id']
-            
-            # Check parent's purchased courses
-            db = firestore.client()
-            purchased_ref = db.collection('purchased_courses').document(parent_id)
-            purchased_doc = purchased_ref.get()
-            
-            if purchased_doc.exists:
-                course_ids = purchased_doc.to_dict().get('course_ids', [])
-                return Response({"purchased": course_id in course_ids})
-        
-        return Response({"purchased": False})
-    
-    # For PARENT, check their own purchases
-    elif user_role == ROLE_PARENT:
-        # Check Django model (backward compatibility)
-        purchased = Payment.objects.filter(
-            firebase_uid=uid,
-            course_id=course_id,
-            status="COMPLETED"
-        ).exists()
-        
-        # Also check Firestore
-        db = firestore.client()
-        purchased_ref = db.collection('purchased_courses').document(uid)
+            check_uids = [link['parent_id'] for link in links]
+
+    for check_uid in check_uids:
+        # Check Firestore purchased_courses collection
+        purchased_ref = db.collection('purchased_courses').document(check_uid)
         purchased_doc = purchased_ref.get()
         
         if purchased_doc.exists:
-            course_ids = purchased_doc.to_dict().get('course_ids', [])
-            purchased = purchased or (course_id in course_ids)
-        
-        return Response({"purchased": purchased})
-    
+            pids = purchased_doc.to_dict().get('course_ids', [])
+            # Access granted if specific course is purchased OR if a subscription PLAN is purchased
+            if course_id in pids or any(plan in pids for plan in SUBSCRIPTION_PLAN_IDS):
+                return Response({"purchased": True})
+
+        # Check Django model (backward compatibility forParents)
+        if user_role == ROLE_PARENT:
+            if Payment.objects.filter(firebase_uid=check_uid, course_id=course_id, status="COMPLETED").exists():
+                return Response({"purchased": True})
+
     return Response({"purchased": False})
 
 
+
+@api_view(["GET"])
+def subscription_status(request):
+    """
+    Check if the current user has an active subscription.
+    Returns {subscribed: true/false, plan_id, billing_cycle}.
+    A subscription is considered active if there is any COMPLETED
+    payment that has a plan_id (i.e. came from the subscription checkout).
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({"subscribed": False}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded["uid"]
+
+    # Check Django payment records for a completed subscription payment
+    payment = Payment.objects.filter(
+        firebase_uid=uid,
+        status="COMPLETED",
+    ).exclude(course_id__in=["scratch-101"]).first()
+
+    # Also check Firestore payments for a plan_id-based completed payment
+    try:
+        from firebase_admin import firestore as fs
+        db = fs.client()
+        payments_ref = db.collection("payments") \
+            .where("parent_id", "==", uid) \
+            .where("status", "==", "COMPLETED") \
+            .stream()
+
+        for doc in payments_ref:
+            data = doc.to_dict()
+            if data.get("plan_id"):
+                return Response({
+                    "subscribed": True,
+                    "plan_id": data.get("plan_id"),
+                    "billing_cycle": data.get("billing_cycle", "monthly"),
+                })
+    except Exception as e:
+        print(f"[subscription_status] Firestore error: {e}")
+
+    # Fallback: check Django model for any non-course payment marked COMPLETED
+    if payment:
+        return Response({
+            "subscribed": True,
+            "plan_id": payment.course_id,
+            "billing_cycle": "monthly",
+        })
+
+    return Response({"subscribed": False})

@@ -34,14 +34,13 @@
 }
 
 body {
-  background-color: var(--color-bg-light);
+  background-color: #ffffff;
   color: var(--color-text-dark);
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(180deg, var(--color-bg-light) 0%, var(--color-bg-medium) 100%);
-  color: var(--color-text-light);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-gutter: stable;
 }
 
 .page-wrapper {
@@ -57,7 +56,12 @@ body {
   padding: 0 24px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-text-dark);
   font-weight: 800;
   margin: 0;
@@ -132,6 +136,7 @@ ul {
   .section-header h2 {
     font-size: 36px;
   }
+
   .section-header p {
     font-size: 18px;
   }

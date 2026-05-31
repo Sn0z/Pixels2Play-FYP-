@@ -1,0 +1,366 @@
+/* ════════════════════════════════════════════════════════
+   Child Courses Page — Colorful, fun, kid-friendly design
+   ════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+.ccp-page {
+  min-height: 100vh;
+  background: #ffffff; /* Light theme white */
+  font-family: 'Nunito', 'Segoe UI', sans-serif;
+  color: #1f2937; /* Dark text for light theme */
+}
+
+/* ── Main Navigation (Child Home Page style) ─────────────── */
+.main-navigation {
+  background-color: #ffffff;
+  box-shadow: 0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a;
+  display: flex;
+  height: 80px;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.main-navigation .frame-frame-2 {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  max-width: 1390px;
+  margin: 0 auto;
+}
+
+.main-navigation .nav-links {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+}
+
+.main-navigation .nav-links > div {
+  color: #9233ea;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── Header (Deprecated but keeping for safety if used elsewhere) ── */
+.ccp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ccp-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ccp-logo-icon { font-size: 1.6rem; }
+.ccp-logo-text {
+  font-size: 1.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #a78bfa, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ccp-nav {
+  display: flex;
+  gap: 8px;
+}
+.ccp-nav-link {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ccp-nav-link:hover,
+.ccp-nav-link.active {
+  background: rgba(139, 92, 246, 0.18);
+  color: #a78bfa;
+}
+
+/* ── Banner ──────────────────────────────────────────────── */
+.ccp-banner {
+  text-align: center;
+  padding: 60px 24px 40px;
+  position: relative;
+}
+
+.ccp-banner-stars {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  animation: twinkle 2s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.ccp-banner-title {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 900;
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.ccp-banner-sub {
+  font-size: 1.1rem;
+  color: #4a5462;
+  margin: 0;
+}
+
+/* ── Main ──────────────────────────────────────────────── */
+.ccp-main {
+  min-height: calc(100vh - 64px);
+}
+.ccp-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ── Loading Bubbles ──────────────────────────────────────── */
+.ccp-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 0;
+  gap: 20px;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.ccp-bubbles {
+  display: flex;
+  gap: 8px;
+}
+.ccp-bubble {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa, #ec4899);
+  animation: bounce 0.6s ease-in-out infinite alternate;
+}
+.ccp-bubble:nth-child(2) { animation-delay: 0.15s; }
+.ccp-bubble:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-14px); }
+}
+
+/* ── Empty State ──────────────────────────────────────────── */
+.ccp-empty-state {
+  text-align: center;
+  padding: 80px 24px;
+}
+.ccp-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+.ccp-empty-state h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #571c86;
+  margin: 0 0 10px;
+}
+.ccp-empty-state p {
+  color: #4a5462;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* ── Grid ──────────────────────────────────────────────── */
+.ccp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 24px;
+}
+
+/* ── Card ──────────────────────────────────────────────── */
+.ccp-card {
+  background: #ffffff;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  animation: cardPop 0.4s ease backwards;
+}
+.ccp-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 24px 60px rgba(139, 92, 246, 0.25);
+  border-color: rgba(167, 139, 250, 0.5);
+}
+@keyframes cardPop {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Thumbnail ──────────────────────────────────────────── */
+.ccp-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+.ccp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s;
+}
+.ccp-card:hover .ccp-thumb img { transform: scale(1.06); }
+
+.ccp-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.ccp-card:hover .ccp-thumb-overlay { opacity: 1; }
+
+.ccp-play-icon {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #7c3aed;
+  padding-left: 4px;
+}
+
+.ccp-completed-seal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Card Body ──────────────────────────────────────────── */
+.ccp-card-body {
+  padding: 18px 20px 20px;
+}
+
+.ccp-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #c4b5fd;
+  margin-bottom: 8px;
+}
+
+.ccp-course-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 14px;
+  line-height: 1.35;
+}
+
+/* ── Progress Bar ──────────────────────────────────────────── */
+.ccp-progress-wrap {
+  margin-bottom: 12px;
+}
+.ccp-progress-bar {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.ccp-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a78bfa, #ec4899);
+  border-radius: 100px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ccp-progress-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+/* ── Meta ──────────────────────────────────────────────── */
+.ccp-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+/* ── Start Button ──────────────────────────────────────────── */
+.ccp-start-btn {
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
+  color: #fff;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(109, 40, 217, 0.35);
+}
+.ccp-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(109, 40, 217, 0.5);
+}
+.ccp-continue-btn {
+  background: linear-gradient(135deg, #0369a1, #0ea5e9);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+}
+.ccp-continue-btn:hover {
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.45);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .ccp-header { padding: 14px 16px; }
+  .ccp-nav-link { padding: 6px 10px; font-size: 0.8rem; }
+  .ccp-banner { padding: 40px 16px 28px; }
+  .ccp-container { padding: 0 12px 60px; }
+  .ccp-grid { grid-template-columns: 1fr; }
+}

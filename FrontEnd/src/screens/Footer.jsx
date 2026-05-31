@@ -3,7 +3,10 @@ export default function Footer() {
     <footer className="site-footer-main" id="footer">
       <div className="container footer-top">
         <div className="footer-brand">
-          <h3 className="logo-text">Pixles2Play</h3>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <img src="/Logo.png" alt="Pixels2Play" style={{ height: '36px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+            <h3 className="logo-text">Pixels2Play</h3>
+          </a>
           <p>Fun, safe, and engaging AI education for kids ages 8-16.</p>
         </div>
 
@@ -38,7 +41,7 @@ export default function Footer() {
 
       <div className="container footer-bottom">
         <span className="copyright">
-          © {new Date().getFullYear()} Pixles2Play. All rights reserved.
+          © {new Date().getFullYear()} Pixels2Play. All rights reserved.
         </span>
       </div>
     </footer>

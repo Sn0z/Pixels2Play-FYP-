@@ -1,10 +1,8 @@
-import firebase_admin
-from firebase_admin import auth, credentials
-from django.conf import settings
+from firebase_admin import auth
+from utils.firebase_init import ensure_initialized
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate(settings.FIREBASE_SERVICE_ACCOUNT)
-    firebase_admin.initialize_app(cred)
+# Ensure Firebase is initialized before using auth
+ensure_initialized()
 
 
 def verify_firebase_token(request):

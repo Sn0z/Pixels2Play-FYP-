@@ -1,0 +1,1129 @@
+.kids-home-page {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.kids-home-page .root {
+  background: linear-gradient(135deg,
+      rgba(239, 246, 255, 1) 0%,
+      rgba(250, 245, 255, 1) 50%,
+      rgba(253, 242, 248, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%),
+    linear-gradient(0deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 1) 100%);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  width: 100%;
+  overflow-x: hidden;
+  align-items: center;
+}
+
+.kids-home-page .hero-section-frame-2 {
+  max-width: 616px;
+  width: 50%;
+}
+
+/* Main Footer Styles */
+.main-footer {
+  background-color: #111727;
+  display: flex;
+  height: auto;
+  min-height: 369px;
+  position: relative;
+  width: 100%;
+  margin-top: 40px;
+  justify-content: center;
+}
+
+.main-footer .frame {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 48px;
+  width: 100%;
+  max-width: 1280px;
+  padding: 0 40px;
+}
+
+.main-footer .div {
+  display: flex;
+  gap: 32px;
+  width: 1280px;
+}
+
+.main-footer .div-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 180px;
+  width: 296px;
+}
+
+.main-footer .frame-2 {
+  display: flex;
+  gap: 8px;
+  width: 296px;
+}
+
+.main-footer .div-wrapper {
+  background: linear-gradient(135deg,
+      rgba(192, 132, 252, 1) 0%,
+      rgba(244, 114, 182, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  border-radius: 9999px;
+  display: flex;
+  height: 48px;
+  width: 48px;
+}
+
+.main-footer .text-wrapper {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 24px;
+  font-weight: 700;
+  height: 32px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 32px;
+  margin-left: 16.8px;
+  margin-top: 8.0px;
+  text-align: center;
+  white-space: nowrap;
+  width: 14.34px;
+}
+
+.main-footer .text-wrapper-2 {
+  color: #ffffff;
+  font-family: "Fredoka", Helvetica;
+  font-size: 24px;
+  font-weight: 700;
+  height: 32px;
+  letter-spacing: 0;
+  line-height: 32px;
+  margin-top: 8px;
+  white-space: nowrap;
+  width: 97px;
+}
+
+.main-footer .p {
+  color: #9ca2ae;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.7px;
+  font-weight: 400;
+  height: 56px;
+  letter-spacing: 0;
+  line-height: 28px;
+}
+
+.main-footer .text-wrapper-3 {
+  color: #ffffff;
+  font-family: "Fredoka", Helvetica;
+  font-size: 19.9px;
+  font-weight: 700;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  white-space: nowrap;
+}
+
+.main-footer .list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 136px;
+}
+
+.main-footer .text-wrapper-4 {
+  color: #9ca2ae;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.6px;
+  font-weight: 400;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  white-space: nowrap;
+  width: 296px;
+}
+
+.main-footer .text-wrapper-5 {
+  color: #9ca2ae;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.9px;
+  font-weight: 400;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  white-space: nowrap;
+  width: 296px;
+}
+
+.main-footer .text-wrapper-6 {
+  color: #9ca2ae;
+  font-family: "Fredoka", Helvetica;
+  font-size: 18px;
+  font-weight: 400;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  white-space: nowrap;
+  width: 296px;
+}
+
+.main-footer .text-wrapper-7 {
+  color: #9ca2ae;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.7px;
+  font-weight: 400;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  white-space: nowrap;
+  width: 296px;
+}
+
+.main-footer .text-wrapper-8 {
+  color: #ffffff;
+  font-family: "Fredoka", Helvetica;
+  font-size: 19.8px;
+  font-weight: 700;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  white-space: nowrap;
+}
+
+.main-footer .list-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100px;
+}
+
+.main-footer .footer-bottom {
+  border-color: #1f2937;
+  border-top-style: solid;
+  border-top-width: 0.8px;
+  display: flex;
+  height: 61px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 40px;
+}
+
+.main-footer .text-wrapper-9 {
+  color: #9ca2ae;
+  font-family: "Fredoka", Helvetica;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  margin-top: 32.8px;
+  text-align: center;
+  width: 100%;
+}
+
+/* CTA Section Styles */
+.cta-section {
+  background: linear-gradient(90deg,
+      rgba(147, 51, 234, 1) 0%,
+      rgba(219, 39, 119, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  height: auto;
+  padding: 60px 0;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
+}
+
+.cta-section .frame-3 {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 896px;
+  align-items: center;
+}
+
+.cta-section .text-wrapper-10 {
+  color: #ffffff;
+  font-family: "Fredoka", Helvetica;
+  font-size: 47.9px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cta-section .text-wrapper-11 {
+  color: #f3e8ff;
+  font-family: "Fredoka", Helvetica;
+  font-size: 24px;
+  font-weight: 400;
+  margin-top: 24px;
+  text-align: center;
+}
+
+.cta-section .frame-4 {
+  display: flex;
+  gap: 15.8px;
+  margin-top: 32px;
+  justify-content: center;
+}
+
+.cta-section .button {
+  all: unset;
+  background-color: #ffffff;
+  border-radius: 9999px;
+  box-sizing: border-box;
+  display: flex;
+  height: 60px;
+  width: 253px;
+}
+
+.cta-section .text-wrapper-12 {
+  align-items: center;
+  color: #9233ea;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-left: 40.0px;
+  margin-top: 15.6px;
+  text-align: center;
+  white-space: nowrap;
+  width: 172.79px;
+}
+
+.cta-section .button-2 {
+  all: unset;
+  background-color: #f9cc14;
+  border-radius: 9999px;
+  box-sizing: border-box;
+  display: flex;
+  height: 60px;
+  width: 224px;
+}
+
+.cta-section .text-wrapper-13 {
+  align-items: center;
+  color: #571c86;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-left: 40.0px;
+  margin-top: 15.6px;
+  text-align: center;
+  white-space: nowrap;
+  width: 143.69px;
+}
+
+/* Testimonials Styles */
+.testimonials {
+  background: linear-gradient(135deg,
+      rgba(254, 252, 232, 1) 0%,
+      rgba(255, 247, 237, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  height: auto;
+  min-height: 568px;
+  padding-bottom: 60px;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
+}
+
+.testimonials .frame-5 {
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+  margin-top: 80px;
+  width: 100%;
+  max-width: 1280px;
+  align-items: center;
+}
+
+.testimonials .section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.testimonials .what-kids-parents {
+  color: #571c86;
+  font-family: "Fredoka", Helvetica;
+  font-size: 47.9px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.testimonials .text-wrapper-14 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.testimonials .testimonials-grid {
+  display: flex;
+  gap: 32.3px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.testimonials .testimonial-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a, 0px 0px 0px transparent, 0px 0px 0px transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
+}
+
+.testimonials .img {
+  height: 24px;
+  width: auto;
+  margin-bottom: 8px;
+}
+
+.testimonials .text-wrapper-15 {
+  color: #374151;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.8px;
+  font-weight: 400;
+  line-height: 28px;
+  text-align: center;
+}
+
+.testimonials .frame-6 {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.testimonials .frame-7 {
+  background-color: #d7b4fd;
+  border-radius: 9999px;
+  display: flex;
+  height: 48px;
+  width: 48px;
+}
+
+.testimonials .text-wrapper-16 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-left: 18px;
+  margin-top: 9.6px;
+  text-align: center;
+  white-space: nowrap;
+  width: 12.06px;
+}
+
+.testimonials .frame-8 {
+  display: flex;
+  flex-direction: column;
+  height: 44px;
+  margin-top: 2px;
+  width: 98px;
+}
+
+.testimonials .text-wrapper-17 {
+  color: #1f2937;
+  font-family: "Fredoka", Helvetica;
+  font-size: 15.9px;
+  font-weight: 700;
+  height: 24px;
+  letter-spacing: 0;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.testimonials .text-wrapper-18 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 14px;
+  font-weight: 400;
+  height: 20px;
+  letter-spacing: 0;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.testimonials .frame-9 {
+  background-color: #92c5fc;
+  border-radius: 9999px;
+  display: flex;
+  height: 48px;
+  width: 48px;
+}
+
+.testimonials .text-wrapper-19 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-left: 18.6px;
+  margin-top: 9.6px;
+  text-align: center;
+  white-space: nowrap;
+  width: 10.85px;
+}
+
+.testimonials .frame-10 {
+  display: flex;
+  flex-direction: column;
+  height: 44px;
+  margin-top: 2px;
+  width: 106px;
+}
+
+.testimonials .frame-11 {
+  background-color: #f8a8d3;
+  border-radius: 9999px;
+  display: flex;
+  height: 48px;
+  width: 48px;
+}
+
+.testimonials .text-wrapper-20 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-left: 18.3px;
+  margin-top: 9.6px;
+  text-align: center;
+  white-space: nowrap;
+  width: 11.39px;
+}
+
+.testimonials .frame-12 {
+  display: flex;
+  flex-direction: column;
+  height: 44px;
+  margin-top: 2px;
+  width: 73px;
+}
+
+.testimonials .text-wrapper-21 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 13.8px;
+  font-weight: 400;
+  height: 20px;
+  letter-spacing: 0;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+/* Why Choose Us Styles */
+.why-choose-us {
+  background-color: #ffffff;
+  display: flex;
+  height: auto;
+  padding-bottom: 60px;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
+}
+
+.why-choose-us .frame-13 {
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+  margin-top: 80px;
+  width: 100%;
+  max-width: 1280px;
+  align-items: center;
+}
+
+.why-choose-us .section-header-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.why-choose-us .text-wrapper-22 {
+  color: #571c86;
+  font-family: "Fredoka", Helvetica;
+  font-size: 48px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.why-choose-us .text-wrapper-23 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.why-choose-us .features-grid {
+  display: flex;
+  gap: 32.3px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.why-choose-us .feature-card {
+  background: linear-gradient(135deg,
+      rgba(239, 246, 255, 1) 0%,
+      rgba(219, 234, 254, 1) 100%);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
+}
+
+.why-choose-us .feature-icon {
+  height: 96px;
+  width: 96px;
+  margin-bottom: 24px;
+}
+
+.why-choose-us .text-wrapper-24 {
+  color: #1f2937;
+  font-family: "Fredoka", Helvetica;
+  font-size: 23.9px;
+  font-weight: 700;
+  line-height: 32px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.why-choose-us .text-wrapper-25 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.8px;
+  font-weight: 400;
+  line-height: 28px;
+  text-align: center;
+}
+
+.why-choose-us .feature-card-2 {
+  background: linear-gradient(135deg,
+      rgba(250, 245, 255, 1) 0%,
+      rgba(243, 232, 255, 1) 100%);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
+}
+
+.why-choose-us .text-wrapper-26 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  text-align: center;
+}
+
+.why-choose-us .feature-card-3 {
+  background: linear-gradient(135deg,
+      rgba(253, 242, 248, 1) 0%,
+      rgba(252, 231, 243, 1) 100%);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  width: 100%;
+  max-width: 405px;
+  padding: 32px;
+  align-items: center;
+}
+
+/* Games Section Styles */
+.games-section {
+  background: linear-gradient(135deg,
+      rgba(243, 232, 255, 1) 0%,
+      rgba(252, 231, 243, 1) 100%);
+  display: flex;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.games-section .frame-13 {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  width: 1280px;
+  align-items: center;
+}
+
+.games-section .section-header-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.games-section .text-wrapper-22 {
+  color: #571c86;
+  font-family: "Fredoka", Helvetica;
+  font-size: 48px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.games-section .text-wrapper-23 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  text-align: center;
+}
+
+.games-section .features-grid {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+  justify-content: center;
+}
+
+.games-section .game-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 320px;
+  width: 380px;
+  align-items: center;
+  padding: 32px 24px;
+}
+
+.games-section .game-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.games-section .text-wrapper-24 {
+  color: #1f2937;
+  font-family: "Fredoka", Helvetica;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.games-section .text-wrapper-25,
+.games-section .text-wrapper-26 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.games-section .play-btn {
+  background: linear-gradient(90deg, #9333ea 0%, #db2711 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-family: "Fredoka", Helvetica;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 12px 32px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.games-section .play-btn:hover {
+  opacity: 0.9;
+}
+
+
+
+
+
+/* Stats Section Styles */
+.stats-section {
+  background-color: #ffffff;
+  display: flex;
+  height: auto;
+  padding: 40px 0;
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+  justify-content: center;
+}
+
+.stats-section .frame-frame {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+  max-width: 1280px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stats-section .stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 84px;
+  width: 296px;
+}
+
+.stats-section .text-wrapper-86 {
+  color: #9233ea;
+  font-family: "Fredoka", Helvetica;
+  font-size: 47.7px;
+  font-weight: 700;
+  height: 48px;
+  letter-spacing: 0;
+  line-height: 48px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-section .text-wrapper-87 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.8px;
+  font-weight: 700;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-section .text-wrapper-88 {
+  color: #2462eb;
+  font-family: "Fredoka", Helvetica;
+  font-size: 47.8px;
+  font-weight: 700;
+  height: 48px;
+  letter-spacing: 0;
+  line-height: 48px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-section .text-wrapper-89 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 18px;
+  font-weight: 700;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-section .text-wrapper-90 {
+  color: #db2777;
+  font-family: "Fredoka", Helvetica;
+  font-size: 47.6px;
+  font-weight: 700;
+  height: 48px;
+  letter-spacing: 0;
+  line-height: 48px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-section .text-wrapper-91 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.9px;
+  font-weight: 700;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-section .text-wrapper-92 {
+  color: #ea570b;
+  font-family: "Fredoka", Helvetica;
+  font-size: 47.9px;
+  font-weight: 700;
+  height: 48px;
+  letter-spacing: 0;
+  line-height: 48px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stats-section .text-wrapper-93 {
+  color: #4a5462;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.6px;
+  font-weight: 700;
+  height: 28px;
+  letter-spacing: 0;
+  line-height: 28px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Hero Section Styles */
+.hero-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1280px;
+  width: 100%;
+  margin: 60px auto 0;
+  padding: 0 40px;
+  gap: 40px;
+}
+
+.hero-section-frame {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 50%;
+}
+
+.hero-section-frame .heading {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1px;
+  height: 150px;
+}
+
+.hero-section-frame .learn-have-fun {
+  color: #571c86;
+  font-family: "Fredoka", Helvetica;
+  font-size: 59.9px;
+  font-weight: 700;
+  height: 75px;
+  letter-spacing: 0;
+  line-height: 75px;
+  margin-top: -0.3px;
+  white-space: nowrap;
+  width: 496.15px;
+}
+
+.hero-section-frame .text {
+  height: 73px;
+  width: 496px;
+}
+
+.hero-section-frame .text-wrapper-94 {
+  color: #374151;
+  font-family: "Fredoka", Helvetica;
+  font-size: 23.8px;
+  font-weight: 400;
+  height: 96px;
+  letter-spacing: 0;
+  line-height: 32px;
+  margin-top: 24px;
+}
+
+.hero-section-frame .button-wrapper {
+  display: flex;
+  margin-top: 32px;
+  width: 616px;
+}
+
+.hero-section-frame .button-13 {
+  all: unset;
+  background: linear-gradient(90deg,
+      rgba(59, 130, 246, 1) 0%,
+      rgba(168, 85, 247, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  border-radius: 9999px;
+  box-sizing: border-box;
+  display: flex;
+  height: 68px;
+  width: 211px;
+}
+
+.hero-section-frame .text-wrapper-95 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 20px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-left: 32px;
+  margin-top: 19.6px;
+  text-align: center;
+  white-space: nowrap;
+  width: 146.83px;
+}
+
+/* Main Navigation Styles */
+.main-navigation {
+  background-color: #ffffff;
+  box-shadow:
+    0px 4px 6px -4px #0000001a, 0px 10px 15px -3px #0000001a;
+  display: flex;
+  height: 80px;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  justify-content: center;
+  z-index: 100;
+}
+
+.main-navigation .frame-frame-2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1390px;
+  padding: 0 40px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.main-navigation .nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
+.main-navigation .text-wrapper-96 {
+  color: #9233ea;
+  font-family: "Fredoka", Helvetica;
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-96:hover {
+  color: #ec4899;
+}
+
+.main-navigation .text-wrapper-97 {
+  color: #9233ea;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.8px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-97:hover {
+  color: #ec4899;
+}
+
+.main-navigation .text-wrapper-98 {
+  color: #9233ea;
+  font-family: "Fredoka", Helvetica;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-98:hover {
+  color: #ec4899;
+}
+
+.main-navigation .text-wrapper-99 {
+  color: #9233ea;
+  font-family: "Fredoka", Helvetica;
+  font-size: 16.1px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.main-navigation .text-wrapper-99:hover {
+  color: #ec4899;
+}
+
+/* User Profile & Sign Out Button */
+.child-nav-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 0;
+}
+
+.main-navigation .cta-button-button {
+  background: linear-gradient(90deg,
+      rgba(168, 85, 247, 1) 0%,
+      rgba(236, 72, 153, 1) 100%), linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  border-radius: 9999px;
+  display: flex;
+  height: 52px;
+  margin-top: 14px;
+  width: 167px;
+}
+
+.main-navigation .text-wrapper-100 {
+  align-items: center;
+  color: #ffffff;
+  display: flex;
+  font-family: "Fredoka", Helvetica;
+  font-size: 17.9px;
+  font-weight: 700;
+  height: 28px;
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 28px;
+  margin-left: 24.0px;
+  margin-top: 12.0px;
+  text-align: center;
+  white-space: nowrap;
+  width: 119.28px;
+}

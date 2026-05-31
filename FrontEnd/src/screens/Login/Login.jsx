@@ -1,17 +1,17 @@
 import { EyeIcon, LockIcon, UserIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { doSignInWithEmailAndPassword, doSignInWithGoogle, doPasswordReset } from '../../FireBase/auth'
 import { useAuth } from '../../contexts/authContext'
 import { Navigate } from "react-router-dom";
 import "./Login.css";
 
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../FireBase/firebase";
+import { login, requestPasswordReset, loginWithGoogle } from '../../api/auth'
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../FireBase/firebase";
 
 const Login = () => {
     const navigate = useNavigate();
-    const { userLoggedIn } = useAuth()
+    const { userLoggedIn, userProfile, profileLoading } = useAuth()
     const [identifier, setIdentifier] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false);
@@ -20,22 +20,32 @@ const Login = () => {
     const [showReset, setShowReset] = useState(false)
     const [resetEmail, setResetEmail] = useState('')
     const [resetMessage, setResetMessage] = useState('')
+    const [waitingForProfile, setWaitingForProfile] = useState(false)
+
+    // Once logged in, wait for the Django profile sync to complete,
+    // then route admin users to /admin, PARENT users to /, and CHILD users to /kidshome.
+    useEffect(() => {
+        if (userLoggedIn && !profileLoading) {
+            const role = userProfile?.role?.toUpperCase();
+            if (role === 'ADMIN') {
+                navigate('/admin', { replace: true });
+            } else if (role === 'CHILD') {
+                navigate('/kidshome', { replace: true });
+            } else if (role === 'PARENT' || !role) {
+                // If it's a parent or empty/unassigned, go to home
+                navigate('/', { replace: true });
+            }
+            setWaitingForProfile(false);
+        }
+    }, [userLoggedIn, profileLoading, userProfile]);
 
     const resolveEmail = async () => {
         const isEmail = identifier.includes("@");
         if (isEmail) return identifier;
 
-        const q = query(
-            collection(db, "users"),
-            where("username", "==", identifier)
-        );
-        const snap = await getDocs(q);
-
-        if (!snap.empty) {
-            return snap.docs[0].data().email;
-        } else {
-            throw new Error("Username not found");
-        }
+        // For username lookup, we would need to call a backend endpoint
+        // For now, just treat it as an email if it contains @
+        throw new Error("Please use your email to log in");
     }
 
     const onSubmit = async (e) => {
@@ -46,22 +56,50 @@ const Login = () => {
 
             try {
                 const emailToUse = await resolveEmail();
-                await doSignInWithEmailAndPassword(emailToUse, password);
-                navigate("/")
-            } catch (err) {
-                setErrorMessage(err.message);
+
+                // Step 1: Sign in with Firebase Auth directly
+                await signInWithEmailAndPassword(auth, emailToUse, password);
+                
+                // AuthContext will automatically detect the sign-in and sync with the Django backend
+                setWaitingForProfile(true); 
+
+            } catch (error) {
+                console.error("Login attempt failed:", error);
+                
+                // Handle Firebase specific errors for invalid credentials
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    setErrorMessage("Invalid email or password");
+                } else if (error.message?.includes("Failed to fetch") || error.message?.includes("network")) {
+                    setErrorMessage("Cannot connect to the server. Please check your internet connection.");
+                } else {
+                    setErrorMessage("Invalid email or password, please try again.");
+                }
+            } finally {
                 setIsSigningIn(false);
             }
         }
     };
 
-    const onGoogleSignIn = (e) => {
+    const onGoogleSignIn = async (e) => {
         e.preventDefault();
         if (!isSigningIn) {
             setIsSigningIn(true);
-            doSignInWithGoogle().catch(() => {
+            setErrorMessage("");
+            try {
+                const provider = new GoogleAuthProvider();
+                const userCredential = await signInWithPopup(auth, provider);
+                const googleToken = await userCredential.user.getIdToken();
+
+                const response = await loginWithGoogle(googleToken);
+
+                if (response.user) {
+                    // Mark waiting; useEffect will route to /admin or / once profile loads
+                    setWaitingForProfile(true)
+                }
+            } catch (err) {
+                setErrorMessage(err.message);
                 setIsSigningIn(false);
-            });
+            }
         }
     };
 
@@ -72,7 +110,7 @@ const Login = () => {
             return setResetMessage("Please enter a valid email.");
         }
         try {
-            await doPasswordReset(resetEmail);
+            await requestPasswordReset(resetEmail);
             setResetMessage("✅ Password reset email sent!");
         } catch (err) {
             setResetMessage("❌ Failed: " + err.message);
@@ -81,7 +119,19 @@ const Login = () => {
 
     return (
         <div>
-            {userLoggedIn && (<Navigate to={'/'} replace={true} />)}
+            {/* Redirect already-logged-in users away from the login page */}
+            {userLoggedIn && !waitingForProfile && !profileLoading && (
+                <Navigate 
+                    to={
+                        userProfile?.role?.toUpperCase() === 'ADMIN' 
+                            ? '/admin' 
+                            : userProfile?.role?.toUpperCase() === 'CHILD' 
+                            ? '/kidshome' 
+                            : '/'
+                    } 
+                    replace={true} 
+                />
+            )}
             {/* Password Reset Popup */}
             {showReset && (
                 <div className="reset-overlay">
@@ -98,7 +148,11 @@ const Login = () => {
                         <button onClick={handlePasswordReset} className="reset-send-btn">
                             Send Reset Email
                         </button>
-                        {resetMessage && <p className="reset-message">{resetMessage}</p>}
+                        {resetMessage && (
+                            <p className={`reset-message ${resetMessage.includes('✅') ? 'reset-success' : 'reset-error'}`}>
+                                {resetMessage}
+                            </p>
+                        )}
 
                         <button onClick={() => setShowReset(false)} className="reset-close-btn">
                             Close

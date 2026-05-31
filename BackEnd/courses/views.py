@@ -3,16 +3,143 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
-from .models import Module, QuizQuestion, QuizChoice, UserModuleProgress, ParentChildLink, WatchEvent
+from .models import (
+    Module,
+    QuizQuestion,
+    QuizChoice,
+    UserModuleProgress,
+    ParentChildLink,
+    WatchEvent,
+    AttentionEvent,
+)
 from .serializers import ModuleSerializer, QuizQuestionSerializer, ParentChildLinkSerializer
 from payments.firebase import verify_firebase_token
 from users.permissions import IsChild, IsParentOrAdmin, IsAdmin, IsAuthenticatedFirebase
-from utils.firestore import FirestoreService
+from utils.firestore import FirestoreService, get_db
 from utils.constants import ROLE_CHILD, ROLE_UNASSIGNED
 from django.utils import timezone
+from firebase_admin import firestore
+
+
+FIRESTORE_COURSES_COLLECTION = 'courses'
+SUBSCRIPTION_PLAN_IDS = ['starter', 'pro', 'family']
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_courses_list(request):
+    """
+    Fetch all courses from Firestore `courses` collection.
+    Also reads the `modules` subcollection (with lesson counts) for each course.
+    """
+    try:
+        db = get_db()
+        docs = db.collection(FIRESTORE_COURSES_COLLECTION).stream()
+        courses = []
+        for doc in docs:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            modules = []
+            for mod_doc in doc.reference.collection('modules').order_by('order').stream():
+                mod_data = mod_doc.to_dict()
+                mod_data['id'] = mod_doc.id
+                mod_data['lesson_count'] = len(list(mod_doc.reference.collection('lessons').stream()))
+                modules.append(mod_data)
+            data['modules'] = modules
+            data['module_count'] = len(modules)
+            courses.append(data)
+        return Response(courses)
+    except Exception as e:
+        print(f"[ERROR] firestore_courses_list: {e}")
+        return Response({'error': 'Failed to fetch courses'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_course_detail(request, course_id):
+    """
+    Fetch a single course from Firestore including its full modules + lessons subcollections.
+    """
+    try:
+        db = get_db()
+        doc_ref = db.collection(FIRESTORE_COURSES_COLLECTION).document(course_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = doc.to_dict()
+        data['id'] = doc.id
+        modules = []
+        for mod_doc in doc_ref.collection('modules').order_by('order').stream():
+            mod_data = mod_doc.to_dict()
+            mod_data['id'] = mod_doc.id
+            lessons = []
+            for les_doc in mod_doc.reference.collection('lessons').order_by('order').stream():
+                les_data = les_doc.to_dict()
+                les_data['id'] = les_doc.id
+                lessons.append(les_data)
+            mod_data['lessons'] = lessons
+            modules.append(mod_data)
+        data['modules'] = modules
+        return Response(data)
+    except Exception as e:
+        print(f"[ERROR] firestore_course_detail({course_id}): {e}")
+        return Response({'error': 'Failed to fetch course'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_modules_list(request, course_id):
+    """
+    Fetch all modules for a course from Firestore subcollection:
+       courses/<course_id>/modules/
+    """
+    try:
+        db = get_db()
+        modules_ref = (
+            db.collection(FIRESTORE_COURSES_COLLECTION)
+            .document(course_id)
+            .collection('modules')
+        )
+        docs = modules_ref.stream()
+        modules = []
+        for doc in docs:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            modules.append(data)
+        return Response(modules)
+    except Exception as e:
+        print(f"[ERROR] firestore_modules_list({course_id}): {e}")
+        return Response({'error': 'Failed to fetch modules'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def firestore_module_detail(request, course_id, module_id):
+    """
+    Fetch a single module from Firestore subcollection:
+       courses/<course_id>/modules/<module_id>
+    """
+    try:
+        db = get_db()
+        doc = (
+            db.collection(FIRESTORE_COURSES_COLLECTION)
+            .document(course_id)
+            .collection('modules')
+            .document(module_id)
+            .get()
+        )
+        if not doc.exists:
+            return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
+        data = doc.to_dict()
+        data['id'] = doc.id
+        return Response(data)
+    except Exception as e:
+        print(f"[ERROR] firestore_module_detail({course_id}, {module_id}): {e}")
+        return Response({'error': 'Failed to fetch module'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Public course list for marketing pages.
 def module_list(request):
     modules = Module.objects.filter(published=True).order_by('order')
     serializer = ModuleSerializer(modules, many=True)
@@ -255,68 +382,37 @@ def attention_status(request, module_id):
         })
 
     return Response({'status': last.status, 'elapsed': elapsed, 'action': 'pause'})
-    """Accept module JSON (from Firestore admin) and create/update Module and questions.
-    Requires Firebase token and admin UID configured in settings.COURSE_ADMIN_UIDS (or DEBUG True).
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticatedFirebase])
+def course_activity(request):
     """
-    decoded = verify_firebase_token(request)
-    if not decoded:
+    Log study time (in seconds) for a user.
+    """
+    firebase_user = request.firebase_user
+    if not firebase_user:
         return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+    duration_seconds = request.data.get('duration_seconds', 0)
+    try:
+        duration_seconds = int(duration_seconds)
+    except ValueError:
+        return Response({'error': 'Invalid duration format'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    if duration_seconds > 0:
+        try:
+            from progress.activity import ActivityService
+            student_id = firebase_user['uid']
+            ActivityService.log_activity(student_id, 'study', duration_seconds)
+        except Exception as e:
+            print(f"[ERROR] course_activity log: {e}")
+            return Response({'error': 'Failed to log activity'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    return Response({'ok': True})
 
-    uid = decoded.get('uid')
-    from django.conf import settings
-
-    if settings.COURSE_ADMIN_UIDS:
-        if uid not in settings.COURSE_ADMIN_UIDS:
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-    else:
-        # Allow in DEBUG for easy development
-        if not settings.DEBUG:
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-    payload = request.data.get('module')
-    if not isinstance(payload, dict):
-        return Response({'error': 'module payload required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    title = payload.get('title')
-    if not title:
-        return Response({'error': 'title required'}, status=status.HTTP_400_BAD_REQUEST)
-
-    module_id = payload.get('id')
-    if module_id:
-        module, _ = Module.objects.update_or_create(id=module_id, defaults={
-            'title': payload.get('title'),
-            'description': payload.get('description', ''),
-            'order': payload.get('order', 0),
-            'video_url': payload.get('video_url', ''),
-            'video_host': payload.get('video_host', 'youtube'),
-            'video_duration': float(payload.get('video_duration') or 0.0),
-            'required_percent': float(payload.get('required_percent', 0.95)),
-            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
-            'published': bool(payload.get('published', True)),
-        })
-    else:
-        module, _ = Module.objects.update_or_create(title=title, defaults={
-            'description': payload.get('description', ''),
-            'order': payload.get('order', 0),
-            'video_url': payload.get('video_url', ''),
-            'video_host': payload.get('video_host', 'youtube'),
-            'video_duration': float(payload.get('video_duration') or 0.0),
-            'required_percent': float(payload.get('required_percent', 0.95)),
-            'quiz_passing_score': float(payload.get('quiz_passing_score', 0.7)),
-            'published': bool(payload.get('published', True)),
-        })
-
-    # Replace (clear) existing questions and choices
-    module.questions.all().delete()
-
-    for qdata in payload.get('questions', []):
-        q = QuizQuestion.objects.create(module=module, text=qdata.get('text', ''))
-        for c in qdata.get('choices', []):
-            QuizChoice.objects.create(question=q, text=c.get('text', ''), is_correct=bool(c.get('is_correct', False)))
-
-    return Response({'ok': True, 'module_id': module.id})
 
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Public module detail for preview pages.
 def module_detail(request, module_id):
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -328,7 +424,9 @@ def module_detail(request, module_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsChild])  # Only CHILD can watch courses
+# 🚨 TEMPORARY: Changed from IsChild to IsAuthenticatedFirebase for development
+# TODO: Change back to @permission_classes([IsChild]) to restrict to children only
+@permission_classes([IsAuthenticatedFirebase])  # Was: IsChild
 def update_watch(request, module_id):
     """
     Update watch progress for a module.
@@ -344,13 +442,15 @@ def update_watch(request, module_id):
     
     firebase_uid = firebase_user['uid']
     
-    # Additional check: verify user has CHILD role
-    user = FirestoreService.get_user(firebase_uid)
-    if not user or user.get('role') != ROLE_CHILD:
-        return Response(
-            {'error': 'Only children can watch courses. Please complete parent-child linking.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
+    # 🚨 TEMPORARY: Role check bypassed for development
+    # TODO: Uncomment this to re-enable CHILD-only restriction
+    # # Additional check: verify user has CHILD role
+    # user = FirestoreService.get_user(firebase_uid)
+    # if not user or user.get('role') != ROLE_CHILD:
+    #     return Response(
+    #         {'error': 'Only children can watch courses. Please complete parent-child linking.'},
+    #         status=status.HTTP_403_FORBIDDEN
+    #     )
 
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -358,7 +458,8 @@ def update_watch(request, module_id):
         return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # parental approval check: if this firebase user is a child with a pending/unapproved link, block actions
-    if ParentChildLink.objects.filter(child_uid=firebase_uid, approved=False).exists():
+    links = FirestoreService.get_family_links_by_child(firebase_uid)
+    if links and any(not link.get('approved', True) for link in links):
         return Response({'error': 'Parent approval required'}, status=status.HTTP_403_FORBIDDEN)
 
     current_time = request.data.get('current_time')
@@ -396,6 +497,9 @@ def update_watch(request, module_id):
 
 
 @api_view(['GET'])
+# 🚨 TEMPORARY: Changed from IsChild to IsAuthenticatedFirebase for development
+# TODO: Change back to @permission_classes([IsChild])
+@permission_classes([IsAuthenticatedFirebase])  # Was: IsChild
 def quiz(request, module_id):
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -408,7 +512,9 @@ def quiz(request, module_id):
 
 
 @api_view(['POST'])
-@permission_classes([IsChild])  # Only CHILD can submit quizzes
+# 🚨 TEMPORARY: Changed from IsChild to IsAuthenticatedFirebase for development
+# TODO: Change back to @permission_classes([IsChild])
+@permission_classes([IsAuthenticatedFirebase])  # Was: IsChild
 def submit_quiz(request, module_id):
     """
     Submit quiz answers for a module.
@@ -424,13 +530,15 @@ def submit_quiz(request, module_id):
     
     firebase_uid = firebase_user['uid']
     
-    # Additional check: verify user has CHILD role
-    user = FirestoreService.get_user(firebase_uid)
-    if not user or user.get('role') != ROLE_CHILD:
-        return Response(
-            {'error': 'Only children can submit quizzes. Please complete parent-child linking.'},
-            status=status.HTTP_403_FORBIDDEN
-        )
+    # 🚨 TEMPORARY: Role check bypassed for development
+    # TODO: Uncomment this to re-enable CHILD-only restriction
+    # # Additional check: verify user has CHILD role
+    # user = FirestoreService.get_user(firebase_uid)
+    # if not user or user.get('role') != ROLE_CHILD:
+    #     return Response(
+    #         {'error': 'Only children can submit quizzes. Please complete parent-child linking.'},
+    #         status=status.HTTP_403_FORBIDDEN
+    #     )
 
     try:
         module = Module.objects.get(pk=module_id, published=True)
@@ -438,7 +546,8 @@ def submit_quiz(request, module_id):
         return Response({'error': 'Module not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # parental approval check: block if child account has an unapproved parent link
-    if ParentChildLink.objects.filter(child_uid=firebase_uid, approved=False).exists():
+    links = FirestoreService.get_family_links_by_child(firebase_uid)
+    if links and any(not link.get('approved', True) for link in links):
         return Response({'error': 'Parent approval required'}, status=status.HTTP_403_FORBIDDEN)
 
     answers = request.data.get('answers')
@@ -603,3 +712,227 @@ def module_analytics(request, module_id):
         'avg_watch_seconds': avg_watch,
         'completions': completions,
     })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Course Purchase & Child Progress Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+@api_view(['POST'])
+def purchase_course(request):
+    """
+    Parent purchases a course or subscription.
+    Writes course_id/plan_id into purchased_courses/{uid} in Firestore.
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded['uid']
+    course_id = request.data.get('course_id') or request.data.get('plan_id')
+    if not course_id:
+        return Response({'error': 'course_id or plan_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        db = get_db()
+        # Verify the course or plan exists in Firestore (optional check)
+        # Note: 'starter' etc. are plan IDs, while UUIDs are likely courses.
+        
+        purchased_ref = db.collection('purchased_courses').document(uid)
+        purchased_doc = purchased_ref.get()
+
+        if purchased_doc.exists:
+            purchased_ref.update({
+                'course_ids': firestore.ArrayUnion([course_id]),
+                'updated_at': firestore.SERVER_TIMESTAMP
+            })
+        else:
+            purchased_ref.set({
+                'parent_id': uid,
+                'course_ids': [course_id],
+                'created_at': firestore.SERVER_TIMESTAMP
+            })
+
+        return Response({'ok': True, 'course_id': course_id, 'message': 'Successfully processed!'})
+    except Exception as e:
+        print(f"[ERROR] purchase_course: {e}")
+        return Response({'error': 'Failed to process purchase'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def purchased_courses(request):
+    """
+    Return list of course IDs purchased by the authenticated parent.
+    If subscribed, this will include the flag `is_subscribed: true`.
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded['uid']
+    try:
+        db = get_db()
+        # Correct collection as per screenshot: purchased_courses/{uid}
+        user_purchased_doc = db.collection('purchased_courses').document(uid).get()
+        
+        purchased = []
+        is_subscribed = False
+        
+        if user_purchased_doc.exists:
+            data = user_purchased_doc.to_dict() or {}
+            purchased = data.get('course_ids', [])
+            # Check for subscription plans
+            if any(plan_id in purchased for plan_id in SUBSCRIPTION_PLAN_IDS):
+                is_subscribed = True
+                # If subscribed, we grant access to all courses. 
+                # The frontend will check this flag.
+        
+        return Response({
+            'purchased_course_ids': purchased,
+            'is_subscribed': is_subscribed
+        })
+    except Exception as e:
+        print(f"[ERROR] purchased_courses: {e}")
+        return Response({'error': 'Failed to fetch purchased courses'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def child_purchased_courses(request):
+    """
+    Return courses purchased by the child's linked parent.
+    If the parent is subscribed, all courses are considered accessible.
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    child_uid = decoded['uid']
+    try:
+        db = get_db()
+        links = FirestoreService.get_family_links_by_child(child_uid)
+        
+        all_purchased = set()
+        is_subscribed = False
+
+        if not links:
+            # Fallback for testing: check if child UID exists in purchased_courses
+            doc = db.collection('purchased_courses').document(child_uid).get()
+            if doc.exists:
+                data = doc.to_dict() or {}
+                pids = data.get('course_ids', [])
+                all_purchased.update(pids)
+                if any(plan in pids for plan in SUBSCRIPTION_PLAN_IDS):
+                    is_subscribed = True
+        else:
+            # Check all linked parents
+            for link in links:
+                if not link.get('approved', True):
+                    continue
+                parent_doc = db.collection('purchased_courses').document(link['parent_id']).get()
+                if parent_doc.exists:
+                    pdata = parent_doc.to_dict() or {}
+                    pids = pdata.get('course_ids', [])
+                    all_purchased.update(pids)
+                    if any(plan in pids for plan in SUBSCRIPTION_PLAN_IDS):
+                        is_subscribed = True
+
+        # If subbed, return all course IDs from the courses collection
+        if is_subscribed:
+            course_docs = db.collection(FIRESTORE_COURSES_COLLECTION).stream()
+            subscription_granted_ids = [doc.id for doc in course_docs]
+            return Response({
+                'purchased_course_ids': subscription_granted_ids,
+                'is_subscribed': True
+            })
+
+        return Response({
+            'purchased_course_ids': list(all_purchased),
+            'is_subscribed': False
+        })
+    except Exception as e:
+        print(f"[ERROR] child_purchased_courses: {e}")
+        return Response({'error': 'Failed to fetch child courses'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET', 'POST'])
+def child_progress(request, course_id):
+    """
+    GET:  Return child's learning progress for a specific course.
+    POST: Update child's lesson completion or quiz score.
+
+    Firestore path: users/{uid}/progress/{course_id}
+    Progress doc shape:
+    {
+        completed_lessons: [lesson_id, ...],
+        quiz_score: float | null,
+        last_accessed: timestamp
+    }
+    """
+    decoded = verify_firebase_token(request)
+    if not decoded:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    uid = decoded['uid']
+    try:
+        db = get_db()
+        progress_ref = db.collection('users').document(uid).collection('progress').document(course_id)
+
+        if request.method == 'GET':
+            doc = progress_ref.get()
+            if not doc.exists:
+                return Response({'completed_lessons': [], 'quiz_score': None, 'last_accessed': None})
+            return Response(doc.to_dict())
+
+        # POST — update progress
+        completed_lesson = request.data.get('completed_lesson')  # lesson id string
+        quiz_score = request.data.get('quiz_score')              # float 0-1 or None
+
+        update_data = {'last_accessed': firestore.SERVER_TIMESTAMP}
+
+        if completed_lesson:
+            update_data['completed_lessons'] = firestore.ArrayUnion([completed_lesson])
+
+        if quiz_score is not None:
+            try:
+                update_data['quiz_score'] = float(quiz_score)
+            except (TypeError, ValueError):
+                return Response({'error': 'quiz_score must be a number'}, status=status.HTTP_400_BAD_REQUEST)
+
+        progress_ref.set(update_data, merge=True)
+        return Response({'ok': True})
+
+    except Exception as e:
+        print(f"[ERROR] child_progress({course_id}): {e}")
+        return Response({'error': 'Failed to update progress'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ── Demo Video Endpoint ────────────────────────────────────────────
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_demo_video(request):
+    """
+    Fetch the Demo.mp4 video link from Google Drive.
+    
+    Returns:
+        - file_id: Google Drive file ID
+        - embed_url: Direct embed URL for Google Drive preview
+        - webViewLink: Link to view on Google Drive
+        - error: Error message if video not found
+    
+    Access: Public (AllowAny)
+    """
+    from utils.demo_video_service import DemoVideoService
+    
+    try:
+        result = DemoVideoService.get_demo_video_link()
+        
+        if 'error' in result:
+            return Response(result, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(result, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to fetch demo video: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

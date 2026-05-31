@@ -12,9 +12,9 @@ Security Features:
 """
 
 import firebase_admin
-from firebase_admin import auth, credentials
+from firebase_admin import auth
 from django.utils.deprecation import MiddlewareMixin
-from django.conf import settings
+from utils.firebase_init import ensure_initialized
 
 
 class FirebaseAuthenticationMiddleware(MiddlewareMixin):
@@ -34,16 +34,11 @@ class FirebaseAuthenticationMiddleware(MiddlewareMixin):
     
     def __init__(self, get_response):
         """
-        Initialize Firebase Admin SDK if not already initialized.
+        Ensure Firebase is initialized (should already be done in AppConfig).
         """
         super().__init__(get_response)
-        # Initialize Firebase Admin SDK
-        if not firebase_admin._apps:
-            try:
-                cred = credentials.Certificate(settings.FIREBASE_SERVICE_ACCOUNT)
-                firebase_admin.initialize_app(cred)
-            except Exception as e:
-                print(f"Warning: Firebase initialization failed: {e}")
+        # Ensure Firebase is initialized (uses centralized initialization)
+        ensure_initialized()
     
     def process_request(self, request):
         """
@@ -58,21 +53,23 @@ class FirebaseAuthenticationMiddleware(MiddlewareMixin):
         # Skip authentication for certain paths (if needed)
         # For now, we authenticate all requests
         
-        # Extract token from Authorization header
+        # Extract token from Authorization header (Bearer <token> expected).
         auth_header = request.headers.get('Authorization', '')
+        request.firebase_auth_error = None  # Track auth failures for clearer API errors.
         
         if not auth_header.startswith('Bearer '):
-            # No token provided - request.firebase_user will be None
+            # Missing/invalid header: leave user unauthenticated for DRF to handle.
             request.firebase_user = None
             request.user = None
             return None
         
         # Extract token
-        token = auth_header.split('Bearer ')[1].strip()
+        token = auth_header.split('Bearer ', 1)[1].strip()
         
         if not token:
             request.firebase_user = None
             request.user = None
+            request.firebase_auth_error = 'Firebase ID token is missing.'  # Clear 401 message.
             return None
         
         # Verify token with Firebase
@@ -85,6 +82,8 @@ class FirebaseAuthenticationMiddleware(MiddlewareMixin):
                 'email': decoded_token.get('email', ''),
                 'email_verified': decoded_token.get('email_verified', False),
                 'name': decoded_token.get('name', ''),
+                'picture': decoded_token.get('picture', ''),
+                'phone_number': decoded_token.get('phone_number', ''),
                 'firebase_token': decoded_token,
             }
             
@@ -95,14 +94,17 @@ class FirebaseAuthenticationMiddleware(MiddlewareMixin):
             # Invalid token
             request.firebase_user = None
             request.user = None
+            request.firebase_auth_error = 'Invalid Firebase ID token.'  # Clear 401 message.
         except auth.ExpiredIdTokenError:
             # Expired token
             request.firebase_user = None
             request.user = None
+            request.firebase_auth_error = 'Firebase ID token has expired.'  # Clear 401 message.
         except Exception as e:
             # Other errors
             print(f"Firebase auth middleware error: {e}")
             request.firebase_user = None
             request.user = None
+            request.firebase_auth_error = 'Firebase authentication failed.'  # Clear 401 message.
         
         return None

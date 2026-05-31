@@ -3,15 +3,26 @@ import time
 import requests
 import cv2
 import mediapipe as mp
-import numpy as np
+# Try to use MediaPipe Face Mesh if available; otherwise fallback to OpenCV Haar face detector
+try:
+    import mediapipe as mp
+    try:
+        mp_face_mesh = mp.solutions.face_mesh
+        face_mesh = mp_face_mesh.FaceMesh(
+            max_num_faces=1,
+            refine_landmarks=True,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5
+        )
+        USE_MEDIAPIPE = True
+    except Exception:
+        USE_MEDIAPIPE = False
+except Exception:
+    USE_MEDIAPIPE = False
 
-mp_face_mesh = mp.solutions.face_mesh
-face_mesh = mp_face_mesh.FaceMesh(
-    max_num_faces=1,
-    refine_landmarks=True,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
+if not USE_MEDIAPIPE:
+    # Haar cascade for face detection (fallback)
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 LEFT_EYE = [33, 133]
 RIGHT_EYE = [362, 263]
@@ -79,28 +90,44 @@ def main():
 
         frame = cv2.flip(frame, 1)
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = face_mesh.process(rgb)
         h, w, _ = frame.shape
         status_text = 'NO_FACE'
 
-        if results.multi_face_landmarks:
-            landmarks = results.multi_face_landmarks[0].landmark
+        if USE_MEDIAPIPE:
+            results = face_mesh.process(rgb)
+            if results.multi_face_landmarks:
+                landmarks = results.multi_face_landmarks[0].landmark
 
-            # Left eye
-            left_corner = np.array([landmarks[LEFT_EYE[0]].x * w, landmarks[LEFT_EYE[0]].y * h])
-            right_corner = np.array([landmarks[LEFT_EYE[1]].x * w, landmarks[LEFT_EYE[1]].y * h])
-            left_iris = get_center(landmarks, LEFT_IRIS, w, h)
-            left_ratio = (left_iris[0] - left_corner[0]) / (right_corner[0] - left_corner[0])
+                # Left eye
+                left_corner = np.array([landmarks[LEFT_EYE[0]].x * w, landmarks[LEFT_EYE[0]].y * h])
+                right_corner = np.array([landmarks[LEFT_EYE[1]].x * w, landmarks[LEFT_EYE[1]].y * h])
+                left_iris = get_center(landmarks, LEFT_IRIS, w, h)
+                left_ratio = (left_iris[0] - left_corner[0]) / (right_corner[0] - left_corner[0])
 
-            # Right eye
-            left_corner_r = np.array([landmarks[RIGHT_EYE[1]].x * w, landmarks[RIGHT_EYE[1]].y * h])
-            right_corner_r = np.array([landmarks[RIGHT_EYE[0]].x * w, landmarks[RIGHT_EYE[0]].y * h])
-            right_iris = get_center(landmarks, RIGHT_IRIS, w, h)
-            right_ratio = (right_iris[0] - left_corner_r[0]) / (right_corner_r[0] - left_corner_r[0])
+                # Right eye
+                left_corner_r = np.array([landmarks[RIGHT_EYE[1]].x * w, landmarks[RIGHT_EYE[1]].y * h])
+                right_corner_r = np.array([landmarks[RIGHT_EYE[0]].x * w, landmarks[RIGHT_EYE[0]].y * h])
+                right_iris = get_center(landmarks, RIGHT_IRIS, w, h)
+                right_ratio = (right_iris[0] - left_corner_r[0]) / (right_corner_r[0] - left_corner_r[0])
 
-            gaze_ratio = (left_ratio + right_ratio) / 2
+                gaze_ratio = (left_ratio + right_ratio) / 2
 
-            if 0.35 < gaze_ratio < 0.65:
+                if 0.35 < gaze_ratio < 0.65:
+                    status_text = 'LOOKING'
+                    not_looking_start = None
+                else:
+                    status_text = 'NOT_LOOKING'
+                    if not_looking_start is None:
+                        not_looking_start = time.time()
+                    elif time.time() - not_looking_start > ALERT_TIME:
+                        status_text = 'AWAY_ALERT'
+
+                cv2.circle(frame, tuple(left_iris.astype(int)), 3, (0, 255, 0), -1)
+                cv2.circle(frame, tuple(right_iris.astype(int)), 3, (0, 255, 0), -1)
+        else:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80,80))
+            if len(faces) > 0:
                 status_text = 'LOOKING'
                 not_looking_start = None
             else:
@@ -110,8 +137,9 @@ def main():
                 elif time.time() - not_looking_start > ALERT_TIME:
                     status_text = 'AWAY_ALERT'
 
-            cv2.circle(frame, tuple(left_iris.astype(int)), 3, (0, 255, 0), -1)
-            cv2.circle(frame, tuple(right_iris.astype(int)), 3, (0, 255, 0), -1)
+            # Draw rectangles for debugging
+            for (x, y, w2, h2) in faces:
+                cv2.rectangle(frame, (x, y), (x + w2, y + h2), (255, 0, 0), 2)
 
         # Only send when state changes
         if status_text != last_sent_state:

@@ -16,6 +16,34 @@
 .course-detail-main {
   flex: 1;
   max-width: 816px;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-detail-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.back-catalog-btn {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: Nunito, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-catalog-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
 }
 
 .course-badge {
@@ -58,6 +86,25 @@
 .course-main-image {
   width: 100%;
   display: block;
+}
+
+.image-overlay-container {
+  position: relative;
+}
+
+.purchased-ribbon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: Nunito, sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  z-index: 1;
 }
 
 .course-info-content {
@@ -157,4 +204,12 @@
   background-color: #ccc;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.enroll-btn.start-learning-btn {
+  background: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 100%);
+}
+
+.enroll-btn.start-learning-btn:hover {
+  opacity: 0.9;
 }

@@ -9,6 +9,43 @@
   overflow-x: hidden;
 }
 
+.setup-back-button {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+  padding: 10px 16px;
+  border: 1px solid rgba(17, 20, 24, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #111418;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.setup1-back-button {
+  left: 24px;
+  right: auto;
+}
+
+.setup-back-button:hover {
+  background: #eef2ff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .setup-back-button {
+    top: 16px;
+    right: 16px;
+    padding: 8px 14px;
+  }
+  .setup1-back-button {
+    left: 16px;
+    right: auto;
+  }
+}
+
 /* Add fade-in */
 .setup1-page.fade-in,
 .setup1-container.fade-in,
@@ -122,6 +159,106 @@
   color: #617289;
   margin-top: 5px;
 }
+
+/* ─── Error text (red) – used in Setup1 and Setup2 ─── */
+.setup1-hint-text[role="alert"] {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.setup2-field-error {
+  font-size: 0.85rem;
+  color: #dc2626;
+  font-weight: 500;
+  margin: 2px 0 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* ─── Subscription Gate (shown in Setup1 when no/limited plan) ─── */
+.sub-gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.sub-gate-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.sub-gate-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.sub-gate-card h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 10px;
+}
+
+.sub-gate-card p {
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.sub-gate-btn {
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.sub-gate-btn:hover {
+  opacity: 0.88;
+}
+
+.sub-gate-dismiss {
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.sub-gate-plan-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  background: #ede9fe;
+  color: #7c3aed;
+  letter-spacing: 0.03em;
+}
+
 
 /* Button */
 .setup1-continue-button {
@@ -330,6 +467,134 @@
 
 .setup2-continue-button:not(:disabled):hover {
   background: #2563eb;
+}
+
+/* ─── OTP Section (Step 2 linking) ──────────────────────── */
+.setup2-otp-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.setup2-otp-input-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.setup2-otp-input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 2px solid #d1d5db;
+  border-radius: 12px;
+  background: #f9fafb;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  color: #1f2937;
+}
+
+.setup2-otp-input::placeholder {
+  color: #d1d5db;
+  font-size: 1.6rem;
+}
+
+.setup2-otp-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  transform: scale(1.05);
+}
+
+.setup2-otp-input-filled {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.setup2-otp-success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.setup2-otp-success-message span {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.setup2-otp-resend {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.setup2-otp-resend p {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.setup2-otp-resend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.setup2-otp-resend-btn:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.setup2-otp-resend-btn:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.setup2-otp-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.setup2-otp-back-btn {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.setup2-otp-back-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.setup2-otp-back-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Wrapper background */
