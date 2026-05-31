@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import './RockPaperScissorsGame.css';
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+
 // Game assets
 const ICONS = {
   R: '/Rock.png',
@@ -15,14 +17,21 @@ const MOVES = ['R', 'P', 'S'];
 export default function RockPaperScissorsGame() {
   const navigate = useNavigate();
 
-  // Route auth guard
+  // Route auth guard + capture authenticated user for activity logging
+  const [authUser, setAuthUser] = useState(null);
   useEffect(() => {
     const auth = getAuth();
     const unsub = onAuthStateChanged(auth, (u) => {
       if (!u) navigate('/login');
+      setAuthUser(u || null);
     });
     return () => unsub();
   }, [navigate]);
+
+  // Track session duration for activity logging
+  const sessionStartRef = useRef(Date.now());
+  const lastSubmitRef = useRef(Date.now());
+  const SUBMIT_INTERVAL_MS = 15000; // submit every 15 seconds of play
 
   // Track the player's move history so the game can guess the next choice.
   const counts = useRef({ R: 0, P: 0, S: 0 });
@@ -96,6 +105,27 @@ export default function RockPaperScissorsGame() {
     setResult({ playerMove, aiMove, outcome });
     setRoundLog(prev => [{ player: playerMove, ai: aiMove, outcome }, ...prev]);
     setAnimKey(k => k + 1);
+
+    // Log accumulated play time every SUBMIT_INTERVAL_MS
+    const now = Date.now();
+    const elapsed = now - lastSubmitRef.current;
+    if (elapsed >= SUBMIT_INTERVAL_MS && authUser) {
+      const durationSeconds = Math.floor(elapsed / 1000);
+      lastSubmitRef.current = now;
+      authUser.getIdToken().then(tok => {
+        fetch(`${API_BASE}/games/attempt/`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            game_id: 'rock_paper_scissors',
+            score: 0.5,          // neutral; score reflects wins tracked separately
+            difficulty_level: 1,
+            completed: false,
+            game_data: { duration_seconds: durationSeconds },
+          }),
+        }).catch(() => {});
+      });
+    }
   }
 
   // Clear memory and reset scores
@@ -111,6 +141,9 @@ export default function RockPaperScissorsGame() {
     setResult(null);
     setAiThinking('');
     setRoundLog([]);
+    // Reset timing so new session is tracked fresh
+    sessionStartRef.current = Date.now();
+    lastSubmitRef.current = Date.now();
   }
 
   const resultMeta = result

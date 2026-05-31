@@ -193,14 +193,18 @@ def run_game(difficulty, student_id=None, token=None, server="http://127.0.0.1:8
     # Submit score
     if student_id and token:
         try:
-            url = f"{server.rstrip('/')}/api/games/submit-attempt/"
+            url = f"{server.rstrip('/')}/api/games/attempt/"
             headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
             payload = {
                 "game_id": "whack_a_mole_math",
                 "score": min(1.0, final_score),
                 "difficulty_level": difficulty,
                 "completed": True,
-                "game_data": {"total_score": score, "total_questions": total_questions}
+                "game_data": {
+                    "total_score": score,
+                    "total_questions": total_questions,
+                    "duration_seconds": int(time.time() - start_time)
+                }
             }
             requests.post(url, json=payload, headers=headers, timeout=5)
         except Exception as e:
