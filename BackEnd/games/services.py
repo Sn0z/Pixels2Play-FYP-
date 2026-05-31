@@ -62,6 +62,12 @@ GAMES = {
         'ai_concept': 'Creative AI & Ethical Decision-Making',
         'difficulty_levels': [1, 2, 3],
     },
+    'rock_paper_scissors': {
+        'name': 'Rock, Paper, Scissors',
+        'description': 'Challenge the AI — it learns your patterns!',
+        'ai_concept': 'Pattern Prediction & AI Strategy',
+        'difficulty_levels': [1],
+    },
 }
 
 

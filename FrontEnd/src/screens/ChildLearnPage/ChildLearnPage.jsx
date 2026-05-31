@@ -428,6 +428,33 @@ export default function ChildLearnPage() {
     return () => unsub();
   }, [courseId, navigate]);
 
+  // ── Study Time Tracking ───────────────────────────────────────────────────────
+  // Pings the backend every 15 seconds while the kid is actively reading/watching
+  // the module page, logging study time into the daily_activity collection.
+  useEffect(() => {
+    const PING_INTERVAL_MS = 15000;
+    const PING_DURATION_SECONDS = 15;
+
+    const interval = setInterval(async () => {
+      // Only log when the browser tab is visible (not minimised)
+      if (document.visibilityState !== 'visible') return;
+      if (!authUser) return;
+
+      try {
+        const token = await authUser.getIdToken();
+        fetch(`${API_BASE}/courses/activity/`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration_seconds: PING_DURATION_SECONDS }),
+        }).catch(() => {});
+      } catch {
+        // Silently ignore — non-critical tracking
+      }
+    }, PING_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [authUser]);
+
   // Use modules as the unit of progress — each module contains one lesson.
   // We ALWAYS use mod.id (the Firestore document ID) as the completion key
   // because lesson sub-document IDs (e.g. "lesson1") are NOT unique across modules

@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import './DinoGame.css';
+
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+const auth = getAuth();
 
 // Physics constants
 const W = 900, H = 300;
@@ -86,12 +90,22 @@ export default function DinoGame() {
     const [screen, setScreen] = useState('menu');
     const [score,  setScore]  = useState(0);
     const [hi,     setHi]     = useState(() => parseInt(localStorage.getItem('dinoHi') || '0'));
+    const [authUser, setAuthUser] = useState(null);
 
     const gs   = useRef(null);          // core state ref
     const ast  = useRef({ loaded: false });
     const sfx  = useRef({});
     const keys = useRef({ up: false, down: false });
     const rafRef = useRef(null);
+    const startTimeRef = useRef(null);  // tracks when current run started
+
+    // Auth listener — track logged-in user for activity submission
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (u) => {
+            setAuthUser(u || null);
+        });
+        return () => unsub();
+    }, []);
 
     // Initial asset loader
     useEffect(() => {
@@ -416,8 +430,31 @@ export default function DinoGame() {
         keys.current = { up: false, down: false };
         gs.current   = freshState();
         setScore(0);
+        startTimeRef.current = Date.now();  // record run start time
         setScreen('playing');
     }, []);
+
+    // Submit play activity when game is over
+    useEffect(() => {
+        if (screen !== 'gameover' || !authUser) return;
+        const durationSeconds = startTimeRef.current
+            ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+            : 0;
+        if (durationSeconds <= 0) return;
+        authUser.getIdToken().then(tok => {
+            fetch(`${API_BASE}/games/attempt/`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    game_id: 'dino_camera_game',
+                    score: Math.min(1, score / Math.max(1, score + 1)),
+                    difficulty_level: 1,
+                    completed: true,
+                    game_data: { duration_seconds: durationSeconds, final_score: score },
+                }),
+            }).catch(() => {});
+        });
+    }, [screen]); // eslint-disable-line
 
     // Draw frame for menu / game over states
     useEffect(() => {
